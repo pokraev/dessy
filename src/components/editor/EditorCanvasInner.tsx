@@ -5,6 +5,7 @@ import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 import { createImageFrame } from '@/lib/fabric/element-factory';
+import GuidesOverlay from '@/components/editor/GuidesOverlay';
 
 interface EditorCanvasInnerProps {
   projectId: string;
@@ -116,7 +117,7 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      {/* Document canvas wrapper */}
+      {/* Document canvas wrapper with guides overlay */}
       <div
         className="relative"
         style={{
@@ -124,6 +125,7 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
         }}
       >
         <canvas ref={canvasElRef} />
+        <GuidesOverlay formatId={formatId} />
       </div>
 
       {/* First-open hint — disappears after first element is placed */}
