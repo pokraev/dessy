@@ -8,6 +8,8 @@ import { BottomBar } from '@/components/editor/ui/BottomBar';
 import { ToolBar } from '@/components/editor/panels/ToolBar';
 import { PropertiesPanel } from '@/components/editor/panels/PropertiesPanel';
 import { ToastProvider } from '@/components/ui/Toast';
+import { CanvasArea } from '@/components/editor/CanvasArea';
+import EditorCanvasClient from '@/components/editor/EditorCanvas.client';
 import { useProjectStore } from '@/stores/projectStore';
 
 export default function EditorPage() {
@@ -36,9 +38,9 @@ export default function EditorPage() {
       header={<Header />}
       leftPanel={<ToolBar />}
       canvas={
-        <div className="flex items-center justify-center w-full h-full bg-bg text-text-secondary" style={{ fontSize: '13px' }}>
-          Canvas area — Plan 02
-        </div>
+        <CanvasArea>
+          <EditorCanvasClient projectId={projectId} formatId="A4" />
+        </CanvasArea>
       }
       rightPanel={<PropertiesPanel />}
       bottomBar={<BottomBar />}
