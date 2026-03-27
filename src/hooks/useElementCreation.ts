@@ -91,9 +91,10 @@ export function useElementCreation(canvas: Canvas | null) {
 
       const preview = previewObjRef.current;
       if (typeof preview.set === 'function') {
+        const { activeTool } = useCanvasStore.getState();
         preview.set({ left, top, width, height });
-        // Update ellipse radii if present
-        if (preview.rx !== undefined) {
+        // Update ellipse radii only for circle tool
+        if (activeTool === 'circle') {
           preview.set({ rx: width / 2, ry: height / 2 });
         }
         if (typeof preview.setCoords === 'function') {
