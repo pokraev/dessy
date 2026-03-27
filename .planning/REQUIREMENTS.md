@@ -112,10 +112,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### App Shell & UX
 
 - [x] **UXSH-01**: App has dark theme editor UI matching the design system in CLAUDE.md
-- [ ] **UXSH-02**: Header shows project name, save button, undo/redo buttons, export button
-- [ ] **UXSH-03**: Bottom bar shows zoom slider, page indicator, and grid toggle
-- [ ] **UXSH-04**: All panels are collapsible with smooth animation
-- [ ] **UXSH-05**: Toast notifications for save, export, and errors (bottom-right)
+- [x] **UXSH-02**: Header shows project name, save button, undo/redo buttons, export button
+- [x] **UXSH-03**: Bottom bar shows zoom slider, page indicator, and grid toggle
+- [x] **UXSH-04**: All panels are collapsible with smooth animation
+- [x] **UXSH-05**: Toast notifications for save, export, and errors (bottom-right)
 - [ ] **UXSH-06**: Keyboard shortcuts overlay shown with ? key
 
 ## v2 Requirements
@@ -174,10 +174,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-03 | Phase 1 | Pending |
 | EXPO-03 | Phase 1 | Pending |
 | UXSH-01 | Phase 1 | Complete |
-| UXSH-02 | Phase 1 | Pending |
-| UXSH-03 | Phase 1 | Pending |
-| UXSH-04 | Phase 1 | Pending |
-| UXSH-05 | Phase 1 | Pending |
+| UXSH-02 | Phase 1 | Complete |
+| UXSH-03 | Phase 1 | Complete |
+| UXSH-04 | Phase 1 | Complete |
+| UXSH-05 | Phase 1 | Complete |
 | UXSH-06 | Phase 1 | Pending |
 | PAGE-01 | Phase 2 | Pending |
 | PAGE-02 | Phase 2 | Pending |
