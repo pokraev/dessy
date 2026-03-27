@@ -219,69 +219,51 @@ export function useFabricCanvas(
         }
       }
 
-      // Snap an object's edges during resize/scale
-      // Only snap right and bottom edges — Fabric.js internally handles
-      // left/top scaling via transform origin, making those edges unreliable
-      // to snap without fighting the transform system.
+      // Snap only the edge being dragged during resize
       function snapScale(obj: FabricObject) {
         clearSnapLines();
         const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
         const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
 
-        // Get the object's bounding rect which accounts for transform origin
+        // Detect which handle is being dragged
+        // __corner values: 'tl','tr','bl','br','ml','mr','mt','mb'
+        const corner = (obj as FabricObject & { __corner?: string }).__corner ?? '';
+        const snapRight = corner.includes('r');
+        const snapLeft = corner.includes('l') && !corner.includes('r');
+        const snapBottom = corner.includes('b');
+        const snapTop = corner.includes('t') && !corner.includes('b');
+
+        // Get bounding rect in scene coords
         const bound = obj.getBoundingRect();
         const zoom = canvas!.getZoom();
         const vt = canvas!.viewportTransform;
-        // Convert from screen coords back to scene coords
         const bL = (bound.left - vt[4]) / zoom;
         const bT = (bound.top - vt[5]) / zoom;
-        const bW = bound.width / zoom;
-        const bH = bound.height / zoom;
-        const bR = bL + bW;
-        const bB = bT + bH;
+        const bR = bL + bound.width / zoom;
+        const bB = bT + bound.height / zoom;
 
-        // Snap right edge
-        let bestRDist = snapThresh;
-        let bestRTarget = -1;
-        for (const t of vTargets) {
-          const d = Math.abs(bR - t);
-          if (d < bestRDist) { bestRDist = d; bestRTarget = t; }
-        }
-        if (bestRTarget >= 0) {
-          drawSnapLine(bestRTarget, -docH, bestRTarget, docH * 2);
+        if (snapRight) {
+          let best = snapThresh, target = -1;
+          for (const t of vTargets) { const d = Math.abs(bR - t); if (d < best) { best = d; target = t; } }
+          if (target >= 0) drawSnapLine(target, -docH, target, docH * 2);
         }
 
-        // Snap left edge
-        let bestLDist = snapThresh;
-        let bestLTarget = -1;
-        for (const t of vTargets) {
-          const d = Math.abs(bL - t);
-          if (d < bestLDist) { bestLDist = d; bestLTarget = t; }
-        }
-        if (bestLTarget >= 0) {
-          drawSnapLine(bestLTarget, -docH, bestLTarget, docH * 2);
+        if (snapLeft) {
+          let best = snapThresh, target = -1;
+          for (const t of vTargets) { const d = Math.abs(bL - t); if (d < best) { best = d; target = t; } }
+          if (target >= 0) drawSnapLine(target, -docH, target, docH * 2);
         }
 
-        // Snap bottom edge
-        let bestBDist = snapThresh;
-        let bestBTarget = -1;
-        for (const t of hTargets) {
-          const d = Math.abs(bB - t);
-          if (d < bestBDist) { bestBDist = d; bestBTarget = t; }
-        }
-        if (bestBTarget >= 0) {
-          drawSnapLine(-docW, bestBTarget, docW * 2, bestBTarget);
+        if (snapBottom) {
+          let best = snapThresh, target = -1;
+          for (const t of hTargets) { const d = Math.abs(bB - t); if (d < best) { best = d; target = t; } }
+          if (target >= 0) drawSnapLine(-docW, target, docW * 2, target);
         }
 
-        // Snap top edge
-        let bestTDist = snapThresh;
-        let bestTTarget = -1;
-        for (const t of hTargets) {
-          const d = Math.abs(bT - t);
-          if (d < bestTDist) { bestTDist = d; bestTTarget = t; }
-        }
-        if (bestTTarget >= 0) {
-          drawSnapLine(-docW, bestTTarget, docW * 2, bestTTarget);
+        if (snapTop) {
+          let best = snapThresh, target = -1;
+          for (const t of hTargets) { const d = Math.abs(bT - t); if (d < best) { best = d; target = t; } }
+          if (target >= 0) drawSnapLine(-docW, target, docW * 2, target);
         }
       }
 
