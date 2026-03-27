@@ -1,7 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
+import { useElementCreation } from '@/hooks/useElementCreation';
+import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+import { createImageFrame } from '@/lib/fabric/element-factory';
 
 interface EditorCanvasInnerProps {
   projectId: string;
@@ -12,12 +15,95 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [hasElements, setHasElements] = useState(false);
 
-  // Mount Fabric.js canvas
-  const canvasRef = useFabricCanvas(canvasElRef.current, formatId);
+  // Mount Fabric.js canvas — canvasInstance becomes non-null once async init completes
+  const { canvasRef, canvasInstance } = useFabricCanvas(canvasElRef.current, formatId);
 
-  // Suppress unused warning — canvasRef used by child hooks added in Task 2
+  // Wire element creation and zoom/pan hooks — these re-run when canvasInstance becomes available
+  useElementCreation(canvasInstance);
+  useCanvasZoomPan(canvasInstance);
+
+  // Track when first element is placed to hide the hint
+  useEffect(() => {
+    const canvas = canvasInstance;
+    if (!canvas) return;
+
+    const onObjectAdded = () => setHasElements(true);
+    canvas.on('object:added', onObjectAdded);
+    return () => {
+      canvas.off('object:added', onObjectAdded);
+    };
+  }, [canvasInstance]);
+
+  // Suppress unused warning for canvasRef — used by future canvas-dependent features
   void canvasRef;
-  void setHasElements;
+
+  // Handle image file drops onto the canvas
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const canvas = canvasInstance;
+      if (!canvas) return;
+
+      const files = Array.from(e.dataTransfer.files).filter((f) =>
+        f.type.startsWith('image/')
+      );
+      if (!files.length) return;
+
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const dataUrl = ev.target?.result as string;
+          if (!dataUrl) return;
+
+          // Determine drop position relative to canvas
+          const canvasEl = canvas.getElement();
+          const rect = canvasEl.getBoundingClientRect();
+          const dropX = e.clientX - rect.left;
+          const dropY = e.clientY - rect.top;
+
+          // Create image frame placeholder at drop position
+          const frame = createImageFrame({
+            left: dropX - 100,
+            top: dropY - 75,
+            width: 200,
+            height: 150,
+          });
+
+          // Load image into frame using FabricImage.fromURL
+          const { FabricImage } = await import('fabric');
+          FabricImage.fromURL(dataUrl, { crossOrigin: 'anonymous' }).then((img) => {
+            // Scale image to fit within the frame
+            const scaleX = 200 / (img.width ?? 200);
+            const scaleY = 150 / (img.height ?? 150);
+            const scale = Math.min(scaleX, scaleY);
+            img.set({
+              left: dropX - 100,
+              top: dropY - 75,
+              scaleX: scale,
+              scaleY: scale,
+              originX: 'left',
+              originY: 'top',
+            });
+
+            // Replace frame placeholder with actual image
+            canvas.remove(frame as Parameters<typeof canvas.add>[0]);
+            canvas.add(img);
+            canvas.setActiveObject(img);
+            canvas.requestRenderAll();
+          });
+
+          canvas.add(frame as Parameters<typeof canvas.add>[0]);
+          canvas.requestRenderAll();
+        };
+        reader.readAsDataURL(file);
+      });
+    },
+    [canvasInstance]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  }, []);
 
   return (
     <div
@@ -27,6 +113,8 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
         backgroundImage: 'repeating-conic-gradient(#141414 0% 25%, #1a1a1a 0% 50%)',
         backgroundSize: '10px 10px',
       }}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
     >
       {/* Document canvas wrapper */}
       <div

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Canvas as FabricCanvas } from 'fabric';
 import { getCanvasOptions } from '@/lib/fabric/canvas-config';
 import { FORMATS } from '@/constants/formats';
@@ -11,6 +11,8 @@ export function useFabricCanvas(
   formatId: string
 ) {
   const canvasRef = useRef<FabricCanvas | null>(null);
+  // canvasInstance is null until init completes — triggers re-renders so child hooks see the canvas
+  const [canvasInstance, setCanvasInstance] = useState<FabricCanvas | null>(null);
 
   useEffect(() => {
     if (!canvasEl) return;
@@ -28,6 +30,7 @@ export function useFabricCanvas(
 
       canvas = new Canvas(canvasEl, options);
       canvasRef.current = canvas;
+      setCanvasInstance(canvas);
 
       // Bridge Fabric.js selection events to Zustand
       canvas.on('selection:created', (e) => {
@@ -65,9 +68,10 @@ export function useFabricCanvas(
         canvas.off('mouse:down');
         canvas.dispose();
         canvasRef.current = null;
+        setCanvasInstance(null);
       }
     };
   }, [canvasEl, formatId]);
 
-  return canvasRef;
+  return { canvasRef, canvasInstance };
 }

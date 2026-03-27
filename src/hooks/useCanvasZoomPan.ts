@@ -1,0 +1,131 @@
+'use client';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useEffect, useRef } from 'react';
+import type { Canvas } from 'fabric';
+import { useCanvasStore } from '@/stores/canvasStore';
+
+const MIN_ZOOM = 0.1;  // 10%
+const MAX_ZOOM = 5;    // 500%
+
+/**
+ * Clamp a value between min and max.
+ */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+/**
+ * Zoom canvas to fit the document in the viewport.
+ */
+export function zoomToFit(canvas: Canvas) {
+  const canvasEl = canvas.getElement();
+  const containerWidth = canvasEl.parentElement?.clientWidth ?? canvasEl.width;
+  const containerHeight = canvasEl.parentElement?.clientHeight ?? canvasEl.height;
+  const canvasWidth = canvas.getWidth();
+  const canvasHeight = canvas.getHeight();
+
+  const scaleX = containerWidth / canvasWidth;
+  const scaleY = containerHeight / canvasHeight;
+  const zoom = clamp(Math.min(scaleX, scaleY) * 0.9, MIN_ZOOM, MAX_ZOOM);
+
+  canvas.setZoom(zoom);
+  useCanvasStore.getState().setZoom(zoom);
+  useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
+}
+
+/**
+ * Zoom to a specific level.
+ */
+export function zoomTo(canvas: Canvas, level: number) {
+  const zoom = clamp(level, MIN_ZOOM, MAX_ZOOM);
+  canvas.setZoom(zoom);
+  useCanvasStore.getState().setZoom(zoom);
+  useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
+}
+
+/**
+ * Hook: handles scroll-to-zoom and pan (hand tool + alt-drag).
+ * Uses getScenePoint for coordinate accuracy (getPointer removed in Fabric.js 7).
+ * Zoom range clamped between 0.1 (10%) and 5 (500%).
+ */
+export function useCanvasZoomPan(canvas: Canvas | null) {
+  const isDraggingRef = useRef(false);
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!canvas) return;
+    // Capture non-null alias so TypeScript is satisfied inside closures
+    const c = canvas;
+
+    function onMouseWheel(opt: any) {
+      (opt.e as WheelEvent).preventDefault();
+      (opt.e as WheelEvent).stopPropagation();
+
+      const delta = (opt.e as WheelEvent).deltaY;
+      let zoom = c.getZoom();
+
+      // Exponential zoom for smooth feel; clamp between 10% and 500%
+      zoom *= 0.999 ** delta;
+      zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
+
+      // Zoom centered on cursor using getScenePoint (not getPointer — removed in Fabric.js 7)
+      const point = c.getScenePoint(opt.e as MouseEvent);
+      c.zoomToPoint(point, zoom);
+
+      useCanvasStore.getState().setZoom(zoom);
+      useCanvasStore.getState().setViewportTransform([...c.viewportTransform] as number[]);
+    }
+
+    function onMouseDown(opt: any) {
+      const { activeTool } = useCanvasStore.getState();
+      const isHandTool = activeTool === 'hand';
+      const isAltDrag = (opt.e as MouseEvent).altKey;
+
+      if (isHandTool || isAltDrag) {
+        isDraggingRef.current = true;
+        lastPosRef.current = { x: (opt.e as MouseEvent).clientX, y: (opt.e as MouseEvent).clientY };
+        c.selection = false;
+        c.getElement().style.cursor = 'grabbing';
+      }
+    }
+
+    async function onMouseMove(opt: any) {
+      if (!isDraggingRef.current || !lastPosRef.current) return;
+
+      const dx = (opt.e as MouseEvent).clientX - lastPosRef.current.x;
+      const dy = (opt.e as MouseEvent).clientY - lastPosRef.current.y;
+
+      const { Point } = await import('fabric');
+      c.relativePan(new Point(dx, dy));
+      lastPosRef.current = { x: (opt.e as MouseEvent).clientX, y: (opt.e as MouseEvent).clientY };
+
+      useCanvasStore.getState().setViewportTransform([...c.viewportTransform] as number[]);
+    }
+
+    function onMouseUp() {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      lastPosRef.current = null;
+
+      const { activeTool } = useCanvasStore.getState();
+      if (activeTool !== 'hand') {
+        c.selection = true;
+      }
+      c.getElement().style.cursor = activeTool === 'hand' ? 'grab' : '';
+    }
+
+    c.on('mouse:wheel', onMouseWheel);
+    c.on('mouse:down', onMouseDown);
+    c.on('mouse:move', onMouseMove);
+    c.on('mouse:up', onMouseUp);
+
+    return () => {
+      c.off('mouse:wheel', onMouseWheel);
+      c.off('mouse:down', onMouseDown);
+      c.off('mouse:move', onMouseMove);
+      c.off('mouse:up', onMouseUp);
+    };
+  }, [canvas]);
+}
