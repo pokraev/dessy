@@ -83,27 +83,61 @@ export function useElementCreation(canvas: Canvas | null) {
 
       const current = c.getScenePoint(opt.e as MouseEvent);
       const start = startPointRef.current;
-
-      const left = Math.min(start.x, current.x);
-      const top = Math.min(start.y, current.y);
-      const width = Math.abs(current.x - start.x);
-      const height = Math.abs(current.y - start.y);
+      const isShift = (opt.e as MouseEvent).shiftKey;
+      const { activeTool } = useCanvasStore.getState();
 
       const preview = previewObjRef.current;
-      if (typeof preview.set === 'function') {
-        const { activeTool } = useCanvasStore.getState();
-        if (activeTool === 'circle') {
-          // Perfect circle — use the larger dimension
+      if (typeof preview.set !== 'function') return;
+
+      if (activeTool === 'line') {
+        // Line tool: update endpoints directly
+        let endX = current.x;
+        let endY = current.y;
+
+        if (isShift) {
+          // Shift: constrain to horizontal, vertical, or 45°
+          const dx = current.x - start.x;
+          const dy = current.y - start.y;
+          const angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+
+          if (angle < 22.5 || angle > 157.5) {
+            // Horizontal
+            endY = start.y;
+          } else if (angle > 67.5 && angle < 112.5) {
+            // Vertical
+            endX = start.x;
+          } else {
+            // 45° diagonal
+            const dist = Math.max(Math.abs(dx), Math.abs(dy));
+            endX = start.x + dist * Math.sign(dx);
+            endY = start.y + dist * Math.sign(dy);
+          }
+        }
+
+        preview.set({ x1: start.x, y1: start.y, x2: endX, y2: endY });
+      } else if (activeTool === 'circle') {
+        const left = Math.min(start.x, current.x);
+        const top = Math.min(start.y, current.y);
+        const size = Math.max(Math.abs(current.x - start.x), Math.abs(current.y - start.y));
+        preview.set({ left, top, width: size, height: size, rx: size / 2, ry: size / 2 });
+      } else {
+        const left = Math.min(start.x, current.x);
+        const top = Math.min(start.y, current.y);
+        const width = Math.abs(current.x - start.x);
+        const height = Math.abs(current.y - start.y);
+
+        if (isShift) {
+          // Shift: constrain to square
           const size = Math.max(width, height);
-          preview.set({ left, top, width: size, height: size, rx: size / 2, ry: size / 2 });
+          preview.set({ left, top, width: size, height: size });
         } else {
           preview.set({ left, top, width, height });
         }
-        if (typeof preview.setCoords === 'function') {
-          preview.setCoords();
-        }
       }
 
+      if (typeof preview.setCoords === 'function') {
+        preview.setCoords();
+      }
       c.requestRenderAll();
     }
 
@@ -114,11 +148,12 @@ export function useElementCreation(canvas: Canvas | null) {
       const { activeTool } = useCanvasStore.getState();
       const current = c.getScenePoint(opt.e as MouseEvent);
       const start = startPointRef.current;
+      const isShift = (opt.e as MouseEvent).shiftKey;
 
-      const left = Math.min(start.x, current.x);
-      const top = Math.min(start.y, current.y);
-      const width = Math.abs(current.x - start.x);
-      const height = Math.abs(current.y - start.y);
+      let left = Math.min(start.x, current.x);
+      let top = Math.min(start.y, current.y);
+      let width = Math.abs(current.x - start.x);
+      let height = Math.abs(current.y - start.y);
 
       // Remove preview
       if (previewObjRef.current) {
@@ -129,12 +164,43 @@ export function useElementCreation(canvas: Canvas | null) {
       // Re-enable selection
       c.selection = true;
 
-      // For circle: constrain to perfect circle
-      const finalWidth = activeTool === 'circle' ? Math.max(width, height) : width;
-      const finalHeight = activeTool === 'circle' ? Math.max(width, height) : height;
+      // Apply shift constraints
+      if (activeTool === 'circle') {
+        const size = Math.max(width, height);
+        width = size;
+        height = size;
+      } else if (isShift && activeTool !== 'line') {
+        const size = Math.max(width, height);
+        width = size;
+        height = size;
+      }
+
+      // For line with shift: compute constrained endpoints
+      let lineEndX = current.x;
+      let lineEndY = current.y;
+      if (activeTool === 'line' && isShift) {
+        const dx = current.x - start.x;
+        const dy = current.y - start.y;
+        const angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+        if (angle < 22.5 || angle > 157.5) {
+          lineEndY = start.y;
+        } else if (angle > 67.5 && angle < 112.5) {
+          lineEndX = start.x;
+        } else {
+          const dist = Math.max(Math.abs(dx), Math.abs(dy));
+          lineEndX = start.x + dist * Math.sign(dx);
+          lineEndY = start.y + dist * Math.sign(dy);
+        }
+        // Recalculate bounding box for line
+        left = Math.min(start.x, lineEndX);
+        top = Math.min(start.y, lineEndY);
+        width = Math.abs(lineEndX - start.x);
+        height = Math.abs(lineEndY - start.y);
+      }
 
       // Discard if too small (accidental click)
-      if (finalWidth < MIN_SIZE || finalHeight < MIN_SIZE) {
+      const minDim = activeTool === 'line' ? Math.max(width, height) : Math.min(width, height);
+      if (minDim < MIN_SIZE) {
         startPointRef.current = null;
         c.requestRenderAll();
         return;
@@ -144,18 +210,18 @@ export function useElementCreation(canvas: Canvas | null) {
       let finalObj: any;
 
       if (activeTool === 'text') {
-        finalObj = createTextFrame({ left, top, width: finalWidth, height: finalHeight });
+        finalObj = createTextFrame({ left, top, width, height });
       } else if (activeTool === 'image') {
-        finalObj = createImageFrame({ left, top, width: finalWidth, height: finalHeight });
+        finalObj = createImageFrame({ left, top, width, height });
       } else if (CREATION_TOOLS.has(activeTool)) {
         finalObj = createShape(activeTool as 'rect' | 'circle' | 'line', {
           left,
           top,
-          width: finalWidth,
-          height: finalHeight,
+          width,
+          height,
         });
       } else {
-        finalObj = createColorBlock({ left, top, width: finalWidth, height: finalHeight });
+        finalObj = createColorBlock({ left, top, width, height });
       }
 
       // Make it fully visible and selectable
