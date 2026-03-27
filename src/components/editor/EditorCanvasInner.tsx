@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, type RefCallback } from 'react';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
@@ -22,12 +22,17 @@ interface EditorCanvasInnerProps {
 }
 
 export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasInnerProps) {
-  const canvasElRef = useRef<HTMLCanvasElement | null>(null);
+  // Use state for the canvas element so that when the ref attaches, it triggers a re-render
+  // and useFabricCanvas receives the actual element (not null)
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const canvasElRef: RefCallback<HTMLCanvasElement> = useCallback((el: HTMLCanvasElement | null) => {
+    setCanvasEl(el);
+  }, []);
   const [hasElements, setHasElements] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   // Mount Fabric.js canvas — canvasInstance becomes non-null once async init completes
-  const { canvasRef, canvasInstance, historyRef } = useFabricCanvas(canvasElRef.current, formatId);
+  const { canvasRef, canvasInstance, historyRef } = useFabricCanvas(canvasEl, formatId);
 
   // Wire element creation and zoom/pan hooks — these re-run when canvasInstance becomes available
   useElementCreation(canvasInstance);
