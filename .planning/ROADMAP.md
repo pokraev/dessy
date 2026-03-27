@@ -45,12 +45,13 @@ Plans:
   3. User can upload a photo or sketch and have the AI interpret it into an editable Fabric.js layout
   4. User can preview the generated result and click "Load into Editor" to place it on the canvas with all elements selectable and editable
   5. Multi-page fold types (bifold, trifold, z-fold) create the correct number of pages in the project
-**Plans:** 3/3 plans complete
+**Plans:** 4 plans (3 complete + 1 gap closure)
 
 Plans:
 - [ ] 01.1-01-PLAN.md — AI service layer: types, provider abstraction (Claude + Gemini), system prompt, schema validator, API route
 - [ ] 01.1-02-PLAN.md — Generation modal UI: 3-tab modal, fold type picker, style picker, preview component, Header integration
 - [ ] 01.1-03-PLAN.md — Canvas integration: load generated layouts into canvas and project store
+- [ ] 01.1-04-PLAN.md — Gap closure: add AIGEN-01 through AIGEN-08 requirement definitions to REQUIREMENTS.md
 
 ### Phase 2: Editor Surface
 **Goal**: Users have a complete editing surface with layers, properties, typography, style, multi-page support, and a full color system
@@ -91,7 +92,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
-| 01.1. AI Leaflet Generation | 3/3 | Complete   | 2026-03-27 |
+| 01.1. AI Leaflet Generation | 3/4 | Gap closure   | 2026-03-27 |
 | 2. Editor Surface | 0/TBD | Not started | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
