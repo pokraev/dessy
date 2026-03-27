@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-06-PLAN.md
-last_updated: "2026-03-27T21:21:25.958Z"
+stopped_at: Completed 01.1-01-PLAN.md
+last_updated: "2026-03-27T22:01:02.103Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 1
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Speed — full leaflet from zero to print-ready in minutes, with AI handling on-brand image generation
-**Current focus:** Phase 01 — canvas-foundation
+**Current focus:** Phase 01.1 — import
 
 ## Current Position
 
-Phase: 01 (canvas-foundation) — EXECUTING
-Plan: 6 of 6
+Phase: 01.1 (import) — EXECUTING
+Plan: 1 of 3
 
 ## Performance Metrics
 
@@ -55,8 +55,14 @@ Plan: 6 of 6
 | Phase 01 P04 | 4 min | 2 tasks | 8 files |
 | Phase 01 P05 | 8 min | 2 tasks | 9 files |
 | Phase 01 P06 | 12 | 2 tasks | 11 files |
+| Phase 01.1-import P02 | 4 | 2 tasks | 10 files |
+| Phase 01.1-import P01 | 4 | 2 tasks | 8 files |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 01.1 inserted after Phase 01: import (URGENT)
 
 ### Decisions
 
@@ -85,6 +91,10 @@ Recent decisions affecting current work:
 - [01-05]: ContextMenu uses onContextMenu on canvas wrapper div (not Fabric.js canvas.on) — React event system handles positioning correctly
 - [Phase 01]: triggerSave/triggerExport/triggerImport stored as callbacks in canvasStore for Header→EditorCanvasInner communication without prop drilling
 - [Phase 01]: Canvas JSON restore uses sessionStorage bridge — EditorPage writes on load, EditorCanvasInner reads and clears on first canvas mount
+- [Phase 01.1-02]: Modal state uses editorStore.generateModalOpen (same pattern as shortcutsModalOpen) — no prop drilling, matches existing conventions
+- [Phase 01.1-02]: Tab components own their local input state; modal only receives the final generate call with mode-specific data
+- [Phase 01.1-import]: Native fetch used for Anthropic/Gemini AI calls — no SDK dependency, keeps bundle lean
+- [Phase 01.1-import]: Validate-then-repair pattern for AI JSON: validateCanvasJSON() detects issues, repairCanvasJSON() fixes them
 
 ### Pending Todos
 
@@ -99,6 +109,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:26:35.207Z
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-03-27T22:01:02.072Z
+Stopped at: Completed 01.1-01-PLAN.md
 Resume file: None

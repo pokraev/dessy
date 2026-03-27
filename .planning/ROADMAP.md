@@ -45,7 +45,7 @@ Plans:
   3. User can upload a photo or sketch and have the AI interpret it into an editable Fabric.js layout
   4. User can preview the generated result and click "Load into Editor" to place it on the canvas with all elements selectable and editable
   5. Multi-page fold types (bifold, trifold, z-fold) create the correct number of pages in the project
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 01.1-01-PLAN.md — AI service layer: types, provider abstraction (Claude + Gemini), system prompt, schema validator, API route
@@ -91,7 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
-| 01.1. AI Leaflet Generation | 0/3 | Planning complete | - |
+| 01.1. AI Leaflet Generation | 2/3 | In Progress|  |
 | 2. Editor Surface | 0/TBD | Not started | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
