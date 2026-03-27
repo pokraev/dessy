@@ -5,7 +5,6 @@ import type { Canvas as FabricCanvas, FabricObject } from 'fabric';
 import { getCanvasOptions, getDocDimensions } from '@/lib/fabric/canvas-config';
 import { FORMATS } from '@/constants/formats';
 import { useCanvasStore } from '@/stores/canvasStore';
-import { calcBleedGuides, calcMarginGuides } from '@/lib/fabric/guides';
 import { createHistory } from '@/hooks/useHistory';
 
 export function useFabricCanvas(
@@ -26,7 +25,7 @@ export function useFabricCanvas(
     let canvas: FabricCanvas | null = null;
 
     async function initCanvas() {
-      const { Canvas, Rect, Line: FabricLine } = await import('fabric');
+      const { Canvas, Rect } = await import('fabric');
       if (!isMounted || !canvasEl) return;
 
       const format = FORMATS[formatId] ?? FORMATS['A4'];
@@ -111,166 +110,27 @@ export function useFabricCanvas(
         }
       });
 
-      // ────────────────────────────────────────────────────────────
-      // Snap alignment guides — manual implementation
-      // fabric-guideline-plugin is incompatible with Fabric.js 7 (peer deps: fabric ^5.2.1)
-      // so we implement snap directly via object:moving and mouse:up events.
-      // Snap threshold: 6px (UI-SPEC Snap Guides section)
-      // Guide color: #ec4899 magenta (UI-SPEC)
-      // ────────────────────────────────────────────────────────────
-      const SNAP_THRESHOLD = 6;
-      const GUIDE_COLOR = '#ec4899';
-
-      // Overlay lines drawn on the Fabric.js canvas during drag
-      const snapLines: FabricObject[] = [];
-
-      function clearSnapLines() {
-        for (const line of snapLines) {
-          canvas!.remove(line);
-        }
-        snapLines.length = 0;
-      }
-
-      function drawSnapLine(
-        x1: number, y1: number, x2: number, y2: number
-      ) {
-        const line = new FabricLine([x1, y1, x2, y2], {
-          stroke: GUIDE_COLOR,
-          strokeWidth: 1 / (canvas!.getZoom()),
-          selectable: false,
-          evented: false,
-          excludeFromExport: true,
-        });
-        (line as FabricObject & { _isSnapLine?: boolean })._isSnapLine = true;
-        canvas!.add(line);
-        snapLines.push(line);
-      }
-
-      // Collect all snap targets for a given object (excludes that object)
-      function getSnapTargets(excludeObj: FabricObject | null) {
-        const docDims = getDocDimensions(format);
-        const docW = docDims.width;
-        const docH = docDims.height;
-
-        const vTargets: number[] = [0, docW / 2, docW];
-        const hTargets: number[] = [0, docH / 2, docH];
-
-        const bleed = calcBleedGuides(format);
-        const margins = calcMarginGuides(format);
-        vTargets.push(bleed.bleedPx, docW - bleed.bleedPx, margins.left, margins.right);
-        hTargets.push(bleed.bleedPx, docH - bleed.bleedPx, margins.top, margins.bottom);
-
-        const objects = canvas!.getObjects().filter(
-          (o) => o !== excludeObj
-            && !(o as FabricObject & { _isSnapLine?: boolean })._isSnapLine
-            && !(o as FabricObject & { _isDocBackground?: boolean })._isDocBackground
-        );
-        for (const other of objects) {
-          const oL = other.left ?? 0;
-          const oT = other.top ?? 0;
-          const oW = (other.width ?? 0) * (other.scaleX ?? 1);
-          const oH = (other.height ?? 0) * (other.scaleY ?? 1);
-          vTargets.push(oL, oL + oW / 2, oL + oW);
-          hTargets.push(oT, oT + oH / 2, oT + oH);
-        }
-
-        return { vTargets, hTargets, docW, docH };
-      }
-
-      // Snap an object's position (move snap)
-      function snapMove(obj: FabricObject) {
-        clearSnapLines();
-        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
-        const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
-
-        const oL = obj.left ?? 0;
-        const oT = obj.top ?? 0;
-        const w = (obj.width ?? 0) * (obj.scaleX ?? 1);
-        const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
-        const oR = oL + w;
-        const oB = oT + h;
-        const oCX = oL + w / 2;
-        const oCY = oT + h / 2;
-
-        let newLeft = oL;
-        let newTop = oT;
-
-        // Vertical snap (x-axis)
-        let bestV = snapThresh, bestVT = -1, bestVO = 0;
-        for (const t of vTargets) {
-          const dL = Math.abs(oL - t); if (dL < bestV) { bestV = dL; bestVT = t; bestVO = 0; }
-          const dC = Math.abs(oCX - t); if (dC < bestV) { bestV = dC; bestVT = t; bestVO = -w / 2; }
-          const dR = Math.abs(oR - t); if (dR < bestV) { bestV = dR; bestVT = t; bestVO = -w; }
-        }
-        if (bestVT >= 0) { newLeft = bestVT + bestVO; drawSnapLine(bestVT, -docH, bestVT, docH * 2); }
-
-        // Horizontal snap (y-axis)
-        let bestH = snapThresh, bestHT = -1, bestHO = 0;
-        for (const t of hTargets) {
-          const dT = Math.abs(oT - t); if (dT < bestH) { bestH = dT; bestHT = t; bestHO = 0; }
-          const dC = Math.abs(oCY - t); if (dC < bestH) { bestH = dC; bestHT = t; bestHO = -h / 2; }
-          const dB = Math.abs(oB - t); if (dB < bestH) { bestH = dB; bestHT = t; bestHO = -h; }
-        }
-        if (bestHT >= 0) { newTop = bestHT + bestHO; drawSnapLine(-docW, bestHT, docW * 2, bestHT); }
-
-        if (newLeft !== oL || newTop !== oT) {
-          obj.set({ left: newLeft, top: newTop });
-          obj.setCoords();
-        }
-      }
-
-      // Snap only the edge being dragged during resize
-      function snapScale(obj: FabricObject) {
-        clearSnapLines();
-        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
-        const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
-
-        // Detect which handle is being dragged
-        // __corner values: 'tl','tr','bl','br','ml','mr','mt','mb'
-        const corner = (obj as FabricObject & { __corner?: string }).__corner ?? '';
-        const snapRight = corner.includes('r');
-        const snapLeft = corner.includes('l') && !corner.includes('r');
-        const snapBottom = corner.includes('b');
-        const snapTop = corner.includes('t') && !corner.includes('b');
-
-        // Use object properties directly (scene coords)
-        const bL = obj.left ?? 0;
-        const bT = obj.top ?? 0;
-        const bR = bL + (obj.width ?? 0) * (obj.scaleX ?? 1);
-        const bB = bT + (obj.height ?? 0) * (obj.scaleY ?? 1);
-
-        if (snapRight) {
-          let best = snapThresh, target = -1;
-          for (const t of vTargets) { const d = Math.abs(bR - t); if (d < best) { best = d; target = t; } }
-          if (target >= 0) drawSnapLine(target, -docH, target, docH * 2);
-        }
-
-        if (snapLeft) {
-          let best = snapThresh, target = -1;
-          for (const t of vTargets) { const d = Math.abs(bL - t); if (d < best) { best = d; target = t; } }
-          if (target >= 0) drawSnapLine(target, -docH, target, docH * 2);
-        }
-
-        if (snapBottom) {
-          let best = snapThresh, target = -1;
-          for (const t of hTargets) { const d = Math.abs(bB - t); if (d < best) { best = d; target = t; } }
-          if (target >= 0) drawSnapLine(-docW, target, docW * 2, target);
-        }
-
-        if (snapTop) {
-          let best = snapThresh, target = -1;
-          for (const t of hTargets) { const d = Math.abs(bT - t); if (d < best) { best = d; target = t; } }
-          if (target >= 0) drawSnapLine(-docW, target, docW * 2, target);
-        }
-      }
-
-      canvas.on('object:moving', (e) => { if (e.target) snapMove(e.target); });
-      canvas.on('object:scaling', (e) => { if (e.target) snapScale(e.target); });
-
-      canvas.on('mouse:up', () => {
-        clearSnapLines();
-        canvas!.requestRenderAll();
+      // Fabric.js 7 built-in AligningGuidelines — handles move + scale snap properly
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { AligningGuidelines } = await import('fabric-aligning-guidelines' as any);
+      const guidelines = new AligningGuidelines(canvas, {
+        margin: 6,
+        color: '#ec4899',
+        width: 1,
       });
+      guidelines.initBehavior();
+
+      // Exclude document background rect from snap targets
+      const origGetObjects = guidelines.getObjectsByTarget.bind(guidelines);
+      guidelines.getObjectsByTarget = (target: FabricObject) => {
+        const objects = origGetObjects(target);
+        for (const obj of objects) {
+          if ((obj as FabricObject & { _isDocBackground?: boolean })._isDocBackground) {
+            objects.delete(obj);
+          }
+        }
+        return objects;
+      };
     }
 
     initCanvas();
