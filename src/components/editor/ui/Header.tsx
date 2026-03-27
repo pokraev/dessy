@@ -216,9 +216,12 @@ export function Header() {
       <GenerateLeafletModal
         open={generateModalOpen}
         onClose={() => useEditorStore.getState().setGenerateModalOpen(false)}
-        onLoadPages={() => {
+        onLoadPages={(response) => {
           useEditorStore.getState().setGenerateModalOpen(false);
-          // Loading into canvas happens in Plan 03
+          const loadFn = useCanvasStore.getState().triggerLoadGenerated;
+          if (loadFn) {
+            loadFn(response);
+          }
         }}
       />
     </header>
