@@ -92,10 +92,12 @@ export function useElementCreation(canvas: Canvas | null) {
       const preview = previewObjRef.current;
       if (typeof preview.set === 'function') {
         const { activeTool } = useCanvasStore.getState();
-        preview.set({ left, top, width, height });
-        // Update ellipse radii only for circle tool
         if (activeTool === 'circle') {
-          preview.set({ rx: width / 2, ry: height / 2 });
+          // Perfect circle — use the larger dimension
+          const size = Math.max(width, height);
+          preview.set({ left, top, width: size, height: size, rx: size / 2, ry: size / 2 });
+        } else {
+          preview.set({ left, top, width, height });
         }
         if (typeof preview.setCoords === 'function') {
           preview.setCoords();
@@ -127,8 +129,12 @@ export function useElementCreation(canvas: Canvas | null) {
       // Re-enable selection
       c.selection = true;
 
+      // For circle: constrain to perfect circle
+      const finalWidth = activeTool === 'circle' ? Math.max(width, height) : width;
+      const finalHeight = activeTool === 'circle' ? Math.max(width, height) : height;
+
       // Discard if too small (accidental click)
-      if (width < MIN_SIZE || height < MIN_SIZE) {
+      if (finalWidth < MIN_SIZE || finalHeight < MIN_SIZE) {
         startPointRef.current = null;
         c.requestRenderAll();
         return;
@@ -138,18 +144,18 @@ export function useElementCreation(canvas: Canvas | null) {
       let finalObj: any;
 
       if (activeTool === 'text') {
-        finalObj = createTextFrame({ left, top, width, height });
+        finalObj = createTextFrame({ left, top, width: finalWidth, height: finalHeight });
       } else if (activeTool === 'image') {
-        finalObj = createImageFrame({ left, top, width, height });
+        finalObj = createImageFrame({ left, top, width: finalWidth, height: finalHeight });
       } else if (CREATION_TOOLS.has(activeTool)) {
         finalObj = createShape(activeTool as 'rect' | 'circle' | 'line', {
           left,
           top,
-          width,
-          height,
+          width: finalWidth,
+          height: finalHeight,
         });
       } else {
-        finalObj = createColorBlock({ left, top, width, height });
+        finalObj = createColorBlock({ left, top, width: finalWidth, height: finalHeight });
       }
 
       // Make it fully visible and selectable
