@@ -20,7 +20,7 @@ interface HistoryFns {
  * - Delete: Delete, Backspace (skipped when editing text)
  * - Nudge: Arrow keys (1px), Shift+Arrow (10px)
  * - Group/Ungroup: Ctrl+G, Ctrl+Shift+G
- * - Save: Ctrl+S (placeholder — wired in Plan 06)
+ * - Save: Ctrl+S
  * - Help: ? key opens shortcuts overlay
  */
 export function useKeyboardShortcuts(
@@ -132,10 +132,10 @@ export function useKeyboardShortcuts(
           return;
         }
 
-        // Save (Ctrl+S) — placeholder, wired in Plan 06
+        // Save (Ctrl+S)
         if (key === 's') {
           e.preventDefault();
-          // TODO: wired in Plan 06
+          useCanvasStore.getState().triggerSave?.();
           return;
         }
 
