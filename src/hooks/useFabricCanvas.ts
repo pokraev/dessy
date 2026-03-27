@@ -113,12 +113,15 @@ export function useFabricCanvas(
       // Fabric.js 7 built-in AligningGuidelines — handles move + scale snap properly
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { AligningGuidelines } = await import('fabric-aligning-guidelines' as any);
+      // Constructor already calls initBehavior() — don't call it again
       const guidelines = new AligningGuidelines(canvas, {
         margin: 6,
         color: '#ec4899',
         width: 1,
       });
-      guidelines.initBehavior();
+
+      // Force render after scaling so guide lines drawn on contextTop are visible
+      canvas.on('object:scaling', () => canvas!.requestRenderAll());
 
       // Exclude document background rect from snap targets
       const origGetObjects = guidelines.getObjectsByTarget.bind(guidelines);
