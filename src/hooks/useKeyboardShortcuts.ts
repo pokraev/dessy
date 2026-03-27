@@ -175,9 +175,10 @@ export function useKeyboardShortcuts(
 
       if ((key === 'Delete' || key === 'Backspace') && !isEditingText) {
         e.preventDefault();
-        const obj = canvas.getActiveObject();
-        if (obj) {
-          canvas.remove(obj);
+        const objects = canvas.getActiveObjects();
+        if (objects.length) {
+          canvas.discardActiveObject();
+          objects.forEach((obj) => canvas.remove(obj));
           canvas.requestRenderAll();
         }
         return;
