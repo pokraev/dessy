@@ -233,14 +233,11 @@ export function useFabricCanvas(
         const snapBottom = corner.includes('b');
         const snapTop = corner.includes('t') && !corner.includes('b');
 
-        // Get bounding rect in scene coords
-        const bound = obj.getBoundingRect();
-        const zoom = canvas!.getZoom();
-        const vt = canvas!.viewportTransform;
-        const bL = (bound.left - vt[4]) / zoom;
-        const bT = (bound.top - vt[5]) / zoom;
-        const bR = bL + bound.width / zoom;
-        const bB = bT + bound.height / zoom;
+        // Use object properties directly (scene coords)
+        const bL = obj.left ?? 0;
+        const bT = obj.top ?? 0;
+        const bR = bL + (obj.width ?? 0) * (obj.scaleX ?? 1);
+        const bB = bT + (obj.height ?? 0) * (obj.scaleY ?? 1);
 
         if (snapRight) {
           let best = snapThresh, target = -1;
