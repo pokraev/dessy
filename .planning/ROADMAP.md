@@ -7,6 +7,7 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
 ## Phases
 
 - [x] **Phase 1: Canvas Foundation** - Working Fabric.js canvas in Next.js, all element types, persistence, and app shell (completed 2026-03-27)
+- [ ] **Phase 01.1: AI Leaflet Generation** - AI-powered leaflet generation from text prompt, photo, or sketch (INSERTED)
 - [ ] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system
 - [ ] **Phase 3: AI and Export** - PromptCrafter, Gemini image generation, PNG/JPG export
 - [ ] **Phase 4: Dashboard, Templates, and InDesign Export** - Project management dashboard, starter template gallery, ExtendScript export
@@ -32,6 +33,24 @@ Plans:
 - [ ] 01-04-PLAN.md — Guides overlay (bleed, margin, fold), rulers, snap alignment
 - [ ] 01-05-PLAN.md — Undo/redo, keyboard shortcuts, context menu, shortcuts overlay
 - [ ] 01-06-PLAN.md — Persistence: auto-save, localStorage, IndexedDB, JSON export/import
+
+### Phase 01.1: AI Leaflet Generation (INSERTED)
+
+**Goal:** Users can generate an initial leaflet layout from a text prompt, photo of an existing leaflet, or hand-drawn sketch, and load it directly into the Fabric.js canvas editor
+**Requirements**: AIGEN-01, AIGEN-02, AIGEN-03, AIGEN-04, AIGEN-05, AIGEN-06, AIGEN-07, AIGEN-08
+**Depends on:** Phase 1
+**Success Criteria** (what must be TRUE):
+  1. User can open an AI generation modal from the editor header and choose between Prompt, Photo, and Sketch tabs
+  2. User can type a text description, select a fold type and style, and generate a leaflet layout via AI
+  3. User can upload a photo or sketch and have the AI interpret it into an editable Fabric.js layout
+  4. User can preview the generated result and click "Load into Editor" to place it on the canvas with all elements selectable and editable
+  5. Multi-page fold types (bifold, trifold, z-fold) create the correct number of pages in the project
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01.1-01-PLAN.md — AI service layer: types, provider abstraction (Claude + Gemini), system prompt, schema validator, API route
+- [ ] 01.1-02-PLAN.md — Generation modal UI: 3-tab modal, fold type picker, style picker, preview component, Header integration
+- [ ] 01.1-03-PLAN.md — Canvas integration: load generated layouts into canvas and project store
 
 ### Phase 2: Editor Surface
 **Goal**: Users have a complete editing surface with layers, properties, typography, style, multi-page support, and a full color system
@@ -72,6 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
+| 01.1. AI Leaflet Generation | 0/3 | Planning complete | - |
 | 2. Editor Surface | 0/TBD | Not started | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
