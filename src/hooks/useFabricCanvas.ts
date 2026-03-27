@@ -26,7 +26,7 @@ export function useFabricCanvas(
     let canvas: FabricCanvas | null = null;
 
     async function initCanvas() {
-      const { Canvas, Rect } = await import('fabric');
+      const { Canvas, Rect, Line: FabricLine } = await import('fabric');
       if (!isMounted || !canvasEl) return;
 
       const format = FORMATS[formatId] ?? FORMATS['A4'];
@@ -131,14 +131,9 @@ export function useFabricCanvas(
         snapLines.length = 0;
       }
 
-      // Pre-import Line class so drawSnapLine can be synchronous
-      let FabricLine: typeof import('fabric').Line | null = null;
-      import('fabric').then(m => { FabricLine = m.Line; });
-
       function drawSnapLine(
         x1: number, y1: number, x2: number, y2: number
       ) {
-        if (!FabricLine) return;
         const line = new FabricLine([x1, y1, x2, y2], {
           stroke: GUIDE_COLOR,
           strokeWidth: 1 / (canvas!.getZoom()),
@@ -151,104 +146,121 @@ export function useFabricCanvas(
         snapLines.push(line);
       }
 
-      canvas.on('object:moving', (e) => {
-        const obj = e.target;
-        if (!obj) return;
-
-        clearSnapLines();
-
-        // Scale snap threshold by zoom so it feels consistent at any zoom level
-        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
-
-        const objLeft = obj.left ?? 0;
-        const objTop = obj.top ?? 0;
-        const objRight = objLeft + (obj.width ?? 0) * (obj.scaleX ?? 1);
-        const objBottom = objTop + (obj.height ?? 0) * (obj.scaleY ?? 1);
-        const objCenterX = objLeft + ((obj.width ?? 0) * (obj.scaleX ?? 1)) / 2;
-        const objCenterY = objTop + ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
-
-        // Use document dimensions for snap targets (not viewport)
+      // Collect all snap targets for a given object (excludes that object)
+      function getSnapTargets(excludeObj: FabricObject | null) {
         const docDims = getDocDimensions(format);
         const docW = docDims.width;
         const docH = docDims.height;
 
-        // Collect snap targets: document edges, document center, margin edges, bleed edges
-        const vSnapTargets: number[] = [0, docW / 2, docW];
-        const hSnapTargets: number[] = [0, docH / 2, docH];
+        const vTargets: number[] = [0, docW / 2, docW];
+        const hTargets: number[] = [0, docH / 2, docH];
 
-        // Add margin guide positions
-        const bleedMargin = calcBleedGuides(format);
+        const bleed = calcBleedGuides(format);
         const margins = calcMarginGuides(format);
-        vSnapTargets.push(
-          bleedMargin.bleedPx, docW - bleedMargin.bleedPx,
-          margins.left, margins.right
-        );
-        hSnapTargets.push(
-          bleedMargin.bleedPx, docH - bleedMargin.bleedPx,
-          margins.top, margins.bottom
-        );
+        vTargets.push(bleed.bleedPx, docW - bleed.bleedPx, margins.left, margins.right);
+        hTargets.push(bleed.bleedPx, docH - bleed.bleedPx, margins.top, margins.bottom);
 
-        // Snap to other objects
         const objects = canvas!.getObjects().filter(
-          (o) => o !== obj && !(o as FabricObject & { _isSnapLine?: boolean })._isSnapLine && !(o as FabricObject & { _isDocBackground?: boolean })._isDocBackground
+          (o) => o !== excludeObj
+            && !(o as FabricObject & { _isSnapLine?: boolean })._isSnapLine
+            && !(o as FabricObject & { _isDocBackground?: boolean })._isDocBackground
         );
         for (const other of objects) {
-          const oLeft = other.left ?? 0;
-          const oTop = other.top ?? 0;
-          const oRight = oLeft + (other.width ?? 0) * (other.scaleX ?? 1);
-          const oBottom = oTop + (other.height ?? 0) * (other.scaleY ?? 1);
-          const oCenterX = oLeft + ((other.width ?? 0) * (other.scaleX ?? 1)) / 2;
-          const oCenterY = oTop + ((other.height ?? 0) * (other.scaleY ?? 1)) / 2;
-          vSnapTargets.push(oLeft, oCenterX, oRight);
-          hSnapTargets.push(oTop, oCenterY, oBottom);
+          const oL = other.left ?? 0;
+          const oT = other.top ?? 0;
+          const oW = (other.width ?? 0) * (other.scaleX ?? 1);
+          const oH = (other.height ?? 0) * (other.scaleY ?? 1);
+          vTargets.push(oL, oL + oW / 2, oL + oW);
+          hTargets.push(oT, oT + oH / 2, oT + oH);
         }
 
-        let newLeft = objLeft;
-        let newTop = objTop;
+        return { vTargets, hTargets, docW, docH };
+      }
+
+      // Snap an object's position (move snap)
+      function snapMove(obj: FabricObject) {
+        clearSnapLines();
+        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
+        const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
+
+        const oL = obj.left ?? 0;
+        const oT = obj.top ?? 0;
         const w = (obj.width ?? 0) * (obj.scaleX ?? 1);
         const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
+        const oR = oL + w;
+        const oB = oT + h;
+        const oCX = oL + w / 2;
+        const oCY = oT + h / 2;
 
-        // Find closest vertical (x-axis) snap across left, center, and right edges
-        let bestVDist = snapThresh;
-        let bestVTarget = -1;
-        let bestVOffset = 0;
+        let newLeft = oL;
+        let newTop = oT;
 
-        for (const target of vSnapTargets) {
-          const dLeft = Math.abs(objLeft - target);
-          if (dLeft < bestVDist) { bestVDist = dLeft; bestVTarget = target; bestVOffset = 0; }
-          const dCenter = Math.abs(objCenterX - target);
-          if (dCenter < bestVDist) { bestVDist = dCenter; bestVTarget = target; bestVOffset = -w / 2; }
-          const dRight = Math.abs(objRight - target);
-          if (dRight < bestVDist) { bestVDist = dRight; bestVTarget = target; bestVOffset = -w; }
+        // Vertical snap (x-axis)
+        let bestV = snapThresh, bestVT = -1, bestVO = 0;
+        for (const t of vTargets) {
+          const dL = Math.abs(oL - t); if (dL < bestV) { bestV = dL; bestVT = t; bestVO = 0; }
+          const dC = Math.abs(oCX - t); if (dC < bestV) { bestV = dC; bestVT = t; bestVO = -w / 2; }
+          const dR = Math.abs(oR - t); if (dR < bestV) { bestV = dR; bestVT = t; bestVO = -w; }
         }
-        if (bestVTarget >= 0) {
-          newLeft = bestVTarget + bestVOffset;
-          drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
-        }
+        if (bestVT >= 0) { newLeft = bestVT + bestVO; drawSnapLine(bestVT, -docH, bestVT, docH * 2); }
 
-        // Find closest horizontal (y-axis) snap across top, center, and bottom edges
-        let bestHDist = snapThresh;
-        let bestHTarget = -1;
-        let bestHOffset = 0;
-
-        for (const target of hSnapTargets) {
-          const dTop = Math.abs(objTop - target);
-          if (dTop < bestHDist) { bestHDist = dTop; bestHTarget = target; bestHOffset = 0; }
-          const dCenter = Math.abs(objCenterY - target);
-          if (dCenter < bestHDist) { bestHDist = dCenter; bestHTarget = target; bestHOffset = -h / 2; }
-          const dBottom = Math.abs(objBottom - target);
-          if (dBottom < bestHDist) { bestHDist = dBottom; bestHTarget = target; bestHOffset = -h; }
+        // Horizontal snap (y-axis)
+        let bestH = snapThresh, bestHT = -1, bestHO = 0;
+        for (const t of hTargets) {
+          const dT = Math.abs(oT - t); if (dT < bestH) { bestH = dT; bestHT = t; bestHO = 0; }
+          const dC = Math.abs(oCY - t); if (dC < bestH) { bestH = dC; bestHT = t; bestHO = -h / 2; }
+          const dB = Math.abs(oB - t); if (dB < bestH) { bestH = dB; bestHT = t; bestHO = -h; }
         }
-        if (bestHTarget >= 0) {
-          newTop = bestHTarget + bestHOffset;
-          drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
-        }
+        if (bestHT >= 0) { newTop = bestHT + bestHO; drawSnapLine(-docW, bestHT, docW * 2, bestHT); }
 
-        if (newLeft !== objLeft || newTop !== objTop) {
+        if (newLeft !== oL || newTop !== oT) {
           obj.set({ left: newLeft, top: newTop });
           obj.setCoords();
         }
-      });
+      }
+
+      // Snap an object's edges during resize/scale
+      function snapScale(obj: FabricObject) {
+        clearSnapLines();
+        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
+        const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
+
+        const oL = obj.left ?? 0;
+        const oT = obj.top ?? 0;
+        const w = (obj.width ?? 0) * (obj.scaleX ?? 1);
+        const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
+        const oR = oL + w;
+        const oB = oT + h;
+
+        // Snap right edge
+        for (const t of vTargets) {
+          if (Math.abs(oR - t) < snapThresh) {
+            const newW = t - oL;
+            if (newW > 0) {
+              obj.set({ scaleX: newW / (obj.width ?? 1) });
+              drawSnapLine(t, -docH, t, docH * 2);
+            }
+            break;
+          }
+        }
+
+        // Snap bottom edge
+        for (const t of hTargets) {
+          if (Math.abs(oB - t) < snapThresh) {
+            const newH = t - oT;
+            if (newH > 0) {
+              obj.set({ scaleY: newH / (obj.height ?? 1) });
+              drawSnapLine(-docW, t, docW * 2, t);
+            }
+            break;
+          }
+        }
+
+        obj.setCoords();
+      }
+
+      canvas.on('object:moving', (e) => { if (e.target) snapMove(e.target); });
+      canvas.on('object:scaling', (e) => { if (e.target) snapScale(e.target); });
 
       canvas.on('mouse:up', () => {
         clearSnapLines();
