@@ -9,6 +9,8 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { createImageFrame, CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 import { saveProject } from '@/lib/storage/projectStorage';
 import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
+import { loadGeneratedLeaflet } from '@/lib/ai/canvas-loader';
+import type { GenerationResponse } from '@/types/generation';
 import { useProjectStore } from '@/stores/projectStore';
 import { useCanvasStore } from '@/stores/canvasStore';
 import GuidesOverlay from '@/components/editor/GuidesOverlay';
@@ -99,8 +101,14 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
 
     useCanvasStore.getState().setPersistFns(triggerSave, triggerExport, triggerImport);
 
+    const triggerLoadGenerated = (response: GenerationResponse) => {
+      loadGeneratedLeaflet(response, canvas, projectId);
+    };
+    useCanvasStore.getState().setLoadGeneratedFn(triggerLoadGenerated);
+
     return () => {
       useCanvasStore.getState().setPersistFns(() => {}, () => {}, () => {});
+      useCanvasStore.getState().setLoadGeneratedFn(null);
     };
   }, [canvasInstance, projectId]);
 

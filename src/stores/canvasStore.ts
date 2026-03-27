@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { GenerationResponse } from '@/types/generation';
 
 export type ToolId = 'select' | 'text' | 'rect' | 'circle' | 'line' | 'image' | 'hand';
 
@@ -18,6 +19,8 @@ interface CanvasState {
   triggerExport: (() => void) | null;
   // Import callback — opens file picker for JSON import
   triggerImport: (() => void) | null;
+  // Load generated callback — set by EditorCanvasInner on mount; calls loadGeneratedLeaflet
+  triggerLoadGenerated: ((response: GenerationResponse) => void) | null;
   // Actions
   setActiveTool: (tool: ToolId) => void;
   setZoom: (zoom: number) => void;
@@ -29,6 +32,7 @@ interface CanvasState {
     triggerRedo: () => Promise<void>
   ) => void;
   setPersistFns: (triggerSave: () => void, triggerExport: () => void, triggerImport: () => void) => void;
+  setLoadGeneratedFn: (fn: ((response: GenerationResponse) => void) | null) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -43,6 +47,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   triggerSave: null,
   triggerExport: null,
   triggerImport: null,
+  triggerLoadGenerated: null,
   setActiveTool: (tool) => set({ activeTool: tool }),
   setZoom: (zoom) => set({ zoom }),
   setSelection: (ids) => set({ selectedObjectIds: ids }),
@@ -50,4 +55,5 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setViewportTransform: (vt) => set({ viewportTransform: vt }),
   setHistoryFns: (triggerUndo, triggerRedo) => set({ triggerUndo, triggerRedo }),
   setPersistFns: (triggerSave, triggerExport, triggerImport) => set({ triggerSave, triggerExport, triggerImport }),
+  setLoadGeneratedFn: (fn) => set({ triggerLoadGenerated: fn }),
 }));
