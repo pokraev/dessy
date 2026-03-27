@@ -28,6 +28,17 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ELEM-04**: User can create solid or gradient color blocks
 - [x] **ELEM-05**: User can group and ungroup elements
 
+### AI Layout Generation
+
+- [x] **AIGEN-01**: User can open an AI generation modal from the editor header with Prompt, Photo, and Sketch tabs
+- [x] **AIGEN-02**: User can type a text description, select a fold type (single/bifold/trifold/z-fold) and style (minimal/bold/corporate/playful/elegant), and generate a leaflet layout via AI
+- [x] **AIGEN-03**: AI service layer supports both Claude (Anthropic) and Gemini providers via a provider-agnostic abstraction
+- [x] **AIGEN-04**: User can upload a photo of an existing leaflet and have the AI interpret it into an editable layout with placeholder text
+- [x] **AIGEN-05**: User can upload a hand-drawn sketch and have the AI interpret boxes, scribbles, and blobs into a structured layout
+- [x] **AIGEN-06**: Fold-type-aware generation produces the correct number of pages/panels (1 for single, 4 for bifold, 6 for trifold/z-fold)
+- [x] **AIGEN-07**: User can preview generated results and click "Load into Editor" to place the layout on the canvas with all elements selectable and editable
+- [x] **AIGEN-08**: AI-generated canvas JSON is validated against the Fabric.js schema and automatically repaired if malformed
+
 ### Multi-Page
 
 - [ ] **PAGE-01**: User can add, remove, and reorder pages in a project
@@ -179,6 +190,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UXSH-04 | Phase 1 | Complete |
 | UXSH-05 | Phase 1 | Complete |
 | UXSH-06 | Phase 1 | Complete |
+| AIGEN-01 | Phase 01.1 | Complete |
+| AIGEN-02 | Phase 01.1 | Complete |
+| AIGEN-03 | Phase 01.1 | Complete |
+| AIGEN-04 | Phase 01.1 | Complete |
+| AIGEN-05 | Phase 01.1 | Complete |
+| AIGEN-06 | Phase 01.1 | Complete |
+| AIGEN-07 | Phase 01.1 | Complete |
+| AIGEN-08 | Phase 01.1 | Complete |
 | PAGE-01 | Phase 2 | Pending |
 | PAGE-02 | Phase 2 | Pending |
 | PAGE-03 | Phase 2 | Pending |
@@ -225,8 +244,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TMPL-02 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 69 total (REQUIREMENTS.md header previously stated 55 — actual count from document is 69)
-- Mapped to phases: 69
+- v1 requirements: 77 total (REQUIREMENTS.md header previously stated 55 — actual count from document is 77)
+- Mapped to phases: 77
 - Unmapped: 0
 
 ---
