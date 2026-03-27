@@ -245,8 +245,10 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
         onChange={handleImportFile}
       />
 
-      {/* Canvas fills entire viewport area — document is a white rect inside */}
-      <canvas ref={canvasElRef} className="absolute inset-0 w-full h-full" />
+      {/* Canvas container — Fabric.js wraps the <canvas> in its own div */}
+      <div className="absolute inset-0">
+        <canvas ref={canvasElRef} />
+      </div>
       <GuidesOverlay formatId={formatId} />
 
       {/* First-open hint — disappears after first element is placed */}
