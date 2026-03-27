@@ -220,57 +220,69 @@ export function useFabricCanvas(
       }
 
       // Snap an object's edges during resize/scale
+      // Only snap right and bottom edges — Fabric.js internally handles
+      // left/top scaling via transform origin, making those edges unreliable
+      // to snap without fighting the transform system.
       function snapScale(obj: FabricObject) {
         clearSnapLines();
         const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
         const { vTargets, hTargets, docW, docH } = getSnapTargets(obj);
 
-        const oL = obj.left ?? 0;
-        const oT = obj.top ?? 0;
-        const w = (obj.width ?? 0) * (obj.scaleX ?? 1);
-        const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
-        const oR = oL + w;
-        const oB = oT + h;
+        // Get the object's bounding rect which accounts for transform origin
+        const bound = obj.getBoundingRect();
+        const zoom = canvas!.getZoom();
+        const vt = canvas!.viewportTransform;
+        // Convert from screen coords back to scene coords
+        const bL = (bound.left - vt[4]) / zoom;
+        const bT = (bound.top - vt[5]) / zoom;
+        const bW = bound.width / zoom;
+        const bH = bound.height / zoom;
+        const bR = bL + bW;
+        const bB = bT + bH;
 
-        // Find closest vertical snap — check both left and right edges
-        let bestVDist = snapThresh, bestVTarget = -1, bestVEdge: 'left' | 'right' = 'right';
+        // Snap right edge
+        let bestRDist = snapThresh;
+        let bestRTarget = -1;
         for (const t of vTargets) {
-          const dL = Math.abs(oL - t);
-          if (dL < bestVDist) { bestVDist = dL; bestVTarget = t; bestVEdge = 'left'; }
-          const dR = Math.abs(oR - t);
-          if (dR < bestVDist) { bestVDist = dR; bestVTarget = t; bestVEdge = 'right'; }
+          const d = Math.abs(bR - t);
+          if (d < bestRDist) { bestRDist = d; bestRTarget = t; }
         }
-        if (bestVTarget >= 0) {
-          if (bestVEdge === 'right') {
-            const newW = bestVTarget - oL;
-            if (newW > 0) obj.set({ scaleX: newW / (obj.width ?? 1) });
-          } else {
-            const newW = oR - bestVTarget;
-            if (newW > 0) obj.set({ left: bestVTarget, scaleX: newW / (obj.width ?? 1) });
-          }
-          drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
+        if (bestRTarget >= 0) {
+          drawSnapLine(bestRTarget, -docH, bestRTarget, docH * 2);
         }
 
-        // Find closest horizontal snap — check both top and bottom edges
-        let bestHDist = snapThresh, bestHTarget = -1, bestHEdge: 'top' | 'bottom' = 'bottom';
+        // Snap left edge
+        let bestLDist = snapThresh;
+        let bestLTarget = -1;
+        for (const t of vTargets) {
+          const d = Math.abs(bL - t);
+          if (d < bestLDist) { bestLDist = d; bestLTarget = t; }
+        }
+        if (bestLTarget >= 0) {
+          drawSnapLine(bestLTarget, -docH, bestLTarget, docH * 2);
+        }
+
+        // Snap bottom edge
+        let bestBDist = snapThresh;
+        let bestBTarget = -1;
         for (const t of hTargets) {
-          const dT = Math.abs(oT - t);
-          if (dT < bestHDist) { bestHDist = dT; bestHTarget = t; bestHEdge = 'top'; }
-          const dB = Math.abs(oB - t);
-          if (dB < bestHDist) { bestHDist = dB; bestHTarget = t; bestHEdge = 'bottom'; }
+          const d = Math.abs(bB - t);
+          if (d < bestBDist) { bestBDist = d; bestBTarget = t; }
         }
-        if (bestHTarget >= 0) {
-          if (bestHEdge === 'bottom') {
-            const newH = bestHTarget - oT;
-            if (newH > 0) obj.set({ scaleY: newH / (obj.height ?? 1) });
-          } else {
-            const newH = oB - bestHTarget;
-            if (newH > 0) obj.set({ top: bestHTarget, scaleY: newH / (obj.height ?? 1) });
-          }
-          drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
+        if (bestBTarget >= 0) {
+          drawSnapLine(-docW, bestBTarget, docW * 2, bestBTarget);
         }
 
-        obj.setCoords();
+        // Snap top edge
+        let bestTDist = snapThresh;
+        let bestTTarget = -1;
+        for (const t of hTargets) {
+          const d = Math.abs(bT - t);
+          if (d < bestTDist) { bestTDist = d; bestTTarget = t; }
+        }
+        if (bestTTarget >= 0) {
+          drawSnapLine(-docW, bestTTarget, docW * 2, bestTTarget);
+        }
       }
 
       canvas.on('object:moving', (e) => { if (e.target) snapMove(e.target); });
