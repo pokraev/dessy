@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-03-27T19:14:23.687Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-03-27T19:17:15Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -24,25 +24,25 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 01 (canvas-foundation) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 4
-- Average duration: 6.25 min
-- Total execution time: 0.4 hours
+- Total plans completed: 5
+- Average duration: 6.6 min
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-canvas-foundation | 4/6 | 25 min | 6.25 min |
+| 01-canvas-foundation | 5/6 | 33 min | 6.6 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (6 min), 01-02 (7 min), 01-03 (8 min), 01-04 (4 min)
+- Last 5 plans: 01-01 (6 min), 01-02 (7 min), 01-03 (8 min), 01-04 (4 min), 01-05 (8 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -52,7 +52,8 @@ Plan: 5 of 6
 | Phase 01 P01 | 6 min | 2 tasks | 10 files |
 | Phase 01 P02 | 7 min | 2 tasks | 8 files |
 | Phase 01 P03 | 8 min | 2 tasks | 7 files |
-| Phase 01 P04 | 4 | 2 tasks | 8 files |
+| Phase 01 P04 | 4 min | 2 tasks | 8 files |
+| Phase 01 P05 | 8 min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Recent decisions affecting current work:
 - [Phase 01]: fabric-guideline-plugin skipped — peer deps require fabric ^5.x incompatible with Fabric.js 7; manual snap via object:moving implemented
 - [Phase 01]: Rulers use canvasStore.subscribe() + requestAnimationFrame instead of useState to avoid React batching lag during rapid pan/zoom
 - [Phase 01]: GuidesOverlay uses CSS transform matrix matching viewportTransform to track zoom/pan as HTML overlay (pointer-events-none)
+- [01-05]: createHistory() is a plain factory (not useRef-wrapped hook) so tests can call it without a React component context
+- [01-05]: Canvas-bound triggerUndo/triggerRedo stored in canvasStore so Header (sibling component) can call them without prop drilling
+- [01-05]: ContextMenu uses onContextMenu on canvas wrapper div (not Fabric.js canvas.on) — React event system handles positioning correctly
 
 ### Pending Todos
 
@@ -92,6 +96,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:14:23.655Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-03-27T19:17:15Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None

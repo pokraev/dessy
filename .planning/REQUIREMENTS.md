@@ -15,10 +15,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CANV-04**: User can zoom (fit, 50%, 100%, 200%, scroll-to-zoom) and pan the canvas
 - [x] **CANV-05**: User can see bleed guides (3mm) and configurable margin guides on canvas
 - [x] **CANV-06**: User can see fold lines as dashed guides for bifold/trifold formats
-- [ ] **CANV-07**: User can undo/redo at least 50 steps with Ctrl+Z / Ctrl+Shift+Z
-- [ ] **CANV-08**: User can copy/paste elements with Ctrl+C / Ctrl+V
-- [ ] **CANV-09**: User can delete elements with Delete key, nudge with arrow keys (1px, Shift+10px)
-- [ ] **CANV-10**: User can right-click elements for context menu (bring forward, send back, duplicate, delete, lock)
+- [x] **CANV-07**: User can undo/redo at least 50 steps with Ctrl+Z / Ctrl+Shift+Z
+- [x] **CANV-08**: User can copy/paste elements with Ctrl+C / Ctrl+V
+- [x] **CANV-09**: User can delete elements with Delete key, nudge with arrow keys (1px, Shift+10px)
+- [x] **CANV-10**: User can right-click elements for context menu (bring forward, send back, duplicate, delete, lock)
 
 ### Elements
 
@@ -116,7 +116,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UXSH-03**: Bottom bar shows zoom slider, page indicator, and grid toggle
 - [x] **UXSH-04**: All panels are collapsible with smooth animation
 - [x] **UXSH-05**: Toast notifications for save, export, and errors (bottom-right)
-- [ ] **UXSH-06**: Keyboard shortcuts overlay shown with ? key
+- [x] **UXSH-06**: Keyboard shortcuts overlay shown with ? key
 
 ## v2 Requirements
 
@@ -160,10 +160,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CANV-04 | Phase 1 | Complete |
 | CANV-05 | Phase 1 | Complete |
 | CANV-06 | Phase 1 | Complete |
-| CANV-07 | Phase 1 | Pending |
-| CANV-08 | Phase 1 | Pending |
-| CANV-09 | Phase 1 | Pending |
-| CANV-10 | Phase 1 | Pending |
+| CANV-07 | Phase 1 | Complete |
+| CANV-08 | Phase 1 | Complete |
+| CANV-09 | Phase 1 | Complete |
+| CANV-10 | Phase 1 | Complete |
 | ELEM-01 | Phase 1 | Complete |
 | ELEM-02 | Phase 1 | Complete |
 | ELEM-03 | Phase 1 | Complete |
@@ -178,7 +178,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UXSH-03 | Phase 1 | Complete |
 | UXSH-04 | Phase 1 | Complete |
 | UXSH-05 | Phase 1 | Complete |
-| UXSH-06 | Phase 1 | Pending |
+| UXSH-06 | Phase 1 | Complete |
 | PAGE-01 | Phase 2 | Pending |
 | PAGE-02 | Phase 2 | Pending |
 | PAGE-03 | Phase 2 | Pending |
