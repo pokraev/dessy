@@ -4,8 +4,11 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { createImageFrame } from '@/lib/fabric/element-factory';
 import GuidesOverlay from '@/components/editor/GuidesOverlay';
+import { ContextMenu } from '@/components/editor/panels/ContextMenu';
+import { KeyboardShortcutsModal } from '@/components/editor/ui/KeyboardShortcutsModal';
 
 interface EditorCanvasInnerProps {
   projectId: string;
@@ -15,13 +18,20 @@ interface EditorCanvasInnerProps {
 export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) {
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [hasElements, setHasElements] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   // Mount Fabric.js canvas — canvasInstance becomes non-null once async init completes
-  const { canvasRef, canvasInstance } = useFabricCanvas(canvasElRef.current, formatId);
+  const { canvasRef, canvasInstance, historyRef } = useFabricCanvas(canvasElRef.current, formatId);
 
   // Wire element creation and zoom/pan hooks — these re-run when canvasInstance becomes available
   useElementCreation(canvasInstance);
   useCanvasZoomPan(canvasInstance);
+
+  // Wire keyboard shortcuts — passes history functions from historyRef
+  useKeyboardShortcuts(canvasInstance, {
+    undo: (canvas) => historyRef.current.undo(canvas),
+    redo: (canvas) => historyRef.current.redo(canvas),
+  });
 
   // Track when first element is placed to hide the hint
   useEffect(() => {
@@ -37,6 +47,7 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
 
   // Suppress unused warning for canvasRef — used by future canvas-dependent features
   void canvasRef;
+  void contextMenuPos; // used by ContextMenu
 
   // Handle image file drops onto the canvas
   const handleDrop = useCallback(
@@ -106,6 +117,12 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
     e.preventDefault();
   }, []);
 
+  // Prevent default browser context menu on the canvas area
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+  }, []);
+
   return (
     <div
       className="relative w-full h-full overflow-auto flex items-center justify-center"
@@ -116,6 +133,7 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
       }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      onContextMenu={handleContextMenu}
     >
       {/* Document canvas wrapper with guides overlay */}
       <div
@@ -141,6 +159,12 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
           Your canvas is ready &mdash; select a tool to start designing
         </div>
       )}
+
+      {/* Right-click context menu — mounted here to access canvas instance */}
+      <ContextMenu canvas={canvasInstance} />
+
+      {/* Keyboard shortcuts overlay modal — reads state from editorStore */}
+      <KeyboardShortcutsModal />
     </div>
   );
 }
