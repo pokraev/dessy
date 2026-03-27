@@ -38,6 +38,13 @@ export function useFabricCanvas(
       // Bind undo/redo history — must be before other event listeners
       historyRef.current.bindHistory(canvas);
 
+      // Register canvas-bound undo/redo in canvasStore so Header buttons can call them
+      const history = historyRef.current;
+      useCanvasStore.getState().setHistoryFns(
+        () => history.undo(canvas!),
+        () => history.redo(canvas!)
+      );
+
       setCanvasInstance(canvas);
 
       // Bridge Fabric.js selection events to Zustand

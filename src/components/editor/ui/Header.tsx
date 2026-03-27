@@ -12,6 +12,8 @@ export function Header() {
 
   const canUndo = useCanvasStore((s) => s.canUndo);
   const canRedo = useCanvasStore((s) => s.canRedo);
+  const triggerUndo = useCanvasStore((s) => s.triggerUndo);
+  const triggerRedo = useCanvasStore((s) => s.triggerRedo);
   const currentProject = useProjectStore((s) => s.currentProject);
   const updateProjectName = useProjectStore((s) => s.updateProjectName);
 
@@ -84,7 +86,7 @@ export function Header() {
             cursor: canUndo ? 'pointer' : 'default',
           }}
           onClick={() => {
-            // PLACEHOLDER: wired in Plan 05 undo/redo
+            triggerUndo?.();
           }}
         >
           <Undo2
@@ -106,7 +108,7 @@ export function Header() {
             cursor: canRedo ? 'pointer' : 'default',
           }}
           onClick={() => {
-            // PLACEHOLDER: wired in Plan 05 undo/redo
+            triggerRedo?.();
           }}
         >
           <Redo2
