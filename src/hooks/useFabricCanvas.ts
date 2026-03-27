@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { Canvas as FabricCanvas, FabricObject } from 'fabric';
-import { getCanvasOptions } from '@/lib/fabric/canvas-config';
+import { getCanvasOptions, getDocDimensions } from '@/lib/fabric/canvas-config';
 import { FORMATS } from '@/constants/formats';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { calcBleedGuides, calcMarginGuides } from '@/lib/fabric/guides';
@@ -26,13 +26,53 @@ export function useFabricCanvas(
     let canvas: FabricCanvas | null = null;
 
     async function initCanvas() {
-      const { Canvas } = await import('fabric');
+      const { Canvas, Rect } = await import('fabric');
       if (!isMounted || !canvasEl) return;
 
       const format = FORMATS[formatId] ?? FORMATS['A4'];
-      const options = getCanvasOptions(format);
+
+      // Canvas fills the viewport container
+      const container = canvasEl.parentElement;
+      const containerWidth = container?.clientWidth ?? 800;
+      const containerHeight = container?.clientHeight ?? 600;
+      const options = getCanvasOptions(format, containerWidth, containerHeight);
 
       canvas = new Canvas(canvasEl, options);
+
+      // Add white document rectangle as the first object (non-selectable background)
+      const doc = getDocDimensions(format);
+      const docRect = new Rect({
+        left: 0,
+        top: 0,
+        width: doc.width,
+        height: doc.height,
+        fill: '#FFFFFF',
+        selectable: false,
+        evented: false,
+        excludeFromExport: false,
+        hoverCursor: 'default',
+      });
+      (docRect as FabricObject & { _isDocBackground?: boolean })._isDocBackground = true;
+      canvas.add(docRect);
+      canvas.sendObjectToBack(docRect);
+
+      // Auto-fit: zoom to show the document centered with padding
+      const padFactor = 0.85;
+      const zoomX = containerWidth / doc.width;
+      const zoomY = containerHeight / doc.height;
+      const fitZoom = Math.min(zoomX, zoomY) * padFactor;
+      canvas.setZoom(fitZoom);
+
+      // Center the document in the viewport
+      const { Point } = await import('fabric');
+      const vpCenterX = containerWidth / 2;
+      const vpCenterY = containerHeight / 2;
+      const docCenterX = (doc.width * fitZoom) / 2;
+      const docCenterY = (doc.height * fitZoom) / 2;
+      canvas.relativePan(new Point(vpCenterX - docCenterX, vpCenterY - docCenterY));
+
+      useCanvasStore.getState().setZoom(fitZoom);
+      useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
       canvasRef.current = canvas;
 
       // Bind undo/redo history — must be before other event listeners
@@ -144,7 +184,7 @@ export function useFabricCanvas(
 
         // Snap to other objects
         const objects = canvas!.getObjects().filter(
-          (o) => o !== obj && !(o as FabricObject & { _isSnapLine?: boolean })._isSnapLine
+          (o) => o !== obj && !(o as FabricObject & { _isSnapLine?: boolean })._isSnapLine && !(o as FabricObject & { _isDocBackground?: boolean })._isDocBackground
         );
         for (const other of objects) {
           const oLeft = other.left ?? 0;

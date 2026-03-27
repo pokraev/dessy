@@ -231,12 +231,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden flex items-center justify-center"
-      style={{
-        // Checkerboard pasteboard background
-        backgroundImage: 'repeating-conic-gradient(#141414 0% 25%, #1a1a1a 0% 50%)',
-        backgroundSize: '10px 10px',
-      }}
+      className="relative w-full h-full overflow-hidden"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onContextMenu={handleContextMenu}
@@ -250,16 +245,9 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
         onChange={handleImportFile}
       />
 
-      {/* Document canvas wrapper with guides overlay */}
-      <div
-        className="relative"
-        style={{
-          boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
-        }}
-      >
-        <canvas ref={canvasElRef} />
-        <GuidesOverlay formatId={formatId} />
-      </div>
+      {/* Canvas fills entire viewport area — document is a white rect inside */}
+      <canvas ref={canvasElRef} className="absolute inset-0 w-full h-full" />
+      <GuidesOverlay formatId={formatId} />
 
       {/* First-open hint — disappears after first element is placed */}
       {!hasElements && (
