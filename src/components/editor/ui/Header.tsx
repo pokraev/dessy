@@ -1,14 +1,18 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Undo2, Redo2, Download, Upload, Save } from 'lucide-react';
+import { Undo2, Redo2, Download, Upload, Save, Sparkles } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useEditorStore } from '@/stores/editorStore';
+import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeafletModal';
 
 export function Header() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const generateModalOpen = useEditorStore((s) => s.generateModalOpen);
 
   const canUndo = useCanvasStore((s) => s.canUndo);
   const canRedo = useCanvasStore((s) => s.canRedo);
@@ -49,8 +53,8 @@ export function Header() {
       className="flex items-center justify-between px-4 bg-surface border-b border-border"
       style={{ height: '48px', minHeight: '48px' }}
     >
-      {/* Left: Project name */}
-      <div className="flex items-center min-w-0">
+      {/* Left: Project name + AI Generate */}
+      <div className="flex items-center gap-3 min-w-0">
         {isEditingName ? (
           <input
             ref={inputRef}
@@ -72,6 +76,29 @@ export function Header() {
             {projectName}
           </span>
         )}
+
+        {/* AI Generate button */}
+        <button
+          aria-label="Open AI leaflet generator"
+          className="flex items-center gap-1.5 text-white font-medium"
+          style={{
+            height: '32px',
+            paddingLeft: '12px',
+            paddingRight: '12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            border: 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.1)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1)'; }}
+          onClick={() => { useEditorStore.getState().setGenerateModalOpen(true); }}
+        >
+          <Sparkles size={14} />
+          AI Generate
+        </button>
       </div>
 
       {/* Center: Undo/Redo */}
@@ -186,6 +213,14 @@ export function Header() {
           Import JSON
         </button>
       </div>
+      <GenerateLeafletModal
+        open={generateModalOpen}
+        onClose={() => useEditorStore.getState().setGenerateModalOpen(false)}
+        onLoadPages={() => {
+          useEditorStore.getState().setGenerateModalOpen(false);
+          // Loading into canvas happens in Plan 03
+        }}
+      />
     </header>
   );
 }

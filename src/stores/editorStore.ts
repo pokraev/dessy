@@ -7,12 +7,14 @@ interface EditorState {
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
   shortcutsModalOpen: boolean;
+  generateModalOpen: boolean;
   toggleGrid: () => void;
   toggleRulers: () => void;
   toggleGuides: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   setShortcutsModalOpen: (open: boolean) => void;
+  setGenerateModalOpen: (open: boolean) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -22,10 +24,12 @@ export const useEditorStore = create<EditorState>((set) => ({
   leftPanelOpen: true,
   rightPanelOpen: true,
   shortcutsModalOpen: false,
+  generateModalOpen: false,
   toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
   toggleRulers: () => set((s) => ({ showRulers: !s.showRulers })),
   toggleGuides: () => set((s) => ({ showGuides: !s.showGuides })),
   toggleLeftPanel: () => set((s) => ({ leftPanelOpen: !s.leftPanelOpen })),
   toggleRightPanel: () => set((s) => ({ rightPanelOpen: !s.rightPanelOpen })),
   setShortcutsModalOpen: (open) => set({ shortcutsModalOpen: open }),
+  setGenerateModalOpen: (open) => set({ generateModalOpen: open }),
 }));
