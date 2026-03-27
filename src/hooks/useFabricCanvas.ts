@@ -131,30 +131,34 @@ export function useFabricCanvas(
         snapLines.length = 0;
       }
 
-      async function drawSnapLine(
+      // Pre-import Line class so drawSnapLine can be synchronous
+      let FabricLine: typeof import('fabric').Line | null = null;
+      import('fabric').then(m => { FabricLine = m.Line; });
+
+      function drawSnapLine(
         x1: number, y1: number, x2: number, y2: number
       ) {
-        const { Line } = await import('fabric');
-        const line = new Line([x1, y1, x2, y2], {
+        if (!FabricLine) return;
+        const line = new FabricLine([x1, y1, x2, y2], {
           stroke: GUIDE_COLOR,
-          strokeWidth: 1,
+          strokeWidth: 1 / (canvas!.getZoom()),
           selectable: false,
           evented: false,
           excludeFromExport: true,
-          // Type assertion needed because Fabric.js 7 Line constructor
-          // does not expose these custom fields in types
         });
-        // Mark as snap line so we can identify and remove them
         (line as FabricObject & { _isSnapLine?: boolean })._isSnapLine = true;
         canvas!.add(line);
         snapLines.push(line);
       }
 
-      canvas.on('object:moving', async (e) => {
+      canvas.on('object:moving', (e) => {
         const obj = e.target;
         if (!obj) return;
 
         clearSnapLines();
+
+        // Scale snap threshold by zoom so it feels consistent at any zoom level
+        const snapThresh = SNAP_THRESHOLD / canvas!.getZoom();
 
         const objLeft = obj.left ?? 0;
         const objTop = obj.top ?? 0;
@@ -205,9 +209,9 @@ export function useFabricCanvas(
         const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
 
         // Find closest vertical (x-axis) snap across left, center, and right edges
-        let bestVDist = SNAP_THRESHOLD;
+        let bestVDist = snapThresh;
         let bestVTarget = -1;
-        let bestVOffset = 0; // offset to apply to left
+        let bestVOffset = 0;
 
         for (const target of vSnapTargets) {
           const dLeft = Math.abs(objLeft - target);
@@ -219,11 +223,11 @@ export function useFabricCanvas(
         }
         if (bestVTarget >= 0) {
           newLeft = bestVTarget + bestVOffset;
-          await drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
+          drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
         }
 
         // Find closest horizontal (y-axis) snap across top, center, and bottom edges
-        let bestHDist = SNAP_THRESHOLD;
+        let bestHDist = snapThresh;
         let bestHTarget = -1;
         let bestHOffset = 0;
 
@@ -237,7 +241,7 @@ export function useFabricCanvas(
         }
         if (bestHTarget >= 0) {
           newTop = bestHTarget + bestHOffset;
-          await drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
+          drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
         }
 
         if (newLeft !== objLeft || newTop !== objTop) {
