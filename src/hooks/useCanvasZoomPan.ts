@@ -79,7 +79,7 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
     // Capture non-null alias so TypeScript is satisfied inside closures
     const c = canvas;
 
-    function onMouseWheel(opt: any) {
+    async function onMouseWheel(opt: any) {
       const e = opt.e as WheelEvent;
       e.preventDefault();
       e.stopPropagation();
@@ -99,7 +99,12 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
 
       zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
 
-      const point = c.getScenePoint(e as unknown as MouseEvent);
+      // Use screen coordinates for zoom center — getScenePoint gives pre-transform coords
+      // which causes drift. We need the pointer position relative to the canvas element.
+      const canvasEl = c.getElement();
+      const rect = canvasEl.getBoundingClientRect();
+      const { Point } = await import('fabric');
+      const point = new Point(e.clientX - rect.left, e.clientY - rect.top);
       c.zoomToPoint(point, zoom);
 
       useCanvasStore.getState().setZoom(zoom);
