@@ -120,9 +120,6 @@ export function useFabricCanvas(
         width: 1,
       });
 
-      // Force render after scaling so guide lines drawn on contextTop are visible
-      canvas.on('object:scaling', () => canvas!.requestRenderAll());
-
       // Exclude document background rect from snap targets
       const origGetObjects = guidelines.getObjectsByTarget.bind(guidelines);
       guidelines.getObjectsByTarget = (target: FabricObject) => {
