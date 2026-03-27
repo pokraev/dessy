@@ -163,22 +163,24 @@ export function useFabricCanvas(
         const objCenterX = objLeft + ((obj.width ?? 0) * (obj.scaleX ?? 1)) / 2;
         const objCenterY = objTop + ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
 
-        const canvasW = canvas!.width ?? 0;
-        const canvasH = canvas!.height ?? 0;
+        // Use document dimensions for snap targets (not viewport)
+        const docDims = getDocDimensions(format);
+        const docW = docDims.width;
+        const docH = docDims.height;
 
-        // Collect snap targets: page edges, page center, margin edges, bleed edges
-        const vSnapTargets: number[] = [0, canvasW / 2, canvasW]; // vertical (x) positions
-        const hSnapTargets: number[] = [0, canvasH / 2, canvasH]; // horizontal (y) positions
+        // Collect snap targets: document edges, document center, margin edges, bleed edges
+        const vSnapTargets: number[] = [0, docW / 2, docW];
+        const hSnapTargets: number[] = [0, docH / 2, docH];
 
         // Add margin guide positions
         const bleedMargin = calcBleedGuides(format);
         const margins = calcMarginGuides(format);
         vSnapTargets.push(
-          bleedMargin.bleedPx, bleedMargin.docWidthPx - bleedMargin.bleedPx,
+          bleedMargin.bleedPx, docW - bleedMargin.bleedPx,
           margins.left, margins.right
         );
         hSnapTargets.push(
-          bleedMargin.bleedPx, bleedMargin.docHeightPx - bleedMargin.bleedPx,
+          bleedMargin.bleedPx, docH - bleedMargin.bleedPx,
           margins.top, margins.bottom
         );
 
@@ -202,42 +204,40 @@ export function useFabricCanvas(
         const w = (obj.width ?? 0) * (obj.scaleX ?? 1);
         const h = (obj.height ?? 0) * (obj.scaleY ?? 1);
 
-        // Check vertical (x-axis) snaps — object left, center, right
+        // Find closest vertical (x-axis) snap across left, center, and right edges
+        let bestVDist = SNAP_THRESHOLD;
+        let bestVTarget = -1;
+        let bestVOffset = 0; // offset to apply to left
+
         for (const target of vSnapTargets) {
-          if (Math.abs(objLeft - target) < SNAP_THRESHOLD) {
-            newLeft = target;
-            await drawSnapLine(target, -canvasH, target, canvasH * 2);
-            break;
-          }
-          if (Math.abs(objCenterX - target) < SNAP_THRESHOLD) {
-            newLeft = target - w / 2;
-            await drawSnapLine(target, -canvasH, target, canvasH * 2);
-            break;
-          }
-          if (Math.abs(objRight - target) < SNAP_THRESHOLD) {
-            newLeft = target - w;
-            await drawSnapLine(target, -canvasH, target, canvasH * 2);
-            break;
-          }
+          const dLeft = Math.abs(objLeft - target);
+          if (dLeft < bestVDist) { bestVDist = dLeft; bestVTarget = target; bestVOffset = 0; }
+          const dCenter = Math.abs(objCenterX - target);
+          if (dCenter < bestVDist) { bestVDist = dCenter; bestVTarget = target; bestVOffset = -w / 2; }
+          const dRight = Math.abs(objRight - target);
+          if (dRight < bestVDist) { bestVDist = dRight; bestVTarget = target; bestVOffset = -w; }
+        }
+        if (bestVTarget >= 0) {
+          newLeft = bestVTarget + bestVOffset;
+          await drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
         }
 
-        // Check horizontal (y-axis) snaps — object top, center, bottom
+        // Find closest horizontal (y-axis) snap across top, center, and bottom edges
+        let bestHDist = SNAP_THRESHOLD;
+        let bestHTarget = -1;
+        let bestHOffset = 0;
+
         for (const target of hSnapTargets) {
-          if (Math.abs(objTop - target) < SNAP_THRESHOLD) {
-            newTop = target;
-            await drawSnapLine(-canvasW, target, canvasW * 2, target);
-            break;
-          }
-          if (Math.abs(objCenterY - target) < SNAP_THRESHOLD) {
-            newTop = target - h / 2;
-            await drawSnapLine(-canvasW, target, canvasW * 2, target);
-            break;
-          }
-          if (Math.abs(objBottom - target) < SNAP_THRESHOLD) {
-            newTop = target - h;
-            await drawSnapLine(-canvasW, target, canvasW * 2, target);
-            break;
-          }
+          const dTop = Math.abs(objTop - target);
+          if (dTop < bestHDist) { bestHDist = dTop; bestHTarget = target; bestHOffset = 0; }
+          const dCenter = Math.abs(objCenterY - target);
+          if (dCenter < bestHDist) { bestHDist = dCenter; bestHTarget = target; bestHOffset = -h / 2; }
+          const dBottom = Math.abs(objBottom - target);
+          if (dBottom < bestHDist) { bestHDist = dBottom; bestHTarget = target; bestHOffset = -h; }
+        }
+        if (bestHTarget >= 0) {
+          newTop = bestHTarget + bestHOffset;
+          await drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
         }
 
         if (newLeft !== objLeft || newTop !== objTop) {
