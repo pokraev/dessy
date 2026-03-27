@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 01-05-PLAN.md
-last_updated: "2026-03-27T19:17:15Z"
+stopped_at: Completed 01-06-PLAN.md
+last_updated: "2026-03-27T19:26:35.236Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -54,6 +54,7 @@ Plan: 6 of 6
 | Phase 01 P03 | 8 min | 2 tasks | 7 files |
 | Phase 01 P04 | 4 min | 2 tasks | 8 files |
 | Phase 01 P05 | 8 min | 2 tasks | 9 files |
+| Phase 01 P06 | 12 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [01-05]: createHistory() is a plain factory (not useRef-wrapped hook) so tests can call it without a React component context
 - [01-05]: Canvas-bound triggerUndo/triggerRedo stored in canvasStore so Header (sibling component) can call them without prop drilling
 - [01-05]: ContextMenu uses onContextMenu on canvas wrapper div (not Fabric.js canvas.on) — React event system handles positioning correctly
+- [Phase 01]: triggerSave/triggerExport/triggerImport stored as callbacks in canvasStore for Header→EditorCanvasInner communication without prop drilling
+- [Phase 01]: Canvas JSON restore uses sessionStorage bridge — EditorPage writes on load, EditorCanvasInner reads and clears on first canvas mount
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:17:15Z
-Stopped at: Completed 01-05-PLAN.md
+Last session: 2026-03-27T19:26:35.207Z
+Stopped at: Completed 01-06-PLAN.md
 Resume file: None

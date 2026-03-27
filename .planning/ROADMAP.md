@@ -6,7 +6,7 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
 
 ## Phases
 
-- [ ] **Phase 1: Canvas Foundation** - Working Fabric.js canvas in Next.js, all element types, persistence, and app shell
+- [x] **Phase 1: Canvas Foundation** - Working Fabric.js canvas in Next.js, all element types, persistence, and app shell (completed 2026-03-27)
 - [ ] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system
 - [ ] **Phase 3: AI and Export** - PromptCrafter, Gemini image generation, PNG/JPG export
 - [ ] **Phase 4: Dashboard, Templates, and InDesign Export** - Project management dashboard, starter template gallery, ExtendScript export
@@ -23,7 +23,7 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
   3. User can close the browser and reopen the editor to find the project exactly as left (auto-save to localStorage every 30 seconds)
   4. User can save the project as a JSON file and load it back, restoring all elements and layout
   5. The editor UI is dark-themed with a visible header (project name, save, undo/redo, export), bottom bar (zoom, page indicator, grid toggle), collapsible panels, and keyboard shortcuts overlay accessible via ?
-**Plans:** 4/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md — Project scaffold, types, unit system, stores, dark theme, test framework
@@ -71,7 +71,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Canvas Foundation | 4/6 | In Progress|  |
+| 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
 | 2. Editor Surface | 0/TBD | Not started | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |

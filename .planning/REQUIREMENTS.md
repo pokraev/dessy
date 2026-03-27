@@ -91,7 +91,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **EXPO-01**: User can export pages as PNG or JPG
 - [ ] **EXPO-02**: User can export InDesign ExtendScript (.jsx) that recreates the layout
-- [ ] **EXPO-03**: User can save project as JSON file and load it back
+- [x] **EXPO-03**: User can save project as JSON file and load it back
 - [ ] **EXPO-04**: InDesign export maps text frames, image frames, shapes, and colors to InDesign equivalents
 
 ### Dashboard & Templates
@@ -105,9 +105,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Persistence
 
-- [ ] **PERS-01**: Project auto-saves to localStorage every 30 seconds
-- [ ] **PERS-02**: Project list persists in localStorage
-- [ ] **PERS-03**: Generated images stored in IndexedDB (not localStorage) to avoid 5MB limit
+- [x] **PERS-01**: Project auto-saves to localStorage every 30 seconds
+- [x] **PERS-02**: Project list persists in localStorage
+- [x] **PERS-03**: Generated images stored in IndexedDB (not localStorage) to avoid 5MB limit
 
 ### App Shell & UX
 
@@ -169,10 +169,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ELEM-03 | Phase 1 | Complete |
 | ELEM-04 | Phase 1 | Complete |
 | ELEM-05 | Phase 1 | Complete |
-| PERS-01 | Phase 1 | Pending |
-| PERS-02 | Phase 1 | Pending |
-| PERS-03 | Phase 1 | Pending |
-| EXPO-03 | Phase 1 | Pending |
+| PERS-01 | Phase 1 | Complete |
+| PERS-02 | Phase 1 | Complete |
+| PERS-03 | Phase 1 | Complete |
+| EXPO-03 | Phase 1 | Complete |
 | UXSH-01 | Phase 1 | Complete |
 | UXSH-02 | Phase 1 | Complete |
 | UXSH-03 | Phase 1 | Complete |
