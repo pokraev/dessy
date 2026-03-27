@@ -54,6 +54,26 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
   const isDraggingRef = useRef(false);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Subscribe to zoom changes from the Zustand store (e.g. from the BottomBar slider)
+  // and apply them to the Fabric.js canvas
+  useEffect(() => {
+    if (!canvas) return;
+    const c = canvas;
+    const unsubscribe = useCanvasStore.subscribe((state, prev) => {
+      if (state.zoom !== prev.zoom) {
+        const currentZoom = c.getZoom();
+        if (Math.abs(currentZoom - state.zoom) > 0.001) {
+          // Zoom to center of viewport
+          const center = c.getCenterPoint();
+          c.zoomToPoint(center, state.zoom);
+          useCanvasStore.getState().setViewportTransform([...c.viewportTransform] as number[]);
+          c.requestRenderAll();
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [canvas]);
+
   useEffect(() => {
     if (!canvas) return;
     // Capture non-null alias so TypeScript is satisfied inside closures
