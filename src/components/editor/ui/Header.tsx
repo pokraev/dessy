@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Undo2, Redo2 } from 'lucide-react';
+import { Undo2, Redo2, Download, Upload, Save } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 
@@ -14,6 +14,9 @@ export function Header() {
   const canRedo = useCanvasStore((s) => s.canRedo);
   const triggerUndo = useCanvasStore((s) => s.triggerUndo);
   const triggerRedo = useCanvasStore((s) => s.triggerRedo);
+  const triggerSave = useCanvasStore((s) => s.triggerSave);
+  const triggerExport = useCanvasStore((s) => s.triggerExport);
+  const triggerImport = useCanvasStore((s) => s.triggerImport);
   const currentProject = useProjectStore((s) => s.currentProject);
   const updateProjectName = useProjectStore((s) => s.updateProjectName);
 
@@ -119,10 +122,11 @@ export function Header() {
         </button>
       </div>
 
-      {/* Right: Save Project + Export JSON */}
+      {/* Right: Save Project + Export/Import JSON */}
       <div className="flex items-center gap-2">
         <button
-          className="flex items-center justify-center text-text-primary font-medium transition-colors"
+          aria-label="Save project"
+          className="flex items-center gap-1.5 justify-center text-text-primary font-medium transition-colors"
           style={{
             height: '32px',
             paddingLeft: '12px',
@@ -135,13 +139,15 @@ export function Header() {
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#818cf8'; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#6366f1'; }}
           onClick={() => {
-            // PLACEHOLDER: wired in Plan 06
+            triggerSave?.();
           }}
         >
+          <Save size={14} />
           Save Project
         </button>
         <button
-          className="flex items-center justify-center text-text-primary transition-colors hover:bg-surface-raised"
+          aria-label="Export project as JSON"
+          className="flex items-center gap-1.5 justify-center text-text-primary transition-colors hover:bg-surface-raised"
           style={{
             height: '32px',
             paddingLeft: '12px',
@@ -153,10 +159,31 @@ export function Header() {
             cursor: 'pointer',
           }}
           onClick={() => {
-            // PLACEHOLDER: wired in Plan 06
+            triggerExport?.();
           }}
         >
+          <Download size={14} />
           Export JSON
+        </button>
+        <button
+          aria-label="Import project from JSON"
+          className="flex items-center gap-1.5 justify-center text-text-primary transition-colors hover:bg-surface-raised"
+          style={{
+            height: '32px',
+            paddingLeft: '12px',
+            paddingRight: '12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            background: 'transparent',
+            border: '1px solid #2a2a2a',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            triggerImport?.();
+          }}
+        >
+          <Upload size={14} />
+          Import JSON
         </button>
       </div>
     </header>

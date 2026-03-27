@@ -5,17 +5,23 @@ import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { createImageFrame } from '@/lib/fabric/element-factory';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { createImageFrame, CUSTOM_PROPS } from '@/lib/fabric/element-factory';
+import { saveProject } from '@/lib/storage/projectStorage';
+import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
+import { useProjectStore } from '@/stores/projectStore';
+import { useCanvasStore } from '@/stores/canvasStore';
 import GuidesOverlay from '@/components/editor/GuidesOverlay';
 import { ContextMenu } from '@/components/editor/panels/ContextMenu';
 import { KeyboardShortcutsModal } from '@/components/editor/ui/KeyboardShortcutsModal';
+import toast from 'react-hot-toast';
 
 interface EditorCanvasInnerProps {
   projectId: string;
   formatId: string;
 }
 
-export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) {
+export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasInnerProps) {
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const [hasElements, setHasElements] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
@@ -33,21 +39,116 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
     redo: (canvas) => historyRef.current.redo(canvas),
   });
 
-  // Track when first element is placed to hide the hint
+  // Wire auto-save — runs every 30s when canvas is dirty
+  useAutoSave(canvasInstance, projectId);
+
+  // Mark project dirty on any canvas change; track first element for hint
   useEffect(() => {
     const canvas = canvasInstance;
     if (!canvas) return;
 
-    const onObjectAdded = () => setHasElements(true);
+    const markDirty = () => useProjectStore.getState().markDirty();
+    const onObjectAdded = () => { setHasElements(true); markDirty(); };
     canvas.on('object:added', onObjectAdded);
+    canvas.on('object:modified', markDirty);
+    canvas.on('object:removed', markDirty);
     return () => {
       canvas.off('object:added', onObjectAdded);
+      canvas.off('object:modified', markDirty);
+      canvas.off('object:removed', markDirty);
     };
+  }, [canvasInstance]);
+
+  // Register triggerSave and triggerExport callbacks in canvasStore so Header can call them
+  useEffect(() => {
+    const canvas = canvasInstance;
+    if (!canvas) return;
+
+    const triggerSave = () => {
+      const { currentProject } = useProjectStore.getState();
+      if (!currentProject) return;
+      const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+      const result = saveProject(projectId, {
+        meta: currentProject.meta,
+        canvasJSON,
+        pageData: { pages: currentProject.pages, currentPageIndex: currentProject.currentPageIndex },
+      });
+      if (result.success) {
+        useProjectStore.getState().setLastSaved(new Date());
+        toast.success('Project saved');
+      } else if (result.error === 'quota') {
+        toast.error('Storage full. Export your project to free up space.');
+      }
+    };
+
+    const triggerExport = () => {
+      const { currentProject } = useProjectStore.getState();
+      if (!currentProject) return;
+      exportProjectJSON(canvas, currentProject.meta);
+      toast.success('Project exported');
+    };
+
+    const triggerImport = () => {
+      importFileRef.current?.click();
+    };
+
+    useCanvasStore.getState().setPersistFns(triggerSave, triggerExport, triggerImport);
+
+    return () => {
+      useCanvasStore.getState().setPersistFns(() => {}, () => {}, () => {});
+    };
+  }, [canvasInstance, projectId]);
+
+  // Restore canvas from sessionStorage on first canvas mount (set by EditorPage on load)
+  useEffect(() => {
+    const canvas = canvasInstance;
+    if (!canvas) return;
+
+    const stored = sessionStorage.getItem(`dessy-canvas-restore-${projectId}`);
+    if (!stored) return;
+
+    sessionStorage.removeItem(`dessy-canvas-restore-${projectId}`);
+    try {
+      const canvasJSON = JSON.parse(stored);
+      canvas.loadFromJSON(canvasJSON).then(() => {
+        canvas.renderAll();
+        setHasElements(canvas.getObjects().length > 0);
+      });
+    } catch {
+      // Ignore corrupt restore data
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasInstance]);
 
   // Suppress unused warning for canvasRef — used by future canvas-dependent features
   void canvasRef;
-  void contextMenuPos; // used by ContextMenu
+
+  // Hidden file input ref for JSON import
+  const importFileRef = useRef<HTMLInputElement | null>(null);
+
+  // Handle JSON import from file
+  const handleImportFile = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !canvasInstance) return;
+      // Reset input so same file can be re-selected
+      e.target.value = '';
+      try {
+        const meta = await importProjectJSON(canvasInstance, file);
+        useProjectStore.getState().setCurrentProject({
+          meta,
+          pages: useProjectStore.getState().currentProject?.pages ?? [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
+          currentPageIndex: 0,
+          brandColors: [],
+        });
+        setHasElements(canvasInstance.getObjects().length > 0);
+        toast.success('Project loaded');
+      } catch {
+        toast.error('Could not load project. Make sure the file is a valid Leaflet Factory JSON.');
+      }
+    },
+    [canvasInstance]
+  );
 
   // Handle image file drops onto the canvas
   const handleDrop = useCallback(
@@ -135,6 +236,15 @@ export default function EditorCanvasInner({ formatId }: EditorCanvasInnerProps) 
       onDragOver={handleDragOver}
       onContextMenu={handleContextMenu}
     >
+      {/* Hidden file input for JSON import — triggered via triggerImport callback */}
+      <input
+        ref={importFileRef}
+        type="file"
+        accept=".json,.dessy.json"
+        style={{ display: 'none' }}
+        onChange={handleImportFile}
+      />
+
       {/* Document canvas wrapper with guides overlay */}
       <div
         className="relative"

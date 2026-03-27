@@ -11,13 +11,25 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { CanvasArea } from '@/components/editor/CanvasArea';
 import EditorCanvasClient from '@/components/editor/EditorCanvas.client';
 import { useProjectStore } from '@/stores/projectStore';
+import { loadProject } from '@/lib/storage/projectStorage';
 
 export default function EditorPage() {
   const params = useParams();
   const projectId = typeof params.projectId === 'string' ? params.projectId : 'default';
 
   useEffect(() => {
-    if (!useProjectStore.getState().currentProject) {
+    // Attempt to restore previously saved project from localStorage
+    const saved = loadProject(projectId);
+    if (saved) {
+      useProjectStore.getState().setCurrentProject({
+        meta: saved.meta,
+        pages: (saved.pageData as { pages: never[]; currentPageIndex: number }).pages ?? [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
+        currentPageIndex: (saved.pageData as { pages: never[]; currentPageIndex: number }).currentPageIndex ?? 0,
+        brandColors: [],
+      });
+      // canvasJSON is passed via sessionStorage so EditorCanvasInner can load it after canvas init
+      sessionStorage.setItem(`dessy-canvas-restore-${projectId}`, JSON.stringify(saved.canvasJSON));
+    } else if (!useProjectStore.getState().currentProject) {
       useProjectStore.getState().setCurrentProject({
         meta: {
           id: projectId,
