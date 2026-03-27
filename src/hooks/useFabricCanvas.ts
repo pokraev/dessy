@@ -232,28 +232,42 @@ export function useFabricCanvas(
         const oR = oL + w;
         const oB = oT + h;
 
-        // Snap right edge
+        // Find closest vertical snap — check both left and right edges
+        let bestVDist = snapThresh, bestVTarget = -1, bestVEdge: 'left' | 'right' = 'right';
         for (const t of vTargets) {
-          if (Math.abs(oR - t) < snapThresh) {
-            const newW = t - oL;
-            if (newW > 0) {
-              obj.set({ scaleX: newW / (obj.width ?? 1) });
-              drawSnapLine(t, -docH, t, docH * 2);
-            }
-            break;
+          const dL = Math.abs(oL - t);
+          if (dL < bestVDist) { bestVDist = dL; bestVTarget = t; bestVEdge = 'left'; }
+          const dR = Math.abs(oR - t);
+          if (dR < bestVDist) { bestVDist = dR; bestVTarget = t; bestVEdge = 'right'; }
+        }
+        if (bestVTarget >= 0) {
+          if (bestVEdge === 'right') {
+            const newW = bestVTarget - oL;
+            if (newW > 0) obj.set({ scaleX: newW / (obj.width ?? 1) });
+          } else {
+            const newW = oR - bestVTarget;
+            if (newW > 0) obj.set({ left: bestVTarget, scaleX: newW / (obj.width ?? 1) });
           }
+          drawSnapLine(bestVTarget, -docH, bestVTarget, docH * 2);
         }
 
-        // Snap bottom edge
+        // Find closest horizontal snap — check both top and bottom edges
+        let bestHDist = snapThresh, bestHTarget = -1, bestHEdge: 'top' | 'bottom' = 'bottom';
         for (const t of hTargets) {
-          if (Math.abs(oB - t) < snapThresh) {
-            const newH = t - oT;
-            if (newH > 0) {
-              obj.set({ scaleY: newH / (obj.height ?? 1) });
-              drawSnapLine(-docW, t, docW * 2, t);
-            }
-            break;
+          const dT = Math.abs(oT - t);
+          if (dT < bestHDist) { bestHDist = dT; bestHTarget = t; bestHEdge = 'top'; }
+          const dB = Math.abs(oB - t);
+          if (dB < bestHDist) { bestHDist = dB; bestHTarget = t; bestHEdge = 'bottom'; }
+        }
+        if (bestHTarget >= 0) {
+          if (bestHEdge === 'bottom') {
+            const newH = bestHTarget - oT;
+            if (newH > 0) obj.set({ scaleY: newH / (obj.height ?? 1) });
+          } else {
+            const newH = oB - bestHTarget;
+            if (newH > 0) obj.set({ top: bestHTarget, scaleY: newH / (obj.height ?? 1) });
           }
+          drawSnapLine(-docW, bestHTarget, docW * 2, bestHTarget);
         }
 
         obj.setCoords();
