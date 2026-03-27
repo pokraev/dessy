@@ -10,9 +10,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Canvas Editor
 
 - [x] **CANV-01**: User can create a new document with mm-based dimensions (A4, A5, DL, bifold, trifold, custom)
-- [ ] **CANV-02**: User can drag, resize, and rotate elements on canvas with selection handles
+- [x] **CANV-02**: User can drag, resize, and rotate elements on canvas with selection handles
 - [ ] **CANV-03**: User can see snap guides when aligning elements to edges, centers, and other elements
-- [ ] **CANV-04**: User can zoom (fit, 50%, 100%, 200%, scroll-to-zoom) and pan the canvas
+- [x] **CANV-04**: User can zoom (fit, 50%, 100%, 200%, scroll-to-zoom) and pan the canvas
 - [ ] **CANV-05**: User can see bleed guides (3mm) and configurable margin guides on canvas
 - [ ] **CANV-06**: User can see fold lines as dashed guides for bifold/trifold formats
 - [ ] **CANV-07**: User can undo/redo at least 50 steps with Ctrl+Z / Ctrl+Shift+Z
@@ -22,11 +22,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Elements
 
-- [ ] **ELEM-01**: User can create text frames and edit text inline (double-click to edit)
-- [ ] **ELEM-02**: User can create image frames and drop/upload images with fit modes (fill, fit, stretch)
-- [ ] **ELEM-03**: User can create shapes (rectangle, circle, line) with rounded corners option
-- [ ] **ELEM-04**: User can create solid or gradient color blocks
-- [ ] **ELEM-05**: User can group and ungroup elements
+- [x] **ELEM-01**: User can create text frames and edit text inline (double-click to edit)
+- [x] **ELEM-02**: User can create image frames and drop/upload images with fit modes (fill, fit, stretch)
+- [x] **ELEM-03**: User can create shapes (rectangle, circle, line) with rounded corners option
+- [x] **ELEM-04**: User can create solid or gradient color blocks
+- [x] **ELEM-05**: User can group and ungroup elements
 
 ### Multi-Page
 
@@ -155,20 +155,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CANV-01 | Phase 1 | Complete |
-| CANV-02 | Phase 1 | Pending |
+| CANV-02 | Phase 1 | Complete |
 | CANV-03 | Phase 1 | Pending |
-| CANV-04 | Phase 1 | Pending |
+| CANV-04 | Phase 1 | Complete |
 | CANV-05 | Phase 1 | Pending |
 | CANV-06 | Phase 1 | Pending |
 | CANV-07 | Phase 1 | Pending |
 | CANV-08 | Phase 1 | Pending |
 | CANV-09 | Phase 1 | Pending |
 | CANV-10 | Phase 1 | Pending |
-| ELEM-01 | Phase 1 | Pending |
-| ELEM-02 | Phase 1 | Pending |
-| ELEM-03 | Phase 1 | Pending |
-| ELEM-04 | Phase 1 | Pending |
-| ELEM-05 | Phase 1 | Pending |
+| ELEM-01 | Phase 1 | Complete |
+| ELEM-02 | Phase 1 | Complete |
+| ELEM-03 | Phase 1 | Complete |
+| ELEM-04 | Phase 1 | Complete |
+| ELEM-05 | Phase 1 | Complete |
 | PERS-01 | Phase 1 | Pending |
 | PERS-02 | Phase 1 | Pending |
 | PERS-03 | Phase 1 | Pending |
