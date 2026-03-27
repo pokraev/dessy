@@ -80,18 +80,26 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
     const c = canvas;
 
     function onMouseWheel(opt: any) {
-      (opt.e as WheelEvent).preventDefault();
-      (opt.e as WheelEvent).stopPropagation();
+      const e = opt.e as WheelEvent;
+      e.preventDefault();
+      e.stopPropagation();
 
-      const delta = (opt.e as WheelEvent).deltaY;
       let zoom = c.getZoom();
 
-      // Exponential zoom for smooth feel; clamp between 10% and 500%
-      zoom *= 0.999 ** delta;
+      // Mac trackpad pinch sends ctrlKey + small deltaY (typically -1 to 1)
+      // Regular scroll wheel sends larger deltaY (typically ~100)
+      if (e.ctrlKey) {
+        // Pinch gesture — deltaY is small, use direct multiplier
+        const factor = 1 - e.deltaY * 0.01;
+        zoom *= clamp(factor, 0.9, 1.1);
+      } else {
+        // Scroll wheel — normalize and use exponential
+        zoom *= 0.999 ** e.deltaY;
+      }
+
       zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
 
-      // Zoom centered on cursor using getScenePoint (not getPointer — removed in Fabric.js 7)
-      const point = c.getScenePoint(opt.e as MouseEvent);
+      const point = c.getScenePoint(e as unknown as MouseEvent);
       c.zoomToPoint(point, zoom);
 
       useCanvasStore.getState().setZoom(zoom);
