@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **CANV-01**: User can create a new document with mm-based dimensions (A4, A5, DL, bifold, trifold, custom)
 - [x] **CANV-02**: User can drag, resize, and rotate elements on canvas with selection handles
-- [ ] **CANV-03**: User can see snap guides when aligning elements to edges, centers, and other elements
+- [x] **CANV-03**: User can see snap guides when aligning elements to edges, centers, and other elements
 - [x] **CANV-04**: User can zoom (fit, 50%, 100%, 200%, scroll-to-zoom) and pan the canvas
-- [ ] **CANV-05**: User can see bleed guides (3mm) and configurable margin guides on canvas
-- [ ] **CANV-06**: User can see fold lines as dashed guides for bifold/trifold formats
+- [x] **CANV-05**: User can see bleed guides (3mm) and configurable margin guides on canvas
+- [x] **CANV-06**: User can see fold lines as dashed guides for bifold/trifold formats
 - [ ] **CANV-07**: User can undo/redo at least 50 steps with Ctrl+Z / Ctrl+Shift+Z
 - [ ] **CANV-08**: User can copy/paste elements with Ctrl+C / Ctrl+V
 - [ ] **CANV-09**: User can delete elements with Delete key, nudge with arrow keys (1px, Shift+10px)
@@ -156,10 +156,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | CANV-01 | Phase 1 | Complete |
 | CANV-02 | Phase 1 | Complete |
-| CANV-03 | Phase 1 | Pending |
+| CANV-03 | Phase 1 | Complete |
 | CANV-04 | Phase 1 | Complete |
-| CANV-05 | Phase 1 | Pending |
-| CANV-06 | Phase 1 | Pending |
+| CANV-05 | Phase 1 | Complete |
+| CANV-06 | Phase 1 | Complete |
 | CANV-07 | Phase 1 | Pending |
 | CANV-08 | Phase 1 | Pending |
 | CANV-09 | Phase 1 | Pending |
