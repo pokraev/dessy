@@ -231,7 +231,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
 
   return (
     <div
-      className="relative w-full h-full overflow-auto flex items-center justify-center"
+      className="relative w-full h-full overflow-hidden flex items-center justify-center"
       style={{
         // Checkerboard pasteboard background
         backgroundImage: 'repeating-conic-gradient(#141414 0% 25%, #1a1a1a 0% 50%)',
