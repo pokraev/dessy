@@ -7,7 +7,7 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
 ## Phases
 
 - [x] **Phase 1: Canvas Foundation** - Working Fabric.js canvas in Next.js, all element types, persistence, and app shell (completed 2026-03-27)
-- [ ] **Phase 01.1: AI Leaflet Generation** - AI-powered leaflet generation from text prompt, photo, or sketch (INSERTED)
+- [x] **Phase 01.1: AI Leaflet Generation** - AI-powered leaflet generation from text prompt, photo, or sketch (INSERTED) (completed 2026-03-27)
 - [ ] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system
 - [ ] **Phase 3: AI and Export** - PromptCrafter, Gemini image generation, PNG/JPG export
 - [ ] **Phase 4: Dashboard, Templates, and InDesign Export** - Project management dashboard, starter template gallery, ExtendScript export
@@ -45,7 +45,7 @@ Plans:
   3. User can upload a photo or sketch and have the AI interpret it into an editable Fabric.js layout
   4. User can preview the generated result and click "Load into Editor" to place it on the canvas with all elements selectable and editable
   5. Multi-page fold types (bifold, trifold, z-fold) create the correct number of pages in the project
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 01.1-01-PLAN.md — AI service layer: types, provider abstraction (Claude + Gemini), system prompt, schema validator, API route
@@ -91,7 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
-| 01.1. AI Leaflet Generation | 2/3 | In Progress|  |
+| 01.1. AI Leaflet Generation | 3/3 | Complete   | 2026-03-27 |
 | 2. Editor Surface | 0/TBD | Not started | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
