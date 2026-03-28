@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 01.1-04-PLAN.md
-last_updated: "2026-03-27T22:21:31.693Z"
+status: active
+stopped_at: Post-verification manual improvements to Phase 01.1
+last_updated: "2026-03-28T00:00:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
@@ -16,36 +16,30 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-27)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Speed — full leaflet from zero to print-ready in minutes, with AI handling on-brand image generation
-**Current focus:** Phase 01.1 — import
+**Current focus:** Post-phase 01.1 polish, ready for Phase 2
 
 ## Current Position
 
-Phase: 01.1 (import) — EXECUTING
-Plan: 1 of 4
+Phase: 01.1 (import) — COMPLETE (verified, human testing done)
+Next: Phase 2 (Editor Surface)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5
-- Average duration: 6.6 min
-- Total execution time: 0.5 hours
+- Total plans completed: 11
+- Average duration: 6.2 min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-canvas-foundation | 5/6 | 33 min | 6.6 min |
-
-**Recent Trend:**
-
-- Last 5 plans: 01-01 (6 min), 01-02 (7 min), 01-03 (8 min), 01-04 (4 min), 01-05 (8 min)
-- Trend: stable
-
-*Updated after each plan completion*
+| 01-canvas-foundation | 6/6 | 45 min | 7.5 min |
+| 01.1-import | 4/4 | 18 min | 4.5 min |
 
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
@@ -55,8 +49,8 @@ Plan: 1 of 4
 | Phase 01 P04 | 4 min | 2 tasks | 8 files |
 | Phase 01 P05 | 8 min | 2 tasks | 9 files |
 | Phase 01 P06 | 12 | 2 tasks | 11 files |
-| Phase 01.1-import P02 | 4 | 2 tasks | 10 files |
 | Phase 01.1-import P01 | 4 | 2 tasks | 8 files |
+| Phase 01.1-import P02 | 4 | 2 tasks | 10 files |
 | Phase 01.1-import P03 | 8 | 2 tasks | 4 files |
 | Phase 01.1-import P04 | 2 | 1 tasks | 1 files |
 
@@ -76,30 +70,27 @@ Recent decisions affecting current work:
 - [Pre-phase]: IndexedDB for image blobs, localStorage for project JSON — never embed base64 in localStorage
 - [Pre-phase]: All Gemini calls server-side via API routes; use `@google/genai` 1.x (not deprecated `@google/generative-ai`)
 - [Pre-phase]: `dynamic({ ssr: false })` for Fabric.js — must be in a `'use client'` file
-- [01-01]: Next.js 16.2.1 installed (not 15 as planned) — fully compatible; Turbopack is default, added empty `turbopack: {}` to next.config.ts alongside webpack externals
+- [01-01]: Next.js 16.2.1 installed (not 15 as planned) — fully compatible; Turbopack is default, added `turbopack: { resolveAlias }` to next.config.ts for fabric-aligning-guidelines
 - [01-01]: mm is canonical unit for all design data; mmToPx() called only at render/display boundaries
-- [01-01]: ts-node required as dev dependency for jest.config.ts TypeScript format
-- [Phase 01-03]: EditorLayout uses flex column+row (not CSS grid) for reliable full-screen overflow behavior
-- [Phase 01-03]: ToastProvider scoped to EditorLayout slot prop, not app layout.tsx, keeping toast editor-only in Phase 1
-- [Phase 01-03]: AnimatePresence initial=false used on panel collapse to suppress jarring entry animation on first render
-- [01-02]: useFabricCanvas returns canvasInstance (React state) + canvasRef — state triggers re-renders when async Fabric.js init completes so child hooks receive non-null canvas
-- [01-02]: Element factory uses Object.assign (not .set()) for custom properties — testable in Jest without full Fabric.js mock
-- [01-02]: getScenePoint() is the required API in Fabric.js 7 for pointer coordinates (getPointer() removed)
-- [Phase 01]: fabric-guideline-plugin skipped — peer deps require fabric ^5.x incompatible with Fabric.js 7; manual snap via object:moving implemented
-- [Phase 01]: Rulers use canvasStore.subscribe() + requestAnimationFrame instead of useState to avoid React batching lag during rapid pan/zoom
-- [Phase 01]: GuidesOverlay uses CSS transform matrix matching viewportTransform to track zoom/pan as HTML overlay (pointer-events-none)
-- [01-05]: createHistory() is a plain factory (not useRef-wrapped hook) so tests can call it without a React component context
-- [01-05]: Canvas-bound triggerUndo/triggerRedo stored in canvasStore so Header (sibling component) can call them without prop drilling
-- [01-05]: ContextMenu uses onContextMenu on canvas wrapper div (not Fabric.js canvas.on) — React event system handles positioning correctly
-- [Phase 01]: triggerSave/triggerExport/triggerImport stored as callbacks in canvasStore for Header→EditorCanvasInner communication without prop drilling
-- [Phase 01]: Canvas JSON restore uses sessionStorage bridge — EditorPage writes on load, EditorCanvasInner reads and clears on first canvas mount
-- [Phase 01.1-02]: Modal state uses editorStore.generateModalOpen (same pattern as shortcutsModalOpen) — no prop drilling, matches existing conventions
-- [Phase 01.1-02]: Tab components own their local input state; modal only receives the final generate call with mode-specific data
-- [Phase 01.1-import]: Native fetch used for Anthropic/Gemini AI calls — no SDK dependency, keeps bundle lean
-- [Phase 01.1-import]: Validate-then-repair pattern for AI JSON: validateCanvasJSON() detects issues, repairCanvasJSON() fixes them
-- [01.1-03]: sessionStorage key pattern dessy-generated-page-{projectId}-{i} stores per-page canvas JSONs for multi-page switching support
-- [01.1-03]: setLoadGeneratedFn added as separate setter (not modifying setPersistFns signature) to preserve existing 3-arg contract
-- [Phase 01.1-import]: AI Layout Generation requirements back-filled into REQUIREMENTS.md to close traceability gap after Phase 01.1 was inserted post-roadmap creation
+- [01-02]: useFabricCanvas returns canvasInstance (React state) + canvasRef — state triggers re-renders when async Fabric.js init completes
+- [01-02]: Element factory uses Object.assign (not .set()) for custom properties
+- [01-02]: getScenePoint() is the required API in Fabric.js 7 for pointer coordinates
+- [Phase 01]: fabric-guideline-plugin skipped — peer deps require fabric ^5.x; manual snap implemented
+- [Phase 01]: Rulers use canvasStore.subscribe() + requestAnimationFrame instead of useState
+- [Phase 01]: triggerSave/triggerExport/triggerImport/triggerClearCanvas/triggerSwitchPage stored as callbacks in canvasStore
+- [Phase 01.1-import]: Native fetch used for Anthropic/Gemini AI calls — no SDK dependency
+- [Phase 01.1-import]: Validate-then-repair pattern for AI JSON responses
+- [01.1-03]: sessionStorage key pattern `dessy-generated-page-{projectId}-{i}` stores per-page canvas JSONs
+- [Post-01.1]: HEIC/HEIF image support via heic2any — all images converted to JPEG before AI upload (max 768px, 60% quality)
+- [Post-01.1]: 3-panel (tripanel) fold type added — 3 independent A4 pages
+- [Post-01.1]: Page navigation added in BottomBar — saves/loads page JSON via sessionStorage on switch
+- [Post-01.1]: Triangle tool added to element factory + toolbar (Fabric.js built-in Triangle class)
+- [Post-01.1]: Distribute H/V and Make Same Size tools added to toolbar (require 3+ / 2+ selection)
+- [Post-01.1]: Convert to Image Frame added to context menu for shapes/colorBlocks
+- [Post-01.1]: Clear canvas button with confirmation dialog resets to single empty page
+- [Post-01.1]: canvasRef stored in canvasStore for direct canvas access from toolbar actions
+- [Post-01.1]: Both AI providers use 120s timeout (was 60s)
+- [Post-01.1]: System prompt updated: strict canvas bounds, notebook line detection, "Img" label → image placeholder
 
 ### Pending Todos
 
@@ -107,13 +98,13 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 3 planning]: PDF export deferred to v2 (EXPO-V2-01); vector vs. raster PDF text decision is a known gap — validate jsPDF vs. svg2pdf.js before implementation if PDF is reinstated
-- [Phase 3 planning]: Gemini free tier cut to 250 RPD (Dec 2025) — paid API key likely needed from Phase 3 start; confirm before planning
-- [Phase 4 planning]: InDesign export (EXPO-04) requires a licensed InDesign 2025/2026 installation for testing — confirm access before committing Phase 4 scope
+- [Phase 3 planning]: PDF export deferred to v2 (EXPO-V2-01); vector vs. raster PDF text decision is a known gap
+- [Phase 3 planning]: Gemini free tier cut to 250 RPD (Dec 2025) — paid API key likely needed
+- [Phase 4 planning]: InDesign export requires licensed InDesign installation for testing
 - [Phase 1 planning]: zundo + Zustand 5 installed successfully — no compatibility issues found
 
 ## Session Continuity
 
-Last session: 2026-03-27T22:21:31.664Z
-Stopped at: Completed 01.1-04-PLAN.md
+Last session: 2026-03-28T00:00:00.000Z
+Stopped at: Post-verification manual improvements to Phase 01.1
 Resume file: None

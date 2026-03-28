@@ -54,6 +54,9 @@ export function useKeyboardShortcuts(
           case 't':
             useCanvasStore.getState().setActiveTool('text');
             return;
+          case 'g':
+            useCanvasStore.getState().setActiveTool('triangle');
+            return;
           case 'r':
             useCanvasStore.getState().setActiveTool('rect');
             return;

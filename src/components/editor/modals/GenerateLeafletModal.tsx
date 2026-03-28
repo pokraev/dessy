@@ -197,41 +197,9 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
               })}
             </div>
 
-            {/* Tab content */}
+            {/* Tab content OR preview */}
             <div style={{ padding: '16px' }}>
-              {activeTab === 'prompt' && (
-                <PromptTab
-                  foldType={foldType}
-                  onFoldTypeChange={setFoldType}
-                  style={style}
-                  onStyleChange={setStyle}
-                  onGenerate={(prompt) => handleGenerate({ prompt })}
-                  isGenerating={isGenerating}
-                />
-              )}
-              {activeTab === 'photo' && (
-                <PhotoTab
-                  foldType={foldType}
-                  onFoldTypeChange={setFoldType}
-                  style={style}
-                  onStyleChange={setStyle}
-                  onGenerate={(imageBase64) => handleGenerate({ imageBase64 })}
-                  isGenerating={isGenerating}
-                />
-              )}
-              {activeTab === 'sketch' && (
-                <SketchTab
-                  foldType={foldType}
-                  onFoldTypeChange={setFoldType}
-                  style={style}
-                  onStyleChange={setStyle}
-                  onGenerate={(imageBase64) => handleGenerate({ imageBase64 })}
-                  isGenerating={isGenerating}
-                />
-              )}
-
-              {/* Generation preview */}
-              {showPreview && (
+              {showPreview ? (
                 <GenerationPreview
                   pages={response?.pages ?? []}
                   isLoading={isGenerating}
@@ -239,6 +207,39 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                   onRegenerate={handleRegenerate}
                   onLoadIntoEditor={handleLoadIntoEditor}
                 />
+              ) : (
+                <>
+                  {activeTab === 'prompt' && (
+                    <PromptTab
+                      foldType={foldType}
+                      onFoldTypeChange={setFoldType}
+                      style={style}
+                      onStyleChange={setStyle}
+                      onGenerate={(prompt) => handleGenerate({ prompt })}
+                      isGenerating={isGenerating}
+                    />
+                  )}
+                  {activeTab === 'photo' && (
+                    <PhotoTab
+                      foldType={foldType}
+                      onFoldTypeChange={setFoldType}
+                      style={style}
+                      onStyleChange={setStyle}
+                      onGenerate={(imageBase64) => handleGenerate({ imageBase64 })}
+                      isGenerating={isGenerating}
+                    />
+                  )}
+                  {activeTab === 'sketch' && (
+                    <SketchTab
+                      foldType={foldType}
+                      onFoldTypeChange={setFoldType}
+                      style={style}
+                      onStyleChange={setStyle}
+                      onGenerate={(imageBase64) => handleGenerate({ imageBase64 })}
+                      isGenerating={isGenerating}
+                    />
+                  )}
+                </>
               )}
             </div>
           </motion.div>

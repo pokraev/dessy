@@ -1,5 +1,5 @@
 export type GenerationMode = 'prompt' | 'photo' | 'sketch';
-export type FoldType = 'single' | 'bifold' | 'trifold' | 'zfold';
+export type FoldType = 'single' | 'bifold' | 'tripanel' | 'trifold' | 'zfold';
 
 export interface GenerationRequest {
   mode: GenerationMode;

@@ -15,16 +15,18 @@ export interface BrandContext {
 }
 
 const FOLD_PAGE_LABELS: Record<FoldType, string[]> = {
-  single:  ['Page 1'],
-  bifold:  ['Front', 'Back', 'Inside Left', 'Inside Right'],
-  trifold: ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
-  zfold:   ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
+  single:   ['Page 1'],
+  bifold:   ['Front', 'Back', 'Inside Left', 'Inside Right'],
+  tripanel: ['Panel 1', 'Panel 2', 'Panel 3'],
+  trifold:  ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
+  zfold:    ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
 };
 
 function getFormatDimensions(foldType: FoldType): FormatDimensions {
   const formatIdMap: Record<FoldType, string> = {
     single: 'A4',
     bifold: 'bifold',
+    tripanel: 'A4',
     trifold: 'trifold',
     zfold: 'trifold',
   };
@@ -56,7 +58,7 @@ export function buildSystemPrompt(
 Respond with ONLY valid JSON — no markdown, no explanation, no code fences. Your entire response must be parseable by JSON.parse().
 
 ${isMultiPage
-    ? `Return a JSON **array** of canvas objects, one per page. The pages are: ${pageLabels.map((l, i) => `[${i}]="${l}"`).join(', ')}.`
+    ? `Return a JSON **array** of EXACTLY ${pageLabels.length} canvas objects, one per page. Each canvas object is a complete, independent page with its own background rect and elements. The pages are: ${pageLabels.map((l, i) => `[${i}]="${l}"`).join(', ')}. You MUST return exactly ${pageLabels.length} objects in the array — no more, no less.`
     : `Return a single canvas JSON object for the page labeled "${pageLabels[0]}".`
 }
 
@@ -232,7 +234,7 @@ ${exampleJSON}
 ## Design Rules
 
 1. Use real UUIDs for all id fields (format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx)
-2. Place all elements within canvas bounds (0,0 to ${dims.widthPx},${dims.heightPx}) — background may extend to bleed
+2. STRICTLY place ALL elements within canvas bounds (0,0 to ${dims.widthPx},${dims.heightPx}) — no element's left+width may exceed ${dims.widthPx} and no element's top+height may exceed ${dims.heightPx}. Background rect is the ONLY exception (extends to bleed).
 3. Use "Inter" as the default font family unless brand specifies otherwise
 4. Font sizes: headlines 28-48px, subheads 18-24px, body 12-16px, captions 10-12px
 5. Ensure sufficient contrast for text legibility
@@ -248,7 +250,7 @@ ${brandSection}
 
 **Photo mode:** Analyze the provided image. Extract its layout DNA: identify content zones (headline area, body area, image zone, footer), dominant colors, and typography style. Recreate the layout structure using Fabric.js elements, but replace all content with professional placeholder text ("Headline Here", "Body text goes here", "Call to Action"). Translate image colors into the element fills.
 
-**Sketch mode:** Interpret drawn boxes as image placeholders or content zones. Scribbles/wavy lines = text areas. Blobs/filled areas = image placeholders or color blocks. Respect the spatial layout of the sketch but produce a polished, professional result.
+**Sketch mode:** Interpret drawn boxes as image placeholders or content zones. Scribbles/wavy lines = text areas. Blobs/filled areas = image placeholders or color blocks. Respect the spatial layout of the sketch but produce a polished, professional result. IMPORTANT: Ignore notebook/ruled paper lines, grid lines, and any other background paper patterns — these are artifacts of the drawing surface, NOT part of the layout design. Focus only on the intentional drawn elements. If a box contains text like "Img", "Image", "Photo", "Pic", or a cross/X pattern, treat it as an image placeholder (customType="image" with imageId=null and fitMode="fill") — the user will replace it with an actual image later.
 
 **Prompt mode:** Generate a complete, print-ready leaflet design based on the text description. Infer the brand feel, content structure, and visual hierarchy from the description.`;
 }
@@ -453,6 +455,6 @@ export function buildUserPrompt(request: GenerationRequest): string {
       return `Analyze this image and recreate its layout structure as a professional leaflet design. Extract the layout zones, color palette, and visual style from the image. Use placeholder text ("Headline Here", "Body text goes here", "Call to Action") instead of any real text from the image.`;
 
     case 'sketch':
-      return `Interpret this sketch as a leaflet layout blueprint. Treat rectangular boxes as content zones (image placeholders or text areas), scribbles as text regions, and filled areas as color blocks. Produce a polished, professional leaflet design that respects the spatial layout shown in the sketch.`;
+      return `Interpret this sketch as a leaflet layout blueprint. Treat rectangular boxes as content zones (image placeholders or text areas), scribbles as text regions, and filled areas as color blocks. Produce a polished, professional leaflet design that respects the spatial layout shown in the sketch. IMPORTANT: The sketch may be drawn on ruled/lined notebook paper or grid paper — completely ignore all horizontal lines, vertical lines, or grid patterns that are part of the paper itself. Only interpret the hand-drawn marks as layout elements. Boxes labeled "Img", "Image", "Photo", or containing an X/cross must be image placeholders (customType="image", imageId=null, fitMode="fill").`;
   }
 }

@@ -1,5 +1,5 @@
 export type ElementType = 'text' | 'image' | 'shape' | 'colorBlock' | 'group';
-export type ShapeKind = 'rect' | 'circle' | 'line';
+export type ShapeKind = 'rect' | 'triangle' | 'circle' | 'line';
 export type ImageFitMode = 'fill' | 'fit' | 'stretch';
 
 export interface BaseElement {

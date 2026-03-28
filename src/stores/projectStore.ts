@@ -14,6 +14,7 @@ interface ProjectState {
   markClean: () => void;
   updateProjectName: (name: string) => void;
   getCurrentPage: () => Page | null;
+  setCurrentPageIndex: (index: number) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -29,6 +30,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   updateProjectName: (name) => set((s) => ({
     currentProject: s.currentProject
       ? { ...s.currentProject, meta: { ...s.currentProject.meta, name, updatedAt: new Date().toISOString() } }
+      : null,
+  })),
+  setCurrentPageIndex: (index) => set((s) => ({
+    currentProject: s.currentProject
+      ? { ...s.currentProject, currentPageIndex: index }
       : null,
   })),
   getCurrentPage: () => {

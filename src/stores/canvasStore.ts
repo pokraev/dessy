@@ -1,9 +1,11 @@
 import { create } from 'zustand';
+import type { Canvas } from 'fabric';
 import type { GenerationResponse } from '@/types/generation';
 
-export type ToolId = 'select' | 'text' | 'rect' | 'circle' | 'line' | 'image' | 'hand';
+export type ToolId = 'select' | 'text' | 'triangle' | 'rect' | 'circle' | 'line' | 'image' | 'hand';
 
 interface CanvasState {
+  canvasRef: Canvas | null;
   activeTool: ToolId;
   zoom: number;
   selectedObjectIds: string[];
@@ -21,6 +23,10 @@ interface CanvasState {
   triggerImport: (() => void) | null;
   // Load generated callback — set by EditorCanvasInner on mount; calls loadGeneratedLeaflet
   triggerLoadGenerated: ((response: GenerationResponse) => void) | null;
+  // Clear canvas callback — resets to 1 empty page
+  triggerClearCanvas: (() => void) | null;
+  // Switch page callback — saves current page, loads target page
+  triggerSwitchPage: ((pageIndex: number) => void) | null;
   // Actions
   setActiveTool: (tool: ToolId) => void;
   setZoom: (zoom: number) => void;
@@ -33,9 +39,13 @@ interface CanvasState {
   ) => void;
   setPersistFns: (triggerSave: () => void, triggerExport: () => void, triggerImport: () => void) => void;
   setLoadGeneratedFn: (fn: ((response: GenerationResponse) => void) | null) => void;
+  setClearCanvasFn: (fn: (() => void) | null) => void;
+  setSwitchPageFn: (fn: ((pageIndex: number) => void) | null) => void;
+  setCanvasRef: (canvas: Canvas | null) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
+  canvasRef: null,
   activeTool: 'select',
   zoom: 1,
   selectedObjectIds: [],
@@ -48,6 +58,8 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   triggerExport: null,
   triggerImport: null,
   triggerLoadGenerated: null,
+  triggerClearCanvas: null,
+  triggerSwitchPage: null,
   setActiveTool: (tool) => set({ activeTool: tool }),
   setZoom: (zoom) => set({ zoom }),
   setSelection: (ids) => set({ selectedObjectIds: ids }),
@@ -56,4 +68,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setHistoryFns: (triggerUndo, triggerRedo) => set({ triggerUndo, triggerRedo }),
   setPersistFns: (triggerSave, triggerExport, triggerImport) => set({ triggerSave, triggerExport, triggerImport }),
   setLoadGeneratedFn: (fn) => set({ triggerLoadGenerated: fn }),
+  setClearCanvasFn: (fn: (() => void) | null) => set({ triggerClearCanvas: fn }),
+  setSwitchPageFn: (fn: ((pageIndex: number) => void) | null) => set({ triggerSwitchPage: fn }),
+  setCanvasRef: (canvas) => set({ canvasRef: canvas }),
 }));

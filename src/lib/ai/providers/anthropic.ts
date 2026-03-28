@@ -27,7 +27,7 @@ export class AnthropicProvider implements AIProvider {
     userPrompt: string
   ): Promise<string> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const timeout = setTimeout(() => controller.abort(), 120_000);
 
     try {
       const response = await fetch(ANTHROPIC_API_URL, {
@@ -69,7 +69,7 @@ export class AnthropicProvider implements AIProvider {
     const base64Data = imageBase64.replace(/^data:[^;]+;base64,/, '');
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const timeout = setTimeout(() => controller.abort(), 120_000);
 
     try {
       const response = await fetch(ANTHROPIC_API_URL, {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Grid3x3 } from 'lucide-react';
+import { Grid3x3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -105,12 +105,75 @@ export function BottomBar() {
         )}
       </div>
 
-      {/* Center: Page indicator */}
-      <div
-        className="text-text-secondary select-none"
-        style={{ fontSize: '12px' }}
-      >
-        Page {currentPageIndex + 1} of {totalPages}
+      {/* Center: Page navigator */}
+      <div className="flex items-center gap-1 select-none">
+        <button
+          aria-label="Previous page"
+          disabled={currentPageIndex === 0}
+          onClick={() => {
+            const fn = useCanvasStore.getState().triggerSwitchPage;
+            if (fn) fn(currentPageIndex - 1);
+          }}
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            border: 'none',
+            background: 'transparent',
+            cursor: currentPageIndex === 0 ? 'default' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ChevronLeft size={14} style={{ color: currentPageIndex === 0 ? '#333' : '#888' }} />
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              const fn = useCanvasStore.getState().triggerSwitchPage;
+              if (fn) fn(i);
+            }}
+            style={{
+              minWidth: '24px',
+              height: '24px',
+              borderRadius: '4px',
+              border: i === currentPageIndex ? '1px solid #6366f1' : '1px solid transparent',
+              background: i === currentPageIndex ? '#1a1a2e' : 'transparent',
+              color: i === currentPageIndex ? '#818cf8' : '#888',
+              fontSize: '11px',
+              fontWeight: i === currentPageIndex ? 600 : 400,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          aria-label="Next page"
+          disabled={currentPageIndex >= totalPages - 1}
+          onClick={() => {
+            const fn = useCanvasStore.getState().triggerSwitchPage;
+            if (fn) fn(currentPageIndex + 1);
+          }}
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            border: 'none',
+            background: 'transparent',
+            cursor: currentPageIndex >= totalPages - 1 ? 'default' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ChevronRight size={14} style={{ color: currentPageIndex >= totalPages - 1 ? '#333' : '#888' }} />
+        </button>
       </div>
 
       {/* Right: Grid toggle */}

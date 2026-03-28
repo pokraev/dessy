@@ -1,7 +1,11 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  turbopack: {
+    resolveAlias: {
+      'fabric-aligning-guidelines': './node_modules/fabric/dist-extensions/aligning_guidelines/index.mjs',
+    },
+  },
   webpack: (config) => {
     config.externals = [...(config.externals || []), { canvas: 'canvas' }];
     // Allow direct import of fabric's aligning_guidelines extension

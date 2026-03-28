@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Undo2, Redo2, Download, Upload, Save, Sparkles } from 'lucide-react';
+import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2 } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useEditorStore } from '@/stores/editorStore';
@@ -10,6 +10,7 @@ import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeaflet
 export function Header() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateModalOpen = useEditorStore((s) => s.generateModalOpen);
@@ -212,7 +213,104 @@ export function Header() {
           <Upload size={14} />
           Import JSON
         </button>
+
+        <div style={{ width: '1px', height: '20px', background: '#2a2a2a', flexShrink: 0 }} />
+
+        <button
+          aria-label="Clear canvas"
+          className="flex items-center gap-1.5 justify-center transition-colors"
+          style={{
+            height: '32px',
+            paddingLeft: '10px',
+            paddingRight: '10px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            background: 'transparent',
+            border: '1px solid #2a2a2a',
+            cursor: 'pointer',
+            color: '#888888',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#ef4444'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#888888'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#2a2a2a'; }}
+          onClick={() => setShowClearConfirm(true)}
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
+      {/* Clear canvas confirmation dialog */}
+      {showClearConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            zIndex: 60,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={() => setShowClearConfirm(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#141414',
+              border: '1px solid #2a2a2a',
+              borderRadius: '12px',
+              padding: '24px',
+              width: '360px',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, color: '#f5f5f5' }}>
+              Clear Canvas
+            </h3>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#888888', lineHeight: 1.5 }}>
+              This will remove all elements and reset to a single blank page. This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                style={{
+                  height: '36px',
+                  paddingLeft: '16px',
+                  paddingRight: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid #2a2a2a',
+                  background: 'transparent',
+                  color: '#f5f5f5',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowClearConfirm(false);
+                  const canvas = useCanvasStore.getState().triggerClearCanvas;
+                  if (canvas) canvas();
+                }}
+                style={{
+                  height: '36px',
+                  paddingLeft: '16px',
+                  paddingRight: '16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#ef4444',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Clear Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <GenerateLeafletModal
         open={generateModalOpen}
         onClose={() => useEditorStore.getState().setGenerateModalOpen(false)}

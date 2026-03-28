@@ -18,9 +18,9 @@ import {
  */
 const MIN_SIZE = 5;
 
-type CreationTool = 'text' | 'rect' | 'circle' | 'line' | 'image';
+type CreationTool = 'text' | 'triangle' | 'rect' | 'circle' | 'line' | 'image';
 
-const CREATION_TOOLS: ReadonlySet<string> = new Set<CreationTool>(['text', 'rect', 'circle', 'line', 'image']);
+const CREATION_TOOLS: ReadonlySet<string> = new Set<CreationTool>(['text', 'triangle', 'rect', 'circle', 'line', 'image']);
 
 /**
  * Handles InDesign-style click-drag element creation for all tool types.
@@ -60,8 +60,8 @@ export function useElementCreation(canvas: Canvas | null) {
       } else if (activeTool === 'image') {
         preview = createImageFrame({ left: point.x, top: point.y, width: 1, height: 1 });
       } else {
-        // rect, circle, line
-        preview = createShape(activeTool as 'rect' | 'circle' | 'line', {
+        // triangle, rect, circle, line
+        preview = createShape(activeTool as 'triangle' | 'rect' | 'circle' | 'line', {
           left: point.x,
           top: point.y,
           width: 1,
@@ -214,7 +214,7 @@ export function useElementCreation(canvas: Canvas | null) {
       } else if (activeTool === 'image') {
         finalObj = createImageFrame({ left, top, width, height });
       } else if (CREATION_TOOLS.has(activeTool)) {
-        finalObj = createShape(activeTool as 'rect' | 'circle' | 'line', {
+        finalObj = createShape(activeTool as 'triangle' | 'rect' | 'circle' | 'line', {
           left,
           top,
           width,

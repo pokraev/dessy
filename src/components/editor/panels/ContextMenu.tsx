@@ -153,6 +153,28 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
     close();
   }
 
+  function handleConvertToImage() {
+    if (!canvas || !menu.target) return;
+    const obj = menu.target as FabricObject & { customType?: string; shapeKind?: string };
+    // Convert the shape to an image placeholder
+    obj.set({
+      fill: '#1e1e1e',
+      stroke: '#2a2a2a',
+      strokeWidth: 1,
+      strokeDashArray: [6, 4],
+    } as Partial<FabricObject>);
+    Object.assign(obj, {
+      customType: 'image',
+      imageId: null,
+      fitMode: 'fill',
+      name: 'Image Frame',
+    });
+    // Remove shape-specific props
+    delete obj.shapeKind;
+    canvas.requestRenderAll();
+    close();
+  }
+
   function handleDelete() {
     if (!canvas || !menu.target) return;
     canvas.remove(menu.target);
@@ -163,6 +185,8 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
   // ── Rendering ─────────────────────────────────────────────────────────────
 
   const isLocked = menu.target?.locked === true;
+  const targetCustomType = (menu.target as FabricObject & { customType?: string })?.customType;
+  const canConvertToImage = targetCustomType === 'shape' || targetCustomType === 'colorBlock';
 
   if (!menu.visible) {
     return (
@@ -212,6 +236,13 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
           label={isLocked ? 'Unlock' : 'Lock'}
           onClick={handleLockUnlock}
         />
+
+        {canConvertToImage && (
+          <>
+            <Separator />
+            <MenuItem label="Convert to Image Frame" onClick={handleConvertToImage} />
+          </>
+        )}
 
         <Separator />
 

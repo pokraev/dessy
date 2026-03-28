@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Sparkles, Upload } from 'lucide-react';
+import { Sparkles, Upload, Loader2 } from 'lucide-react';
 import { FoldTypePicker } from '../FoldTypePicker';
 import { StylePicker } from '../StylePicker';
 import type { FoldType } from '@/types/generation';
+import { readImageFile } from '@/lib/image-utils';
 
 interface SketchTabProps {
   foldType: FoldType;
@@ -27,17 +28,22 @@ export function SketchTab({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canGenerate = imageBase64 !== null && !isGenerating;
+  const [isConverting, setIsConverting] = useState(false);
+  const canGenerate = imageBase64 !== null && !isGenerating && !isConverting;
 
-  function handleFileChange(file: File | null) {
+  async function handleFileChange(file: File | null) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setImagePreview(result);
-      setImageBase64(result);
-    };
-    reader.readAsDataURL(file);
+    setIsConverting(true);
+    try {
+      const dataUrl = await readImageFile(file);
+      setImagePreview(dataUrl);
+      setImageBase64(dataUrl);
+    } catch {
+      setImagePreview(null);
+      setImageBase64(null);
+    } finally {
+      setIsConverting(false);
+    }
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
@@ -83,7 +89,12 @@ export function SketchTab({
           background: '#1e1e1e',
         }}
       >
-        {imagePreview ? (
+        {isConverting ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <Loader2 size={32} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: '13px', color: '#888888' }}>Converting image...</span>
+          </div>
+        ) : imagePreview ? (
           <img
             src={imagePreview}
             alt="Sketch preview"
@@ -110,7 +121,7 @@ export function SketchTab({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         style={{ display: 'none' }}
         onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
       />

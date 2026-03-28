@@ -7,11 +7,12 @@ import { FORMATS } from '@/constants/formats';
 import { mmToPx } from '@/lib/units';
 
 const VALID_MODES = new Set(['prompt', 'photo', 'sketch']);
-const VALID_FOLD_TYPES = new Set(['single', 'bifold', 'trifold', 'zfold']);
+const VALID_FOLD_TYPES = new Set(['single', 'bifold', 'tripanel', 'trifold', 'zfold']);
 
 const FOLD_TO_FORMAT_ID: Record<FoldType, string> = {
   single: 'A4',
   bifold: 'bifold',
+  tripanel: 'A4',
   trifold: 'trifold',
   zfold: 'trifold',
 };
@@ -19,6 +20,7 @@ const FOLD_TO_FORMAT_ID: Record<FoldType, string> = {
 const FOLD_PAGE_LABELS: Record<FoldType, string[]> = {
   single: ['Page 1'],
   bifold: ['Front', 'Back', 'Inside Left', 'Inside Right'],
+  tripanel: ['Panel 1', 'Panel 2', 'Panel 3'],
   trifold: ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
   zfold: ['Front Panel', 'Back Panel', 'Inside Left', 'Inside Center', 'Inside Right', 'Flap'],
 };
@@ -72,7 +74,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     if (!req.foldType || !VALID_FOLD_TYPES.has(req.foldType)) {
       return NextResponse.json(
-        { error: `"foldType" must be one of: single, bifold, trifold, zfold (got "${req.foldType}")` },
+        { error: `"foldType" must be one of: single, bifold, tripanel, trifold, zfold (got "${req.foldType}")` },
         { status: 400 }
       );
     }
@@ -125,6 +127,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const userPrompt = buildUserPrompt(req);
 
     // Call AI provider
+    console.log(`[API] Calling ${provider.name} provider, mode=${req.mode}, imageSize=${req.imageBase64?.length ?? 0} chars`);
     let rawResponse: string;
     try {
       if (req.mode === 'prompt') {
@@ -132,8 +135,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       } else {
         rawResponse = await provider.generateWithVision(req, systemPrompt, userPrompt, req.imageBase64!);
       }
+      console.log(`[API] Provider returned ${rawResponse.length} chars`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      console.error(`[API] Provider error:`, message);
       return NextResponse.json(
         { error: 'AI generation failed', details: message },
         { status: 502 }

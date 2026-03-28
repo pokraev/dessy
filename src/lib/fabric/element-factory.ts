@@ -94,14 +94,26 @@ export function createImageFrame(opts: BaseOpts) {
  */
 export function createShape(kind: ShapeKind, opts: BaseOpts) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Rect, Ellipse, Line } = require('fabric');
+  const { Rect, Ellipse, Line, Triangle } = require('fabric');
   const { left, top, width, height } = opts;
 
   const kindCapitalized = kind.charAt(0).toUpperCase() + kind.slice(1);
 
   let obj: Record<string, unknown>;
 
-  if (kind === 'rect') {
+  if (kind === 'triangle') {
+    obj = new Triangle({
+      left,
+      top,
+      width,
+      height,
+      originX: 'left',
+      originY: 'top',
+      fill: '#6366f1',
+      stroke: 'transparent',
+      strokeWidth: 0,
+    });
+  } else if (kind === 'rect') {
     obj = new Rect({
       left,
       top,
@@ -185,7 +197,7 @@ export function createColorBlock(opts: BaseOpts & { fill?: string }) {
  * Unified factory — convenience wrapper for all element types.
  */
 export function createElement(
-  type: 'text' | 'image' | 'rect' | 'circle' | 'line' | 'colorBlock',
+  type: 'text' | 'image' | 'triangle' | 'rect' | 'circle' | 'line' | 'colorBlock',
   opts: BaseOpts & { fill?: string }
 ) {
   switch (type) {
@@ -193,6 +205,8 @@ export function createElement(
       return createTextFrame(opts);
     case 'image':
       return createImageFrame(opts);
+    case 'triangle':
+      return createShape('triangle', opts);
     case 'rect':
       return createShape('rect', opts);
     case 'circle':
