@@ -1,7 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Header } from '@/components/editor/ui/Header';
 import { BottomBar } from '@/components/editor/ui/BottomBar';
@@ -13,13 +12,17 @@ import EditorCanvasClient from '@/components/editor/EditorCanvas.client';
 import { useProjectStore } from '@/stores/projectStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 
-function EditorInner() {
-  const searchParams = useSearchParams();
-  const projectId = searchParams.get('id') ?? 'default';
+export default function EditorPage() {
+  // Read project ID from URL query param (no useSearchParams to avoid Suspense)
+  const [projectId, setProjectId] = useState('default');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const saved = loadProject(projectId);
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id') ?? 'default';
+    setProjectId(id);
+
+    const saved = loadProject(id);
     if (saved) {
       useProjectStore.getState().setCurrentProject({
         meta: saved.meta,
@@ -27,11 +30,11 @@ function EditorInner() {
         currentPageIndex: (saved.pageData as { pages: never[]; currentPageIndex: number }).currentPageIndex ?? 0,
         brandColors: [],
       });
-      sessionStorage.setItem(`dessy-canvas-restore-${projectId}`, JSON.stringify(saved.canvasJSON));
+      sessionStorage.setItem(`dessy-canvas-restore-${id}`, JSON.stringify(saved.canvasJSON));
     } else if (!useProjectStore.getState().currentProject) {
       useProjectStore.getState().setCurrentProject({
         meta: {
-          id: projectId,
+          id,
           name: 'Untitled Leaflet',
           format: 'A4',
           createdAt: new Date().toISOString(),
@@ -43,7 +46,7 @@ function EditorInner() {
       });
     }
     setReady(true);
-  }, [projectId]);
+  }, []);
 
   if (!ready) return null;
 
@@ -60,13 +63,5 @@ function EditorInner() {
       bottomBar={<BottomBar />}
       toastProvider={<ToastProvider />}
     />
-  );
-}
-
-export default function EditorPage() {
-  return (
-    <Suspense>
-      <EditorInner />
-    </Suspense>
   );
 }
