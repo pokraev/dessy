@@ -74,6 +74,30 @@ export function useFabricCanvas(
       useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
       canvasRef.current = canvas;
 
+      // Re-center when container resizes (handles late layout settling)
+      if (container) {
+        const ro = new ResizeObserver((entries) => {
+          const entry = entries[0];
+          if (!entry || !canvas) return;
+          const newW = entry.contentRect.width;
+          const newH = entry.contentRect.height;
+          if (newW < 1 || newH < 1) return;
+          canvas.setDimensions({ width: newW, height: newH });
+          const newZoomX = newW / doc.width;
+          const newZoomY = newH / doc.height;
+          const newFitZoom = Math.min(newZoomX, newZoomY) * padFactor;
+          canvas.setZoom(newFitZoom);
+          canvas.viewportTransform[4] = (newW - doc.width * newFitZoom) / 2;
+          canvas.viewportTransform[5] = (newH - doc.height * newFitZoom) / 2;
+          canvas.requestRenderAll();
+          useCanvasStore.getState().setZoom(newFitZoom);
+          useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
+        });
+        ro.observe(container);
+        // Store for cleanup
+        (canvas as unknown as Record<string, unknown>).__resizeObserver = ro;
+      }
+
       // Bind undo/redo history — must be before other event listeners
       historyRef.current.bindHistory(canvas);
 
@@ -138,6 +162,8 @@ export function useFabricCanvas(
     return () => {
       isMounted = false;
       if (canvas) {
+        const ro = (canvas as unknown as Record<string, unknown>).__resizeObserver as ResizeObserver | undefined;
+        if (ro) ro.disconnect();
         canvas.off('selection:created');
         canvas.off('selection:updated');
         canvas.off('selection:cleared');
