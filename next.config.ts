@@ -2,7 +2,6 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  assetPrefix: '/dessy',
   images: { unoptimized: true },
   turbopack: {
     resolveAlias: {
