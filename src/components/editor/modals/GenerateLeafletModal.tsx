@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Sparkles, Camera, Pencil } from 'lucide-react';
 import { useBrandStore } from '@/stores/brandStore';
@@ -9,6 +9,8 @@ import { PhotoTab } from './tabs/PhotoTab';
 import { SketchTab } from './tabs/SketchTab';
 import { GenerationPreview } from './GenerationPreview';
 import type { GenerationMode, FoldType, GenerationResponse } from '@/types/generation';
+import { getApiKey, setApiKey } from '@/lib/storage/apiKeyStorage';
+import { generateLeaflet } from '@/lib/ai/generate-leaflet';
 
 interface GenerateLeafletModalProps {
   open: boolean;
@@ -35,8 +37,31 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKeyState] = useState<string | null>(null);
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [keyDraft, setKeyDraft] = useState('');
+
+  useEffect(() => {
+    const stored = getApiKey();
+    setApiKeyState(stored);
+    if (!stored) setShowKeyInput(true);
+  }, []);
+
+  function handleSaveKey() {
+    const trimmed = keyDraft.trim();
+    if (trimmed) {
+      setApiKey(trimmed);
+      setApiKeyState(trimmed);
+      setShowKeyInput(false);
+    }
+  }
 
   async function handleGenerate(data: { prompt?: string; imageBase64?: string }) {
+    if (!apiKey) {
+      setShowKeyInput(true);
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setResponse(null);
@@ -44,27 +69,16 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
     const brandState = useBrandStore.getState();
 
     try {
-      const res = await fetch('/api/generate-leaflet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: activeTab,
-          foldType,
-          prompt: data.prompt,
-          imageBase64: data.imageBase64,
-          brandColors: brandState.brandColors.map((c) => c.hex),
-          typographyPresets: brandState.typographyPresets,
-          style,
-        }),
+      const result = await generateLeaflet(apiKey, {
+        mode: activeTab,
+        foldType,
+        prompt: data.prompt,
+        imageBase64: data.imageBase64,
+        brandColors: brandState.brandColors.map((c) => c.hex),
+        typographyPresets: brandState.typographyPresets,
+        style,
       });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        throw new Error(body.error ?? `Generation failed (${res.status})`);
-      }
-
-      const json = await res.json() as GenerationResponse;
-      setResponse(json);
+      setResponse(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -142,6 +156,22 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
               >
                 AI Leaflet Generator
               </span>
+              {apiKey && !showKeyInput && (
+                <button
+                  type="button"
+                  onClick={() => setShowKeyInput(true)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#555',
+                    fontSize: '11px',
+                    padding: '4px 8px',
+                  }}
+                >
+                  API Key
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -199,6 +229,60 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
 
             {/* Tab content OR preview */}
             <div style={{ padding: '16px' }}>
+              {showKeyInput && (
+                <div style={{
+                  marginBottom: '12px',
+                  padding: '12px',
+                  background: '#1a1a1a',
+                  border: '1px solid #333',
+                  borderRadius: '8px',
+                }}>
+                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
+                    Gemini API Key
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="password"
+                      value={keyDraft}
+                      onChange={(e) => setKeyDraft(e.target.value)}
+                      placeholder="Enter your Gemini API key"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        background: '#0a0a0a',
+                        border: '1px solid #333',
+                        borderRadius: '6px',
+                        color: '#f5f5f5',
+                        outline: 'none',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveKey}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        background: '#6366f1',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#666', marginTop: '6px' }}>
+                    Get a free key at{' '}
+                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
+                      aistudio.google.com/apikey
+                    </a>
+                  </p>
+                </div>
+              )}
               {showPreview ? (
                 <GenerationPreview
                   pages={response?.pages ?? []}
