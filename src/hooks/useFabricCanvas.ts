@@ -28,6 +28,10 @@ export function useFabricCanvas(
       const { Canvas, Rect } = await import('fabric');
       if (!isMounted || !canvasEl) return;
 
+      // Wait for layout to settle before measuring container
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      if (!isMounted) return;
+
       const format = FORMATS[formatId] ?? FORMATS['A4'];
 
       // Canvas fills the viewport container
