@@ -63,7 +63,16 @@ Plans:
   3. User can select any element and edit its position, size, rotation, opacity, fill, border, shadow, and corner radius in the right properties panel with mm-based precision
   4. User can select a text frame and apply a Google Font, set weight/size/line-height/letter-spacing/color/alignment, and apply typography presets (Headline, Subhead, Body, Caption, CTA)
   5. User can define up to 10 brand color swatches, pick colors with HEX/RGB/HSL input and eyedropper, choose from predefined palettes, and apply global swatches that update everywhere when changed
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Foundation: install deps, extend types/stores, hooks (useSelectedObject, useCanvasLayers), shared components (NumberInput, ColorPicker), color utilities
+- [ ] 02-02-PLAN.md — Left Panel: tabbed container (Tools/Layers/Pages), LayersPanel with @dnd-kit drag reorder, PagesPanel with thumbnails
+- [ ] 02-03-PLAN.md — Properties Panel: context-sensitive sections (Position, Fill, Stroke, Shadow, FitMode, PageSection)
+- [ ] 02-04-PLAN.md — Typography: Google Fonts hook and dropdown, TypographySection with controls and preset buttons
+- [ ] 02-05-PLAN.md — Multi-Page CRUD: page-crud utilities, projectStore page actions, PagesPanel + BottomBar wiring
+- [ ] 02-06-PLAN.md — Brand & Style: swatch-sync, preset-sync, StyleSection with brand swatches, palette generator, preset editor
+- [ ] 02-07-PLAN.md — Integration: format-aware page init, store initialization, visual checkpoint
 
 ### Phase 3: AI and Export
 **Goal**: Users can generate on-brand AI images via PromptCrafter and export finished leaflets as PNG or JPG
@@ -93,6 +102,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
 | 01.1. AI Leaflet Generation | 4/4 | Complete   | 2026-03-27 |
-| 2. Editor Surface | 0/TBD | Not started | - |
+| 2. Editor Surface | 0/7 | In progress | - |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
