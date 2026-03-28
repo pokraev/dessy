@@ -47,12 +47,13 @@ Exceptions:
 - Layer row height: 32px (compact Figma-style)
 - Page thumbnail height: 64px (aspect-ratio preserving mini-preview)
 - Color swatch: 24×24px (brand swatches row in color picker)
-- Recently used color swatch: 20×20px
-- Bottom bar height: 36px fixed (BottomBar.tsx established)
+- Recently used color swatch: 20×20px (compact secondary swatch distinct from 24px primary brand swatches)
+- Bottom bar height: 36px fixed (established in BottomBar.tsx — Phase 1)
 - Header height: 48px (established in Phase 1)
 - Panel tab bar height: 36px
 - Color picker popover width: 240px
 - Touch/click targets minimum: 24×24px for all interactive icons in panels
+- NumberInput height: 28px (compact input row consistent with Figma-style panel inputs)
 
 ---
 
@@ -103,6 +104,12 @@ Accent reserved for (explicit list):
 
 ---
 
+## Focal Point
+
+Primary focal point: the canvas surface — all panel elements are visually recessive. Panels use `bg-surface` (`#141414`) so they recede behind the `#0a0a0a` canvas backdrop. No panel element should compete with canvas content for visual weight. Accent color (`#6366f1`) is used sparingly in panels to indicate active state only, never for decoration.
+
+---
+
 ## Component Inventory
 
 New components required for Phase 2. All inherit the dark token set above.
@@ -121,7 +128,9 @@ New components required for Phase 2. All inherit the dark token set above.
 - Drag handle: `GripVertical` lucide icon, color `#555`, visible on row hover only
 - Type icons: `Type` (text), `Image` (image), `Square` (shape), `RectangleHorizontal` (colorBlock)
 - Eye icon: `Eye` when visible / `EyeOff` when hidden; color `#888` normally, `#f5f5f5` on hover
+  - `aria-label`: "Toggle visibility for {layer name}" (e.g., "Toggle visibility for Headline")
 - Lock icon: `Lock` when locked / `Unlock` when unlocked; color `#888` normally
+  - `aria-label`: "Toggle lock for {layer name}" (e.g., "Toggle lock for Headline")
 - Row selected: `bg-surface-raised` (`#1e1e1e`)
 - Row hover: `bg-surface-raised` at 60% opacity
 - Rename state: contenteditable inline, border bottom `1px solid #6366f1`
@@ -140,7 +149,7 @@ New components required for Phase 2. All inherit the dark token set above.
 - Toggle switch for shadow section on/off state
 
 **NumberInput** — reusable across all position/size/rotation/opacity inputs
-- Height: 28px, padding: 4px 8px
+- Height: 28px, padding: 4px 8px (28px = compact input row consistent with Figma-style panel inputs)
 - Background: `#1e1e1e`, border: `1px solid #2a2a2a`
 - Border radius: 4px
 - Font: JetBrains Mono 13px weight 400
@@ -261,7 +270,7 @@ Popover internal layout (top to bottom):
 | Element | Copy |
 |---------|------|
 | Primary CTA (add page) | "Add Page" |
-| Primary CTA (apply font) | "Apply" (typography preset button action) |
+| Primary CTA (apply typography preset) | "Apply Preset" (typography preset button action) |
 | Left panel tab 1 | "Tools" |
 | Left panel tab 2 | "Layers" |
 | Left panel tab 3 | "Pages" |
@@ -281,8 +290,8 @@ Popover internal layout (top to bottom):
 | Brand colors label | "Brand" |
 | Palettes section label | "Palettes" |
 | Rename layer placeholder | "Layer name" |
-| Delete page confirmation | "Delete this page? This cannot be undone." — two buttons: "Cancel" (default) + "Delete Page" (destructive, #ef4444 background) |
-| Remove brand swatch confirmation | "Remove this swatch? Elements using it will keep the color value." — two buttons: "Cancel" + "Remove" (destructive) |
+| Delete page confirmation | "Delete this page? This cannot be undone." — two buttons: "Keep Page" (default dismiss) + "Delete Page" (destructive, #ef4444 background) |
+| Remove brand swatch confirmation | "Remove this swatch? Elements using it will keep the color value." — two buttons: "Keep Swatch" (default dismiss) + "Remove Swatch" (destructive, #ef4444 background) |
 | Error: font failed to load | "Font unavailable. Falling back to system font." (toast, 3s) |
 | Error: eyedropper cancelled | No error — silent cancel (user pressed Escape in eyedropper mode) |
 | Preset applied toast | (none — silent apply, instant visual feedback is enough) |
