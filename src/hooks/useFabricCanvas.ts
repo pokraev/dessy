@@ -48,6 +48,8 @@ export function useFabricCanvas(
         width: doc.width,
         height: doc.height,
         fill: '#FFFFFF',
+        originX: 'left',
+        originY: 'top',
         selectable: false,
         evented: false,
         excludeFromExport: false,
@@ -56,6 +58,7 @@ export function useFabricCanvas(
       (docRect as FabricObject & { _isDocBackground?: boolean })._isDocBackground = true;
       canvas.add(docRect);
       canvas.sendObjectToBack(docRect);
+
 
       // Auto-fit: zoom to show the document (without bleed) centered with padding
       const padFactor = 0.85;
