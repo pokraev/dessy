@@ -34,15 +34,17 @@ export function useFabricCanvas(
       const container = canvasEl.parentElement;
       const containerWidth = container?.clientWidth ?? 800;
       const containerHeight = container?.clientHeight ?? 600;
-      const options = getCanvasOptions(format, containerWidth, containerHeight);
 
+      const options = getCanvasOptions(format, containerWidth, containerHeight);
       canvas = new Canvas(canvasEl, options);
 
       // Add white document rectangle as the first object (non-selectable background)
+      // Position at (-bleedPx, -bleedPx) so the document area starts at (0,0)
+      // matching the GuidesOverlay coordinate system
       const doc = getDocDimensions(format);
       const docRect = new Rect({
-        left: 0,
-        top: 0,
+        left: -doc.bleedPx,
+        top: -doc.bleedPx,
         width: doc.width,
         height: doc.height,
         fill: '#FFFFFF',
@@ -55,19 +57,19 @@ export function useFabricCanvas(
       canvas.add(docRect);
       canvas.sendObjectToBack(docRect);
 
-      // Auto-fit: zoom to show the document centered with padding
+      // Auto-fit: zoom to show the document (without bleed) centered with padding
       const padFactor = 0.85;
-      const zoomX = containerWidth / doc.width;
-      const zoomY = containerHeight / doc.height;
+      const zoomX = containerWidth / doc.docWidthPx;
+      const zoomY = containerHeight / doc.docHeightPx;
       const fitZoom = Math.min(zoomX, zoomY) * padFactor;
       canvas.setZoom(fitZoom);
 
-      // Center the document in the viewport
+      // Center the document area in the viewport
       const { Point } = await import('fabric');
       const vpCenterX = containerWidth / 2;
       const vpCenterY = containerHeight / 2;
-      const docCenterX = (doc.width * fitZoom) / 2;
-      const docCenterY = (doc.height * fitZoom) / 2;
+      const docCenterX = (doc.docWidthPx * fitZoom) / 2;
+      const docCenterY = (doc.docHeightPx * fitZoom) / 2;
       canvas.relativePan(new Point(vpCenterX - docCenterX, vpCenterY - docCenterY));
 
       useCanvasStore.getState().setZoom(fitZoom);
