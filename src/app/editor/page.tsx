@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Header } from '@/components/editor/ui/Header';
 import { BottomBar } from '@/components/editor/ui/BottomBar';
@@ -13,12 +13,12 @@ import EditorCanvasClient from '@/components/editor/EditorCanvas.client';
 import { useProjectStore } from '@/stores/projectStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 
-export default function EditorPage() {
-  const params = useParams();
-  const projectId = typeof params.projectId === 'string' ? params.projectId : 'default';
+function EditorInner() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('id') ?? 'default';
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Attempt to restore previously saved project from localStorage
     const saved = loadProject(projectId);
     if (saved) {
       useProjectStore.getState().setCurrentProject({
@@ -27,7 +27,6 @@ export default function EditorPage() {
         currentPageIndex: (saved.pageData as { pages: never[]; currentPageIndex: number }).currentPageIndex ?? 0,
         brandColors: [],
       });
-      // canvasJSON is passed via sessionStorage so EditorCanvasInner can load it after canvas init
       sessionStorage.setItem(`dessy-canvas-restore-${projectId}`, JSON.stringify(saved.canvasJSON));
     } else if (!useProjectStore.getState().currentProject) {
       useProjectStore.getState().setCurrentProject({
@@ -43,7 +42,10 @@ export default function EditorPage() {
         brandColors: [],
       });
     }
+    setReady(true);
   }, [projectId]);
+
+  if (!ready) return null;
 
   return (
     <EditorLayout
@@ -58,5 +60,13 @@ export default function EditorPage() {
       bottomBar={<BottomBar />}
       toastProvider={<ToastProvider />}
     />
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense>
+      <EditorInner />
+    </Suspense>
   );
 }
