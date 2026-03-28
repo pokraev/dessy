@@ -62,13 +62,13 @@ export function useFabricCanvas(
       const fitZoom = Math.min(zoomX, zoomY) * padFactor;
       canvas.setZoom(fitZoom);
 
-      // Center the document in the viewport
-      const { Point } = await import('fabric');
-      const vpCenterX = containerWidth / 2;
-      const vpCenterY = containerHeight / 2;
-      const docCenterX = (doc.width * fitZoom) / 2;
-      const docCenterY = (doc.height * fitZoom) / 2;
-      canvas.relativePan(new Point(vpCenterX - docCenterX, vpCenterY - docCenterY));
+      // Center the document in the viewport (set transform directly, don't use relativePan)
+      const panX = (containerWidth - doc.width * fitZoom) / 2;
+      const panY = (containerHeight - doc.height * fitZoom) / 2;
+      const vpt = canvas.viewportTransform;
+      vpt[4] = panX;
+      vpt[5] = panY;
+      canvas.setViewportTransform(vpt);
 
       useCanvasStore.getState().setZoom(fitZoom);
       useCanvasStore.getState().setViewportTransform([...canvas.viewportTransform] as number[]);
