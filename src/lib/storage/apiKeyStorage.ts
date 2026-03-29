@@ -1,14 +1,40 @@
-const API_KEY_STORAGE_KEY = 'dessy-gemini-api-key';
+const GEMINI_KEY = 'dessy-gemini-api-key';
+const CLAUDE_KEY = 'dessy-claude-api-key';
+const PROVIDER_KEY = 'dessy-ai-provider';
+
+export type AIProvider = 'gemini' | 'claude';
 
 export function getApiKey(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(API_KEY_STORAGE_KEY);
+  return localStorage.getItem(GEMINI_KEY);
 }
 
 export function setApiKey(key: string): void {
-  localStorage.setItem(API_KEY_STORAGE_KEY, key);
+  localStorage.setItem(GEMINI_KEY, key);
+}
+
+export function getClaudeApiKey(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(CLAUDE_KEY);
+}
+
+export function setClaudeApiKey(key: string): void {
+  localStorage.setItem(CLAUDE_KEY, key);
+}
+
+export function getProvider(): AIProvider {
+  if (typeof window === 'undefined') return 'gemini';
+  return (localStorage.getItem(PROVIDER_KEY) as AIProvider) || 'gemini';
+}
+
+export function setProvider(provider: AIProvider): void {
+  localStorage.setItem(PROVIDER_KEY, provider);
 }
 
 export function clearApiKey(): void {
-  localStorage.removeItem(API_KEY_STORAGE_KEY);
+  localStorage.removeItem(GEMINI_KEY);
+}
+
+export function clearClaudeApiKey(): void {
+  localStorage.removeItem(CLAUDE_KEY);
 }

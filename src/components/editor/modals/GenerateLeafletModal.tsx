@@ -9,7 +9,12 @@ import { PhotoTab } from './tabs/PhotoTab';
 import { SketchTab } from './tabs/SketchTab';
 import { GenerationPreview } from './GenerationPreview';
 import type { GenerationMode, FoldType, GenerationResponse } from '@/types/generation';
-import { getApiKey, setApiKey } from '@/lib/storage/apiKeyStorage';
+import type { AIProvider } from '@/lib/storage/apiKeyStorage';
+import {
+  getApiKey, setApiKey,
+  getClaudeApiKey, setClaudeApiKey,
+  getProvider, setProvider,
+} from '@/lib/storage/apiKeyStorage';
 import { generateLeaflet } from '@/lib/ai/generate-leaflet';
 
 interface GenerateLeafletModalProps {
@@ -37,27 +42,55 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiKey, setApiKeyState] = useState<string | null>(null);
   const [showKeyInput, setShowKeyInput] = useState(false);
-  const [keyDraft, setKeyDraft] = useState('');
+
+  const [provider, setProviderState] = useState<AIProvider>('gemini');
+  const [geminiKey, setGeminiKeyState] = useState<string | null>(null);
+  const [claudeKey, setClaudeKeyState] = useState<string | null>(null);
+  const [geminiKeyDraft, setGeminiKeyDraft] = useState('');
+  const [claudeKeyDraft, setClaudeKeyDraft] = useState('');
 
   useEffect(() => {
-    const stored = getApiKey();
-    setApiKeyState(stored);
-    if (!stored) setShowKeyInput(true);
+    const storedGemini = getApiKey();
+    const storedClaude = getClaudeApiKey();
+    const storedProvider = getProvider();
+    setGeminiKeyState(storedGemini);
+    setClaudeKeyState(storedClaude);
+    setProviderState(storedProvider);
+    if (storedProvider === 'claude' && !storedClaude) setShowKeyInput(true);
+    else if (storedProvider === 'gemini' && !storedGemini) setShowKeyInput(true);
   }, []);
 
-  function handleSaveKey() {
-    const trimmed = keyDraft.trim();
+  const activeKey = provider === 'claude' ? claudeKey : geminiKey;
+
+  function handleSaveGeminiKey() {
+    const trimmed = geminiKeyDraft.trim();
     if (trimmed) {
       setApiKey(trimmed);
-      setApiKeyState(trimmed);
-      setShowKeyInput(false);
+      setGeminiKeyState(trimmed);
+      setGeminiKeyDraft('');
     }
   }
 
+  function handleSaveClaudeKey() {
+    const trimmed = claudeKeyDraft.trim();
+    if (trimmed) {
+      setClaudeApiKey(trimmed);
+      setClaudeKeyState(trimmed);
+      setClaudeKeyDraft('');
+    }
+  }
+
+  function handleProviderChange(p: AIProvider) {
+    setProviderState(p);
+    setProvider(p);
+    if (p === 'claude' && !claudeKey) setShowKeyInput(true);
+    else if (p === 'gemini' && !geminiKey) setShowKeyInput(true);
+    else setShowKeyInput(false);
+  }
+
   async function handleGenerate(data: { prompt?: string; imageBase64?: string }) {
-    if (!apiKey) {
+    if (!activeKey) {
       setShowKeyInput(true);
       return;
     }
@@ -69,7 +102,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
     const brandState = useBrandStore.getState();
 
     try {
-      const result = await generateLeaflet(apiKey, {
+      const result = await generateLeaflet(activeKey, {
         mode: activeTab,
         foldType,
         prompt: data.prompt,
@@ -77,7 +110,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
         brandColors: brandState.brandColors.map((c) => c.hex),
         typographyPresets: brandState.typographyPresets,
         style,
-      });
+      }, provider);
       setResponse(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -87,7 +120,6 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   }
 
   function handleRegenerate() {
-    // Clear response to allow user to adjust and re-trigger from the tab
     setResponse(null);
     setError(null);
   }
@@ -147,56 +179,47 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                 borderBottom: '1px solid #2a2a2a',
               }}
             >
-              <span
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  color: '#f5f5f5',
-                }}
-              >
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#f5f5f5' }}>
                 AI Leaflet Generator
               </span>
-              {apiKey && !showKeyInput && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {!showKeyInput && (
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyInput(true)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#555',
+                      fontSize: '11px',
+                      padding: '4px 8px',
+                    }}
+                  >
+                    Settings
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => setShowKeyInput(true)}
+                  onClick={onClose}
                   style={{
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#555',
-                    fontSize: '11px',
-                    padding: '4px 8px',
+                    color: '#888888',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px',
+                    borderRadius: '4px',
                   }}
                 >
-                  API Key
+                  <X size={18} />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={onClose}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#888888',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '4px',
-                  borderRadius: '4px',
-                }}
-              >
-                <X size={18} />
-              </button>
+              </div>
             </div>
 
             {/* Tab bar */}
-            <div
-              style={{
-                display: 'flex',
-                borderBottom: '1px solid #2a2a2a',
-              }}
-            >
+            <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a' }}>
               {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -237,16 +260,41 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                   border: '1px solid #333',
                   borderRadius: '8px',
                 }}>
+                  {/* Provider toggle */}
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                    {(['gemini', 'claude'] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => handleProviderChange(p)}
+                        style={{
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          background: provider === p ? '#6366f1' : '#0a0a0a',
+                          color: provider === p ? '#fff' : '#888',
+                          border: `1px solid ${provider === p ? '#6366f1' : '#333'}`,
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {p === 'gemini' ? 'Gemini' : 'Claude'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Gemini key */}
                   <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    Gemini API Key
+                    Gemini API Key {geminiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>saved</span>}
                   </label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                     <input
                       type="password"
-                      value={keyDraft}
-                      onChange={(e) => setKeyDraft(e.target.value)}
-                      placeholder="Enter your Gemini API key"
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
+                      value={geminiKeyDraft}
+                      onChange={(e) => setGeminiKeyDraft(e.target.value)}
+                      placeholder={geminiKey ? '••••••••' : 'Enter your Gemini API key'}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveGeminiKey()}
                       style={{
                         flex: 1,
                         padding: '8px 10px',
@@ -260,7 +308,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                     />
                     <button
                       type="button"
-                      onClick={handleSaveKey}
+                      onClick={handleSaveGeminiKey}
                       style={{
                         padding: '8px 16px',
                         fontSize: '13px',
@@ -275,12 +323,77 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                       Save
                     </button>
                   </div>
-                  <p style={{ fontSize: '11px', color: '#666', marginTop: '6px' }}>
-                    Get a free key at{' '}
+
+                  {/* Claude key */}
+                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
+                    Claude API Key {claudeKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>saved</span>}
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                    <input
+                      type="password"
+                      value={claudeKeyDraft}
+                      onChange={(e) => setClaudeKeyDraft(e.target.value)}
+                      placeholder={claudeKey ? '••••••••' : 'Enter your Claude API key'}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveClaudeKey()}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        background: '#0a0a0a',
+                        border: '1px solid #333',
+                        borderRadius: '6px',
+                        color: '#f5f5f5',
+                        outline: 'none',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveClaudeKey}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        background: '#6366f1',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+
+                  <p style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
+                    Gemini:{' '}
                     <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
                       aistudio.google.com/apikey
                     </a>
+                    {' | '}
+                    Claude:{' '}
+                    <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
+                      console.anthropic.com
+                    </a>
                   </p>
+
+                  {activeKey && (
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyInput(false)}
+                      style={{
+                        marginTop: '8px',
+                        padding: '4px 12px',
+                        fontSize: '12px',
+                        background: 'transparent',
+                        border: '1px solid #333',
+                        borderRadius: '4px',
+                        color: '#888',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Close settings
+                    </button>
+                  )}
                 </div>
               )}
               {showPreview ? (
