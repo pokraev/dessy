@@ -51,3 +51,30 @@ export function deleteProject(projectId: string): void {
   const list = listProjects().filter(p => p.id !== projectId);
   localStorage.setItem(PROJECT_LIST_KEY, JSON.stringify(list));
 }
+
+export function duplicateProject(sourceId: string): string | null {
+  const source = loadProject(sourceId);
+  if (!source) return null;
+  const newId = crypto.randomUUID();
+  const newMeta: ProjectMeta = {
+    ...source.meta,
+    id: newId,
+    name: `Copy of ${source.meta.name}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveProject(newId, { ...source, meta: newMeta });
+  return newId;
+}
+
+export function updateProjectName(projectId: string, newName: string): boolean {
+  const source = loadProject(projectId);
+  if (!source) return false;
+  const updatedMeta: ProjectMeta = {
+    ...source.meta,
+    name: newName,
+    updatedAt: new Date().toISOString(),
+  };
+  saveProject(projectId, { ...source, meta: updatedMeta });
+  return true;
+}

@@ -336,5 +336,34 @@
   "lang": {
     "bg": "Български",
     "en": "English"
+  },
+  "dashboard": {
+    "newLeaflet": "Нова листовка",
+    "emptyHeading": "Създайте първата си листовка",
+    "emptyBody": "Започнете празен проект или изберете шаблон за бърз старт.",
+    "emptyCtaLabel": "Нова листовка",
+    "recentProjects": "Скорошни проекти",
+    "delete": "Изтриване",
+    "rename": "Преименуване",
+    "duplicate": "Дублиране",
+    "deleteConfirm": "Изтриване на \"{{name}}\"? Това действие не може да бъде отменено.",
+    "deleteConfirmButton": "Изтриване",
+    "cancel": "Запази проекта",
+    "newLeafletTitle": "Нова листовка",
+    "tabBlank": "Празен",
+    "tabTemplates": "Шаблони",
+    "customWidthLabel": "Ширина (мм)",
+    "customHeightLabel": "Височина (мм)",
+    "useTemplate": "Използвай шаблона",
+    "templateCategory": "Категория",
+    "templateFormat": "Формат",
+    "templatePages": "{{count}} страница",
+    "templatePages_plural": "{{count}} страници",
+    "pageCount": "{{count}} страница",
+    "pageCount_plural": "{{count}} страници",
+    "noThumbnail": "",
+    "errorLoadProject": "Проектът не може да бъде отворен. Данните може да са повредени.",
+    "errorDeleteProject": "Проектът не може да бъде изтрит. Опитайте отново.",
+    "successDuplicate": "Проектът е дублиран."
   }
 }

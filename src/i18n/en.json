@@ -336,5 +336,34 @@
   "lang": {
     "bg": "Български",
     "en": "English"
+  },
+  "dashboard": {
+    "newLeaflet": "New Leaflet",
+    "emptyHeading": "Create your first leaflet",
+    "emptyBody": "Start blank or pick a template to get going in seconds.",
+    "emptyCtaLabel": "New Leaflet",
+    "recentProjects": "Recent Projects",
+    "delete": "Delete",
+    "rename": "Rename",
+    "duplicate": "Duplicate",
+    "deleteConfirm": "Delete \"{{name}}\"? This cannot be undone.",
+    "deleteConfirmButton": "Delete",
+    "cancel": "Keep Project",
+    "newLeafletTitle": "New Leaflet",
+    "tabBlank": "Blank",
+    "tabTemplates": "Templates",
+    "customWidthLabel": "Width (mm)",
+    "customHeightLabel": "Height (mm)",
+    "useTemplate": "Use This Template",
+    "templateCategory": "Category",
+    "templateFormat": "Format",
+    "templatePages": "{{count}} page",
+    "templatePages_plural": "{{count}} pages",
+    "pageCount": "{{count}} page",
+    "pageCount_plural": "{{count}} pages",
+    "noThumbnail": "",
+    "errorLoadProject": "Could not open project. The data may be corrupted.",
+    "errorDeleteProject": "Could not delete project. Try again.",
+    "successDuplicate": "Project duplicated."
   }
 }
