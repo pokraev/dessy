@@ -9,6 +9,8 @@ import { StrokeSection } from './sections/StrokeSection';
 import { ShadowSection } from './sections/ShadowSection';
 import { FitModeSection } from './sections/FitModeSection';
 import { PageSection } from './sections/PageSection';
+import { StyleSection } from './sections/StyleSection';
+import { TypographySection } from './sections/TypographySection';
 
 interface SectionHeaderProps {
   title: string;
@@ -62,7 +64,10 @@ export function PropertiesPanel() {
     >
       {/* Nothing selected */}
       {selectionCount === 0 && (
-        <PageSection />
+        <>
+          <PageSection />
+          <StyleSection />
+        </>
       )}
 
       {/* Multi-selection */}
@@ -93,7 +98,7 @@ export function PropertiesPanel() {
       {selectionCount === 1 && snapshot?.type === 'text' && (
         <div>
           <PositionSection snapshot={snapshot} />
-          {/* Typography section — Plan 04 */}
+          <TypographySection snapshot={snapshot} />
           <FillSection snapshot={snapshot} />
         </div>
       )}
