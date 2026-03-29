@@ -19,7 +19,7 @@ created: 2026-03-29
 |----------|-------|
 | **Framework** | Jest 30.3.0 + ts-jest |
 | **Config file** | jest.config.ts |
-| **Quick run command** | `npx jest --testPathPattern=promptcrafter --no-coverage` |
+| **Quick run command** | `npx jest --testPathPattern="generate-image|image-prompt|promptCrafterStore" --no-coverage` |
 | **Full suite command** | `npx jest --no-coverage` |
 | **Estimated runtime** | ~5 seconds |
 
@@ -27,7 +27,7 @@ created: 2026-03-29
 
 ## Sampling Rate
 
-- **After every task commit:** Run `npx jest --testPathPattern=promptcrafter --no-coverage`
+- **After every task commit:** Run `npx jest --testPathPattern="generate-image|image-prompt|promptCrafterStore" --no-coverage`
 - **After every plan wave:** Run `npx jest --no-coverage`
 - **Before `/gsd:verify-work`:** Full suite must be green
 - **Max feedback latency:** 10 seconds
@@ -38,12 +38,11 @@ created: 2026-03-29
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 1 | AIPC-01 | unit | `npx jest src/lib/ai/__tests__/prompt-enricher.test.ts` | ❌ W0 | ⬜ pending |
-| 04-01-02 | 01 | 1 | AIPC-02, AIPC-03 | unit | `npx jest src/lib/ai/__tests__/prompt-enricher.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-01 | 02 | 1 | AIMG-01, AIMG-02 | unit | `npx jest src/lib/ai/__tests__/image-generator.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-02 | 02 | 1 | AIMG-04 | unit | `npx jest src/lib/storage/__tests__/imageDb.test.ts` | ✅ | ⬜ pending |
-| 04-03-01 | 03 | 2 | AIPC-04, AIPC-05 | manual | Browser verification | N/A | ⬜ pending |
-| 04-03-02 | 03 | 2 | AIMG-03 | manual | Browser verification | N/A | ⬜ pending |
+| 04-01-01 | 01 | 1 | AIPC-02, AIPC-03, AIMG-01 | unit | `npx jest --testPathPattern="generate-image\|image-prompt\|promptCrafterStore" --no-coverage` | ❌ W0 (tests written, RED) | ⬜ pending |
+| 04-01-02 | 01 | 1 | AIPC-04, AIPC-05, AIMG-04 | unit | `npx jest --testPathPattern="generate-image\|image-prompt\|promptCrafterStore" --no-coverage` | ✅ (after Task 1) | ⬜ pending |
+| 04-02-01 | 02 | 2 | AIPC-01, AIPC-04, AIPC-05 | typecheck | `npx tsc --noEmit` | N/A | ⬜ pending |
+| 04-02-02 | 02 | 2 | AIMG-02, AIMG-03 | typecheck | `npx tsc --noEmit` | N/A | ⬜ pending |
+| 04-02-03 | 02 | 2 | all | manual | Browser verification | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,8 +50,9 @@ created: 2026-03-29
 
 ## Wave 0 Requirements
 
-- [ ] `src/lib/ai/__tests__/prompt-enricher.test.ts` — stubs for AIPC-01, AIPC-02, AIPC-03
-- [ ] `src/lib/ai/__tests__/image-generator.test.ts` — stubs for AIMG-01, AIMG-02
+- [ ] `src/lib/ai/__tests__/generate-image.test.ts` — tests for enrichPrompt, callGeminiImage, assemblePrompt, snapAspectRatio, base64ToBlob
+- [ ] `src/lib/ai/__tests__/image-prompt.test.ts` — tests for buildEnrichmentSystemPrompt
+- [ ] `src/stores/__tests__/promptCrafterStore.test.ts` — tests for addToHistory, clearHistory
 
 *Existing `imageDb.test.ts` covers image storage.*
 
