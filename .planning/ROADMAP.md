@@ -8,9 +8,10 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
 
 - [x] **Phase 1: Canvas Foundation** - Working Fabric.js canvas in Next.js, all element types, persistence, and app shell (completed 2026-03-27)
 - [x] **Phase 01.1: AI Leaflet Generation** - AI-powered leaflet generation from text prompt, photo, or sketch (INSERTED) (completed 2026-03-27)
-- [ ] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system
-- [ ] **Phase 3: AI and Export** - PromptCrafter, Gemini image generation, PNG/JPG export
-- [ ] **Phase 4: Dashboard, Templates, and InDesign Export** - Project management dashboard, starter template gallery, ExtendScript export
+- [x] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system (completed 2026-03-29)
+- [ ] **Phase 3: Export** - PNG/JPEG raster, InDesign ExtendScript, CorelDraw SVG + VBA macro
+- [ ] **Phase 4: AI PromptCrafter** - Prompt enrichment, AI image generation, image history
+- [ ] **Phase 5: Dashboard and Templates** - Project management dashboard, starter template gallery
 
 ## Phase Details
 
@@ -63,7 +64,7 @@ Plans:
   3. User can select any element and edit its position, size, rotation, opacity, fill, border, shadow, and corner radius in the right properties panel with mm-based precision
   4. User can select a text frame and apply a Google Font, set weight/size/line-height/letter-spacing/color/alignment, and apply typography presets (Headline, Subhead, Body, Caption, CTA)
   5. User can define up to 10 brand color swatches, pick colors with HEX/RGB/HSL input and eyedropper, choose from predefined palettes, and apply global swatches that update everywhere when changed
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Foundation: install deps, extend types/stores, hooks (useSelectedObject, useCanvasLayers), shared components (NumberInput, ColorPicker), color utilities
@@ -74,26 +75,47 @@ Plans:
 - [ ] 02-06-PLAN.md — Brand & Style: swatch-sync, preset-sync, StyleSection with brand swatches, palette generator, preset editor
 - [ ] 02-07-PLAN.md — Integration: format-aware page init, store initialization, visual checkpoint
 
-### Phase 3: AI and Export
-**Goal**: Users can generate on-brand AI images via PromptCrafter and export finished leaflets as PNG or JPG
+### Phase 3: Export (PNG/JPEG, InDesign, CorelDraw)
+**Goal**: Users can export finished leaflets as PNG/JPEG raster images, InDesign ExtendScript (.jsx), and CorelDraw-compatible formats (SVG + VBA macro)
 **Depends on**: Phase 2
-**Requirements**: AIPC-01, AIPC-02, AIPC-03, AIPC-04, AIPC-05, AIMG-01, AIMG-02, AIMG-03, AIMG-04, EXPO-01
+**Requirements**: EXPO-01, EXPO-02, EXPO-04, EXPO-05, EXPO-06
+**Success Criteria** (what must be TRUE):
+  1. User can export any page as PNG or JPEG at 72/150/300 DPI; multi-page projects export as a ZIP
+  2. User can export an InDesign ExtendScript (.jsx) that recreates text frames, image frames, shapes, colors, and fonts with correct mm positioning
+  3. User can export CorelDraw-compatible SVG (per page or ZIP) with correct mm dimensions and embedded images
+  4. User can export a CorelDraw VBA macro (.bas) that recreates the layout programmatically
+  5. Export modal offers all formats with clear options (format, DPI, single page vs all pages)
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Shared export utilities (page collector, color conversion, unit mapping) + raster export (PNG/JPEG)
+- [ ] 03-02-PLAN.md — InDesign ExtendScript (.jsx) generation with object mapping
+- [ ] 03-03-PLAN.md — CorelDraw export (SVG + VBA macro generation)
+- [ ] 03-04-PLAN.md — Export modal UI with format picker, DPI options, progress indicator
+
+### Phase 4: AI PromptCrafter and Image Generation
+**Goal**: Users can generate on-brand AI images via PromptCrafter and place them into canvas frames
+**Depends on**: Phase 2
+**Requirements**: AIPC-01, AIPC-02, AIPC-03, AIPC-04, AIPC-05, AIMG-01, AIMG-02, AIMG-03, AIMG-04
 **Success Criteria** (what must be TRUE):
   1. User can type a basic image description, click Enrich, and receive 3 enriched prompt variations (Editorial, Lifestyle, Bold) that incorporate leaflet context and brand colors
-  2. User can customize a prompt via mood, lighting, composition, style, and background controls that live-update the visible prompt text, then generate an image and see a loading state during generation
+  2. User can customize a prompt via mood, lighting, composition, style, and background controls that live-update the visible prompt text
   3. User can click "Use This" to place a generated image into the selected canvas frame, or Regenerate or Edit Prompt without losing prior work
   4. User can browse a history of all generated images and reuse any without regenerating
-  5. User can export any page as PNG or JPG from the editor
-**Plans**: TBD
+**Plans**: 2 plans
 
-### Phase 4: Dashboard, Templates, and InDesign Export
-**Goal**: Users can manage projects from a dashboard, start from templates, and export InDesign-ready ExtendScript files
+Plans:
+- [ ] 04-01-PLAN.md — Types, AI service layer (enrichment, image generation, prompt assembly), store, unit tests
+- [ ] 04-02-PLAN.md — PromptCrafter modal UI, Header/ImageSection wiring, visual checkpoint
+
+### Phase 5: Dashboard and Templates
+**Goal**: Users can manage projects from a dashboard and start from templates
 **Depends on**: Phase 3
-**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, TMPL-01, TMPL-02, EXPO-02, EXPO-04
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, TMPL-01, TMPL-02
 **Success Criteria** (what must be TRUE):
-  1. User can see a project grid with thumbnails, titles, last-edited dates, and format badges, and create, delete, duplicate, and rename projects from the dashboard
-  2. User can open the template gallery, choose a starter template from a named category (Sale, Event, Restaurant, Real Estate, etc.), and open it as a new editable project
-  3. User can export a leaflet as an InDesign ExtendScript (.jsx) file that, when run in InDesign, recreates text frames, image frames, shapes, and colors from the design
+  1. User can see a project grid with thumbnails, titles, last-edited dates, and format badges
+  2. User can create, delete, duplicate, and rename projects from the dashboard
+  3. User can open the template gallery, choose a starter template, and open it as a new editable project
 **Plans**: TBD
 
 ## Progress
@@ -102,6 +124,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
 | 01.1. AI Leaflet Generation | 4/4 | Complete   | 2026-03-27 |
-| 2. Editor Surface | 6/7 | In Progress|  |
-| 3. AI and Export | 0/TBD | Not started | - |
-| 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
+| 2. Editor Surface | 7/7 | Complete   | 2026-03-29 |
+| 3. Export | 0/4 | Not started | - |
+| 4. AI PromptCrafter | 0/2 | Not started | - |
+| 5. Dashboard and Templates | 0/TBD | Not started | - |
