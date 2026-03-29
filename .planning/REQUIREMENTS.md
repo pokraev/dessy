@@ -109,9 +109,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dashboard & Templates
 
-- [ ] **DASH-01**: User can see a grid of saved projects with thumbnails, titles, last-edited dates, and format badges
-- [ ] **DASH-02**: User can create new project via "New Leaflet" button with format picker modal
-- [ ] **DASH-03**: User can delete, duplicate, and rename projects
+- [x] **DASH-01**: User can see a grid of saved projects with thumbnails, titles, last-edited dates, and format badges
+- [x] **DASH-02**: User can create new project via "New Leaflet" button with format picker modal
+- [x] **DASH-03**: User can delete, duplicate, and rename projects
 - [ ] **DASH-04**: User can start a new project from a template in the template gallery
 - [ ] **TMPL-01**: Template gallery has 10-20 starter templates across categories (Sale, Event, Restaurant, Real Estate, Corporate, Fitness, Beauty, Education)
 - [ ] **TMPL-02**: Templates are stored as serialized Fabric.js canvas state (JSON)
@@ -238,9 +238,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXPO-01 | Phase 3 | Pending |
 | EXPO-02 | Phase 4 | Pending |
 | EXPO-04 | Phase 4 | Pending |
-| DASH-01 | Phase 4 | Pending |
-| DASH-02 | Phase 4 | Pending |
-| DASH-03 | Phase 4 | Pending |
+| DASH-01 | Phase 4 | Complete |
+| DASH-02 | Phase 4 | Complete |
+| DASH-03 | Phase 4 | Complete |
 | DASH-04 | Phase 4 | Pending |
 | TMPL-01 | Phase 4 | Pending |
 | TMPL-02 | Phase 4 | Pending |
