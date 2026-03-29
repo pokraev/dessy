@@ -1,3 +1,4 @@
+import { Textbox, Rect, Ellipse, Line, Triangle } from 'fabric';
 import type { ShapeKind } from '@/types/elements';
 
 /**
@@ -28,9 +29,6 @@ interface BaseOpts {
  * CRITICAL: originX/originY must be 'left'/'top' — Fabric.js 7 changed default to 'center'.
  */
 export function createTextFrame(opts: BaseOpts) {
-  // Use require to avoid SSR issues — this module is always called from client-side hooks
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Textbox } = require('fabric');
   const { left, top, width } = opts;
 
   const textbox = new Textbox('', {
@@ -60,8 +58,6 @@ export function createTextFrame(opts: BaseOpts) {
  * CRITICAL: originX/originY must be 'left'/'top'.
  */
 export function createImageFrame(opts: BaseOpts) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Rect } = require('fabric');
   const { left, top, width, height } = opts;
 
   const frame = new Rect({
@@ -95,8 +91,6 @@ export function createImageFrame(opts: BaseOpts) {
  * CRITICAL: originX/originY must be 'left'/'top'.
  */
 export function createShape(kind: ShapeKind, opts: BaseOpts) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Rect, Ellipse, Line, Triangle } = require('fabric');
   const { left, top, width, height } = opts;
 
   const kindCapitalized = kind.charAt(0).toUpperCase() + kind.slice(1);
@@ -168,8 +162,6 @@ export function createShape(kind: ShapeKind, opts: BaseOpts) {
  * CRITICAL: originX/originY must be 'left'/'top'.
  */
 export function createColorBlock(opts: BaseOpts & { fill?: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Rect } = require('fabric');
   const { left, top, width, height, fill = '#6366f1' } = opts;
 
   const block = new Rect({
