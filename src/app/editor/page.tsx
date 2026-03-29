@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Header } from '@/components/editor/ui/Header';
 import { BottomBar } from '@/components/editor/ui/BottomBar';
-import { ToolBar } from '@/components/editor/panels/ToolBar';
+import { LeftPanel } from '@/components/editor/panels/LeftPanel';
 import { PropertiesPanel } from '@/components/editor/panels/PropertiesPanel';
 import { ToastProvider } from '@/components/ui/Toast';
 import { CanvasArea } from '@/components/editor/CanvasArea';
@@ -57,7 +57,7 @@ export default function EditorPage() {
   return (
     <EditorLayout
       header={<Header />}
-      leftPanel={<ToolBar />}
+      leftPanel={<LeftPanel />}
       canvas={
         <CanvasArea>
           <EditorCanvasClient projectId={projectId} formatId="A4" />
