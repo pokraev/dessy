@@ -30,7 +30,7 @@ async function callGemini(
   systemPrompt: string,
   userPrompt: string,
   imageBase64?: string,
-  maxOutputTokens = 16384
+  maxOutputTokens = 32768
 ): Promise<string> {
   const model = 'gemini-2.5-flash';
   const controller = new AbortController();
@@ -55,7 +55,6 @@ async function callGemini(
         generationConfig: {
           responseMimeType: 'application/json',
           maxOutputTokens,
-          thinkingConfig: { thinkingBudget: 2048 },
         },
       }),
       signal: controller.signal,
@@ -143,7 +142,7 @@ export async function generateLeaflet(
     rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, image);
   } catch (err) {
     if (err instanceof Error && err.message === 'TRUNCATED') {
-      rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, image, 32768);
+      rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, image, 65536);
     } else {
       throw err;
     }
