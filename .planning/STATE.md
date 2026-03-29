@@ -57,6 +57,7 @@ Plan: 5 of 7
 | Phase 02-editor-surface P02 | 18 | 2 tasks | 5 files |
 | Phase 02-editor-surface P05 | 12 | 2 tasks | 3 files |
 | Phase 02-editor-surface P04 | 15 | 2 tasks | 5 files |
+| Phase 02-editor-surface P03 | 22 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,7 @@ Recent decisions affecting current work:
 - [02-05]: ensureFormatPageCount returns project unchanged for custom/unknown formats (FORMATS lookup guard)
 - [02-05]: Thumbnail index shifting kept in PagesPanel component (UI concern, not store/pure fn concern)
 - [Phase 02]: fabric v7 uses cache.clearFontCache(family) not clearFabricFontCache; textTransform applies immediately to obj.text content in Fabric.js
+- [02-03]: canvas.fire('object:modified', ...) uses as any — Fabric.js 7 strict event types; Shadow/Gradient imported as value classes from fabric in client-only sections
 
 ### Pending Todos
 
@@ -118,6 +120,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T06:32:59.460Z
-Stopped at: Completed 02-editor-surface plan 04
+Last session: 2026-03-29T07:00:00.000Z
+Stopped at: Completed 02-editor-surface plan 03
 Resume file: None

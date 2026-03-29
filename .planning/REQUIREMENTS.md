@@ -56,10 +56,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Right Panel — Properties
 
-- [ ] **PROP-01**: User can edit position (X, Y in mm), size (W, H in mm with lock aspect ratio), and rotation
-- [ ] **PROP-02**: User can adjust opacity (0-100%) and corner radius for shapes
-- [ ] **PROP-03**: User can set border (color, width, style) and fill (solid, gradient, none)
-- [ ] **PROP-04**: User can toggle shadow with offset, blur, and color controls
+- [x] **PROP-01**: User can edit position (X, Y in mm), size (W, H in mm with lock aspect ratio), and rotation
+- [x] **PROP-02**: User can adjust opacity (0-100%) and corner radius for shapes
+- [x] **PROP-03**: User can set border (color, width, style) and fill (solid, gradient, none)
+- [x] **PROP-04**: User can toggle shadow with offset, blur, and color controls
 
 ### Right Panel — Typography
 
@@ -73,7 +73,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **STYL-01**: User can define brand colors (up to 10 swatches) with color picker
 - [ ] **STYL-02**: User can generate complementary palette from a single color
 - [ ] **STYL-03**: User can define and apply typography presets globally
-- [ ] **STYL-04**: User can set background color per page
+- [x] **STYL-04**: User can set background color per page
 
 ### AI — PromptCrafter
 
@@ -207,10 +207,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LPNL-03 | Phase 2 | Complete |
 | LPNL-04 | Phase 2 | Complete |
 | LPNL-05 | Phase 2 | Complete |
-| PROP-01 | Phase 2 | Pending |
-| PROP-02 | Phase 2 | Pending |
-| PROP-03 | Phase 2 | Pending |
-| PROP-04 | Phase 2 | Pending |
+| PROP-01 | Phase 2 | Complete |
+| PROP-02 | Phase 2 | Complete |
+| PROP-03 | Phase 2 | Complete |
+| PROP-04 | Phase 2 | Complete |
 | TYPO-01 | Phase 2 | Complete |
 | TYPO-02 | Phase 2 | Complete |
 | TYPO-03 | Phase 2 | Complete |
@@ -218,7 +218,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STYL-01 | Phase 2 | Pending |
 | STYL-02 | Phase 2 | Pending |
 | STYL-03 | Phase 2 | Pending |
-| STYL-04 | Phase 2 | Pending |
+| STYL-04 | Phase 2 | Complete |
 | COLR-01 | Phase 2 | Complete |
 | COLR-02 | Phase 2 | Complete |
 | COLR-03 | Phase 2 | Complete |
