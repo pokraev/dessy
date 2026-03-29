@@ -133,4 +133,4 @@ Plans:
 | 2. Editor Surface | 7/7 | Complete   | 2026-03-29 |
 | 3. Export | 0/4 | Not started | - |
 | 4. AI PromptCrafter | 2/2 | Complete   | 2026-03-29 |
-| 5. Dashboard and Templates | 2/4 | In Progress|  |
+| 5. Dashboard and Templates | 3/4 | In Progress|  |
