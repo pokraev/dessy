@@ -9,6 +9,7 @@ interface EditorState {
   shortcutsModalOpen: boolean;
   generateModalOpen: boolean;
   exportModalOpen: boolean;
+  promptCrafterModalOpen: boolean;
   toggleGrid: () => void;
   toggleRulers: () => void;
   toggleGuides: () => void;
@@ -17,6 +18,7 @@ interface EditorState {
   setShortcutsModalOpen: (open: boolean) => void;
   setGenerateModalOpen: (open: boolean) => void;
   setExportModalOpen: (open: boolean) => void;
+  setPromptCrafterModalOpen: (open: boolean) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -28,6 +30,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   shortcutsModalOpen: false,
   generateModalOpen: false,
   exportModalOpen: false,
+  promptCrafterModalOpen: false,
   toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
   toggleRulers: () => set((s) => ({ showRulers: !s.showRulers })),
   toggleGuides: () => set((s) => ({ showGuides: !s.showGuides })),
@@ -36,4 +39,5 @@ export const useEditorStore = create<EditorState>((set) => ({
   setShortcutsModalOpen: (open) => set({ shortcutsModalOpen: open }),
   setGenerateModalOpen: (open) => set({ generateModalOpen: open }),
   setExportModalOpen: (open) => set({ exportModalOpen: open }),
+  setPromptCrafterModalOpen: (open) => set({ promptCrafterModalOpen: open }),
 }));

@@ -101,7 +101,8 @@
   "image": {
     "title": "Image",
     "upload": "Upload Image",
-    "replace": "Replace Image"
+    "replace": "Replace Image",
+    "aiGenerate": "AI Generate"
   },
   "textContent": {
     "title": "Text Content"
@@ -303,6 +304,34 @@
     "allPages": "All pages",
     "exporting": "Exporting...",
     "exportBtn": "Export"
+  },
+  "promptCrafter": {
+    "title": "AI Image Generator",
+    "descriptionPlaceholder": "Describe the image you want to generate...",
+    "enrich": "Enrich Prompt",
+    "enriching": "Crafting prompts...",
+    "generating": "Generating image...",
+    "generate": "Generate Image",
+    "useThis": "Use This",
+    "regenerate": "Regenerate",
+    "editPrompt": "Edit Prompt",
+    "editorial": "Editorial",
+    "lifestyle": "Lifestyle",
+    "bold": "Bold",
+    "mood": "Mood",
+    "lighting": "Lighting",
+    "composition": "Composition",
+    "style": "Style",
+    "background": "Background",
+    "history": "History",
+    "clearHistory": "Clear History",
+    "noHistory": "No images generated yet",
+    "noFrame": "Select an image frame on canvas first",
+    "apiKeyMissing": "Set your Gemini API key in the AI Leaflet Generator first",
+    "frameLost": "Original frame not found — image placed at canvas center",
+    "enrichError": "Failed to enrich prompt. Try again.",
+    "generateError": "Image generation failed. Your API key may need image generation access (paid tier).",
+    "selectVariation": "Select a variation to customize"
   },
   "lang": {
     "bg": "Български",
