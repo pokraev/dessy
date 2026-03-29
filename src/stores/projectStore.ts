@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 import type { Project, ProjectMeta, Page } from '@/types/project';
+import {
+  addPage as addPageFn,
+  duplicatePage as duplicatePageFn,
+  deletePage as deletePageFn,
+  reorderPages as reorderPagesFn,
+  ensureFormatPageCount as ensureFormatPageCountFn,
+} from '@/lib/pages/page-crud';
 
 interface ProjectState {
   currentProject: Project | null;
@@ -15,6 +22,12 @@ interface ProjectState {
   updateProjectName: (name: string) => void;
   getCurrentPage: () => Page | null;
   setCurrentPageIndex: (index: number) => void;
+  // Page CRUD actions
+  addPage: () => { newPageIndex: number } | null;
+  duplicatePage: (sourceIndex: number) => { newPageIndex: number } | null;
+  deletePage: (pageIndex: number) => { newCurrentIndex: number } | null;
+  reorderPages: (fromIndex: number, toIndex: number) => void;
+  ensureFormatPageCount: () => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -41,5 +54,51 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const { currentProject } = get();
     if (!currentProject) return null;
     return currentProject.pages[currentProject.currentPageIndex] ?? null;
+  },
+  addPage: () => {
+    const { currentProject } = get();
+    if (!currentProject) return null;
+    const { updatedProject, newPageIndex } = addPageFn(currentProject);
+    set({ currentProject: updatedProject });
+    return { newPageIndex };
+  },
+  duplicatePage: (sourceIndex) => {
+    const { currentProject } = get();
+    if (!currentProject) return null;
+    const { updatedProject, newPageIndex } = duplicatePageFn(
+      currentProject,
+      sourceIndex,
+      currentProject.meta.id
+    );
+    set({ currentProject: updatedProject });
+    return { newPageIndex };
+  },
+  deletePage: (pageIndex) => {
+    const { currentProject } = get();
+    if (!currentProject) return null;
+    const { updatedProject, newCurrentIndex } = deletePageFn(
+      currentProject,
+      pageIndex,
+      currentProject.meta.id
+    );
+    set({ currentProject: updatedProject });
+    return { newCurrentIndex };
+  },
+  reorderPages: (fromIndex, toIndex) => {
+    const { currentProject } = get();
+    if (!currentProject) return;
+    const updatedProject = reorderPagesFn(
+      currentProject,
+      fromIndex,
+      toIndex,
+      currentProject.meta.id
+    );
+    set({ currentProject: updatedProject });
+  },
+  ensureFormatPageCount: () => {
+    const { currentProject } = get();
+    if (!currentProject) return;
+    const updatedProject = ensureFormatPageCountFn(currentProject);
+    set({ currentProject: updatedProject });
   },
 }));
