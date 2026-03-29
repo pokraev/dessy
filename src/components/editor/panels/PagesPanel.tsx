@@ -199,8 +199,10 @@ function PageThumbnailRow({
 
 export function PagesPanel() {
   const currentProject = useProjectStore((s) => s.currentProject);
-  const setCurrentProject = useProjectStore((s) => s.setCurrentProject);
-  const setCurrentPageIndex = useProjectStore((s) => s.setCurrentPageIndex);
+  const addPageAction = useProjectStore((s) => s.addPage);
+  const duplicatePageAction = useProjectStore((s) => s.duplicatePage);
+  const deletePageAction = useProjectStore((s) => s.deletePage);
+  const reorderPagesAction = useProjectStore((s) => s.reorderPages);
   const triggerSwitchPage = useCanvasStore((s) => s.triggerSwitchPage);
 
   const [thumbnails, setThumbnails] = useState<Record<number, string>>({});
@@ -252,18 +254,14 @@ export function PagesPanel() {
 
   const pages = currentProject.pages;
   const currentPageIndex = currentProject.currentPageIndex;
-  const projectId = currentProject.meta.id;
   // Calculate aspect ratio from document format for thumbnail proportions
   const format = FORMATS[currentProject.meta.format] ?? FORMATS['A4'];
   void (format.widthMm / format.heightMm);
 
   function handleSelectPage(index: number) {
-    if (!currentProject) return;
     captureCurrentThumbnail();
     if (triggerSwitchPage) {
       triggerSwitchPage(index);
-    } else {
-      setCurrentPageIndex(index);
     }
   }
 
@@ -272,49 +270,23 @@ export function PagesPanel() {
     setMenuState({ visible: true, x: e.clientX, y: e.clientY, pageIndex });
   }
 
-  function handleDuplicatePage() {
-    if (!currentProject) return;
-    const sourceIndex = menuState.pageIndex;
-    const sourcePage = pages[sourceIndex];
-    if (!sourcePage) return;
-
-    const sourceKey = `dessy-generated-page-${projectId}-${sourceIndex}`;
-    const sourceJson = sessionStorage.getItem(sourceKey);
-
-    const newPage: Page = {
-      id: crypto.randomUUID(),
-      elements: [...sourcePage.elements],
-      background: sourcePage.background,
-    };
-
-    const newPages = [...pages];
-    const insertIndex = sourceIndex + 1;
-    newPages.splice(insertIndex, 0, newPage);
-
-    // Shift sessionStorage keys forward from the end down to insertIndex
-    for (let i = newPages.length - 1; i > insertIndex; i--) {
-      const prevKey = `dessy-generated-page-${projectId}-${i - 1}`;
-      const nextKey = `dessy-generated-page-${projectId}-${i}`;
-      const data = sessionStorage.getItem(prevKey);
-      if (data) {
-        sessionStorage.setItem(nextKey, data);
-      } else {
-        sessionStorage.removeItem(nextKey);
-      }
-    }
-
-    // Write duplicated page JSON at the insert position
-    if (sourceJson) {
-      sessionStorage.setItem(`dessy-generated-page-${projectId}-${insertIndex}`, sourceJson);
-    } else {
-      sessionStorage.removeItem(`dessy-generated-page-${projectId}-${insertIndex}`);
-    }
-
+  function handleAddPage() {
+    captureCurrentThumbnail();
+    const result = addPageAction();
+    if (!result) return;
     setMenuState((m) => ({ ...m, visible: false }));
-    setCurrentProject({ ...currentProject, pages: newPages, currentPageIndex: insertIndex });
-
     if (triggerSwitchPage) {
-      triggerSwitchPage(insertIndex);
+      triggerSwitchPage(result.newPageIndex);
+    }
+  }
+
+  function handleDuplicatePage() {
+    const sourceIndex = menuState.pageIndex;
+    const result = duplicatePageAction(sourceIndex);
+    if (!result) return;
+    setMenuState((m) => ({ ...m, visible: false }));
+    if (triggerSwitchPage) {
+      triggerSwitchPage(result.newPageIndex);
     }
   }
 
@@ -325,32 +297,10 @@ export function PagesPanel() {
   }
 
   function handleDeletePageConfirm() {
-    if (deleteConfirmIndex === null || !currentProject) return;
+    if (deleteConfirmIndex === null) return;
     const delIndex = deleteConfirmIndex;
 
-    const newPages = pages.filter((_, i) => i !== delIndex);
-
-    // Remove sessionStorage key and shift remaining keys down
-    sessionStorage.removeItem(`dessy-generated-page-${projectId}-${delIndex}`);
-    for (let i = delIndex; i < newPages.length; i++) {
-      const nextKey = `dessy-generated-page-${projectId}-${i + 1}`;
-      const currKey = `dessy-generated-page-${projectId}-${i}`;
-      const data = sessionStorage.getItem(nextKey);
-      if (data) {
-        sessionStorage.setItem(currKey, data);
-      } else {
-        sessionStorage.removeItem(currKey);
-      }
-    }
-    // Clean up trailing key
-    sessionStorage.removeItem(`dessy-generated-page-${projectId}-${newPages.length}`);
-
-    let newCurrentIndex = currentPageIndex;
-    if (newCurrentIndex >= newPages.length) {
-      newCurrentIndex = newPages.length - 1;
-    }
-
-    // Shift thumbnails to match removed page
+    // Shift thumbnails to match removed page before store update
     setThumbnails((prev) => {
       const shifted: Record<number, string> = {};
       for (const [k, v] of Object.entries(prev)) {
@@ -364,65 +314,21 @@ export function PagesPanel() {
       return shifted;
     });
 
+    const result = deletePageAction(delIndex);
     setDeleteConfirmIndex(null);
-    setCurrentProject({ ...currentProject, pages: newPages, currentPageIndex: newCurrentIndex });
 
-    if (triggerSwitchPage) {
-      triggerSwitchPage(newCurrentIndex);
-    }
-  }
-
-  function handleAddPage() {
-    if (!currentProject) return;
-    captureCurrentThumbnail();
-
-    const newPage: Page = {
-      id: crypto.randomUUID(),
-      elements: [],
-      background: '#FFFFFF',
-    };
-
-    const newPages = [...pages, newPage];
-    const newPageIndex = newPages.length - 1;
-
-    setCurrentProject({ ...currentProject, pages: newPages, currentPageIndex: newPageIndex });
-
-    if (triggerSwitchPage) {
-      triggerSwitchPage(newPageIndex);
+    if (result && triggerSwitchPage) {
+      triggerSwitchPage(result.newCurrentIndex);
     }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id || !currentProject) return;
+    if (!over || active.id === over.id) return;
 
     const fromIndex = pages.findIndex((p) => p.id === active.id);
     const toIndex = pages.findIndex((p) => p.id === over.id);
     if (fromIndex === -1 || toIndex === -1) return;
-
-    // Read all page JSONs before reorder
-    const pageJsons: (string | null)[] = pages.map((_, i) =>
-      sessionStorage.getItem(`dessy-generated-page-${projectId}-${i}`)
-    );
-
-    const newPages = [...pages];
-    const [moved] = newPages.splice(fromIndex, 1);
-    newPages.splice(toIndex, 0, moved);
-
-    // Reorder JSONs to match new page positions
-    const newJsons = [...pageJsons];
-    const [movedJson] = newJsons.splice(fromIndex, 1);
-    newJsons.splice(toIndex, 0, movedJson);
-
-    // Re-write all sessionStorage keys in new order
-    for (let i = 0; i < newPages.length; i++) {
-      const key = `dessy-generated-page-${projectId}-${i}`;
-      if (newJsons[i] !== null) {
-        sessionStorage.setItem(key, newJsons[i]!);
-      } else {
-        sessionStorage.removeItem(key);
-      }
-    }
 
     // Reorder thumbnails to match new page order
     setThumbnails((prev) => {
@@ -437,17 +343,7 @@ export function PagesPanel() {
       return next;
     });
 
-    // Adjust current page index after reorder
-    let newCurrentIndex = currentPageIndex;
-    if (currentPageIndex === fromIndex) {
-      newCurrentIndex = toIndex;
-    } else if (currentPageIndex > fromIndex && currentPageIndex <= toIndex) {
-      newCurrentIndex = currentPageIndex - 1;
-    } else if (currentPageIndex < fromIndex && currentPageIndex >= toIndex) {
-      newCurrentIndex = currentPageIndex + 1;
-    }
-
-    setCurrentProject({ ...currentProject, pages: newPages, currentPageIndex: newCurrentIndex });
+    reorderPagesAction(fromIndex, toIndex);
   }
 
   return (
