@@ -7,6 +7,7 @@ import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeafletModal';
+import { ExportModal } from '@/components/editor/modals/ExportModal';
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -16,6 +17,7 @@ export function Header() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateModalOpen = useEditorStore((s) => s.generateModalOpen);
+  const exportModalOpen = useEditorStore((s) => s.exportModalOpen);
 
   const canUndo = useCanvasStore((s) => s.canUndo);
   const canRedo = useCanvasStore((s) => s.canRedo);
@@ -176,7 +178,7 @@ export function Header() {
           {t('header.saveProject')}
         </button>
         <button
-          aria-label={t('header.exportJson')}
+          aria-label={t('header.export')}
           className="flex items-center gap-1.5 justify-center text-text-primary transition-colors hover:bg-surface-raised"
           style={{
             height: '32px',
@@ -189,11 +191,11 @@ export function Header() {
             cursor: 'pointer',
           }}
           onClick={() => {
-            triggerExport?.();
+            useEditorStore.getState().setExportModalOpen(true);
           }}
         >
           <Download size={14} />
-          {t('header.exportJson')}
+          {t('header.export')}
         </button>
         <button
           aria-label={t('header.importJson')}
@@ -352,6 +354,11 @@ export function Header() {
             loadFn(response);
           }
         }}
+      />
+
+      <ExportModal
+        open={exportModalOpen}
+        onClose={() => useEditorStore.getState().setExportModalOpen(false)}
       />
     </header>
   );

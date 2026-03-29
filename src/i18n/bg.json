@@ -20,6 +20,7 @@
     "undo": "Отмяна",
     "redo": "Повтори",
     "saveProject": "Запази проект",
+    "export": "Експорт",
     "exportJson": "Експорт JSON",
     "importJson": "Импорт JSON",
     "clearCanvas": "Изчисти платното",
@@ -284,6 +285,24 @@
     "nothingToUndo": "Няма какво да се отмени",
     "nothingToRedo": "Няма какво да се повтори",
     "canvasReady": "Платното е готово — изберете инструмент, за да започнете"
+  },
+  "export": {
+    "title": "Експорт",
+    "raster": "PNG / JPEG",
+    "rasterDesc": "Растерни изображения за уеб или печат",
+    "indesign": "InDesign (.jsx)",
+    "indesignDesc": "ExtendScript за Adobe InDesign",
+    "coreldrawSvg": "CorelDraw SVG",
+    "coreldrawSvgDesc": "Векторни файлове за CorelDraw",
+    "coreldrawVba": "CorelDraw VBA (.bas)",
+    "coreldrawVbaDesc": "Макрос за CorelDraw автоматизация",
+    "format": "Формат",
+    "dpi": "DPI",
+    "scope": "Страници",
+    "currentPage": "Текуща страница",
+    "allPages": "Всички страници",
+    "exporting": "Експортиране...",
+    "exportBtn": "Експорт"
   },
   "lang": {
     "bg": "Български",
