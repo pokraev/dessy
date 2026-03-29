@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import type { Canvas, FabricObject, Shadow } from 'fabric';
@@ -22,6 +21,7 @@ export interface ObjectSnapshot {
   rx: number;
   ry: number;
   // text-only properties
+  text?: string;
   fontFamily?: string;
   fontSize?: number;
   fontWeight?: number | string;
@@ -31,6 +31,7 @@ export interface ObjectSnapshot {
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
   // image-only
   fitMode?: string;
+  imageId?: string | null;
   // swatch linking
   swatchId?: string | null;
   presetId?: string | null;
@@ -97,6 +98,7 @@ function extractSnapshot(obj: FabricObjectWithCustom): ObjectSnapshot {
   };
 
   if (type === 'text') {
+    snapshot.text = obj.text ?? '';
     snapshot.fontFamily = obj.fontFamily;
     snapshot.fontSize = obj.fontSize;
     snapshot.fontWeight = obj.fontWeight;
@@ -108,6 +110,7 @@ function extractSnapshot(obj: FabricObjectWithCustom): ObjectSnapshot {
 
   if (type === 'image') {
     snapshot.fitMode = obj.fitMode;
+    snapshot.imageId = (obj as FabricObjectWithCustom & { imageId?: string | null }).imageId ?? null;
   }
 
   snapshot.swatchId = obj.swatchId ?? null;
@@ -152,9 +155,28 @@ export function useSelectedObject(): ObjectSnapshot | null {
       return;
     }
 
-    const activeObjects = canvas.getActiveObjects();
+    const activeObjects = canvas.getActiveObjects() as FabricObjectWithCustom[];
     if (activeObjects.length > 1) {
-      setSnapshot(makeMultiSnapshot());
+      // If all selected objects share the same customType, use that type
+      const firstType = activeObjects[0]?.customType;
+      const allSameType = firstType && activeObjects.every((o) => o.customType === firstType);
+      const multi = makeMultiSnapshot();
+      if (allSameType) {
+        multi.type = mapCustomType(firstType);
+        // Extract common properties from first object for section rendering
+        const first = extractSnapshot(activeObjects[0]);
+        Object.assign(multi, {
+          fill: first.fill,
+          stroke: first.stroke,
+          strokeWidth: first.strokeWidth,
+          fontFamily: first.fontFamily,
+          fontSize: first.fontSize,
+          fontWeight: first.fontWeight,
+          textAlign: first.textAlign,
+          fitMode: first.fitMode,
+        });
+      }
+      setSnapshot(multi);
       return;
     }
 

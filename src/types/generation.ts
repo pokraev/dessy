@@ -15,6 +15,7 @@ export interface GenerationRequest {
     color: string;
   }>;
   style?: string;            // 'minimal' | 'bold' | 'corporate' | 'playful' | 'elegant'
+  maxObjects?: number;       // max elements to generate (20, 50, 100)
   logoBase64?: string;       // optional logo upload
 }
 

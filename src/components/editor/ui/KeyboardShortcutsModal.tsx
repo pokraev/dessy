@@ -1,6 +1,6 @@
-'use client';
 
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEditorStore } from '@/stores/editorStore';
 import { SHORTCUTS, type ShortcutDef } from '@/constants/shortcuts';
@@ -19,6 +19,7 @@ import { SHORTCUTS, type ShortcutDef } from '@/constants/shortcuts';
  *   Rows: shortcut 12px JetBrains Mono #888888 + description 13px Inter #f5f5f5
  */
 export function KeyboardShortcutsModal() {
+  const { t } = useTranslation();
   const isOpen = useEditorStore((s) => s.shortcutsModalOpen);
   const setShortcutsModalOpen = useEditorStore((s) => s.setShortcutsModalOpen);
 
@@ -37,6 +38,12 @@ export function KeyboardShortcutsModal() {
   }, [isOpen, setShortcutsModalOpen]);
 
   // Group shortcuts by section
+  const sectionKeys: Record<string, string> = {
+    Tools: t('shortcuts.tools'),
+    Canvas: t('shortcuts.canvas'),
+    Edit: t('shortcuts.edit'),
+    File: t('shortcuts.file'),
+  };
   const sections: ShortcutDef['section'][] = ['Tools', 'Canvas', 'Edit', 'File'];
   const grouped = sections.map((section) => ({
     section,
@@ -85,7 +92,7 @@ export function KeyboardShortcutsModal() {
                 marginBottom: '20px',
               }}
             >
-              Keyboard Shortcuts
+              {t('shortcuts.title')}
             </h2>
 
             {/* Sections */}
@@ -104,7 +111,7 @@ export function KeyboardShortcutsModal() {
                       marginBottom: '8px',
                     }}
                   >
-                    {section}
+                    {sectionKeys[section]}
                   </div>
 
                   {/* Shortcut rows */}

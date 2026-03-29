@@ -1,4 +1,3 @@
-'use client';
 
 import { useEditorStore } from '@/stores/editorStore';
 import RulerH from '@/components/editor/RulerH';

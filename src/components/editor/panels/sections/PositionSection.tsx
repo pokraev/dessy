@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, Link, Link2Off } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { NumberInput } from '../NumberInput';
@@ -25,6 +25,7 @@ function updateCanvasObject(updates: Record<string, unknown>) {
 }
 
 export function PositionSection({ snapshot }: PositionSectionProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const [aspectLocked, setAspectLocked] = useState(false);
 
@@ -130,7 +131,7 @@ export function PositionSection({ snapshot }: PositionSectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Position
+          {t('position.title')}
         </span>
         <ChevronDown
           size={16}
@@ -183,7 +184,7 @@ export function PositionSection({ snapshot }: PositionSectionProps) {
             </div>
             <button
               onClick={() => setAspectLocked((v) => !v)}
-              title={aspectLocked ? 'Aspect ratio locked' : 'Aspect ratio unlocked — click to lock'}
+              title={aspectLocked ? t('position.aspectLocked') : t('position.aspectUnlocked')}
               style={{
                 width: '20px',
                 height: '20px',
@@ -271,7 +272,7 @@ export function PositionSection({ snapshot }: PositionSectionProps) {
                   step={1}
                   min={0}
                   suffix="px"
-                  label="Radius"
+                  label={t('position.radius')}
                 />
               </div>
               <div style={{ flex: 1 }} />

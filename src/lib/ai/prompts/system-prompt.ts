@@ -42,7 +42,8 @@ function getFormatDimensions(foldType: FoldType): FormatDimensions {
 export function buildSystemPrompt(
   foldType: FoldType,
   formatDimensions?: FormatDimensions,
-  brandContext?: BrandContext
+  brandContext?: BrandContext,
+  maxObjects?: number
 ): string {
   const dims = formatDimensions ?? getFormatDimensions(foldType);
   const pageLabels = FOLD_PAGE_LABELS[foldType];
@@ -243,23 +244,30 @@ ${exampleJSON}
 8. Include at least one image placeholder for visual interest
 9. Use the full canvas height — don't leave large empty zones
 10. For multi-panel layouts, each panel is a complete, coherent design section
+${maxObjects ? `11. Generate UP TO ${maxObjects} elements (not counting the background rect). Do not exceed this limit.` : ''}
 
 ${brandSection}
 
 ## Mode-Specific Instructions
 
-**Photo mode:** Create a STRUCTURAL DRAFT inspired by the image — NOT a pixel-perfect copy. Your goal is to capture the layout structure, not reproduce every visual detail.
+**Photo mode:** Recreate the image's layout by extracting every colored region, text zone, and image area.
 
-Steps:
-1. Identify the major content zones: header, body sections, image areas, footer
-2. For each zone, create simple elements: colored background rectangles, text boxes with short placeholder text, image placeholders
-3. Use the dominant colors from the image for backgrounds and accents
-4. Keep text SHORT — use labels like "Headline", "Subheading", "Body text here", "Contact info". Do NOT try to reproduce exact text from the image character by character.
-5. Where the image has photos or illustrations, place a single image placeholder (customType="image") — not a complex recreation
-6. Aim for 8-15 elements total. Fewer, well-positioned elements are better than many tiny ones
-7. Focus on getting the POSITIONS and PROPORTIONS right — the user will edit the content later
+Rules:
+1. Every region in the image that has a distinct background color MUST become a colorBlock Rect with that exact color, at the correct position and size. This is the most important rule — the colored regions ARE the layout.
+2. Where the image has photos or illustrations, place an image placeholder (customType="image") at the correct position and size.
+3. Where the image has text, place a Textbox with SHORT placeholder text describing its purpose (e.g. "Brand Name", "Price", "Description"). Do NOT copy the actual text.
+4. The goal: if you removed all text and images from the original, you should see the same colored shapes as the colorBlocks you generated.
 
-**Sketch mode:** Interpret drawn boxes as image placeholders or content zones. Scribbles/wavy lines = text areas. Blobs/filled areas = image placeholders or color blocks. Respect the spatial layout of the sketch but produce a polished, professional result. IMPORTANT: Ignore notebook/ruled paper lines, grid lines, and any other background paper patterns — these are artifacts of the drawing surface, NOT part of the layout design. Focus only on the intentional drawn elements. If a box contains text like "Img", "Image", "Photo", "Pic", or a cross/X pattern, treat it as an image placeholder (customType="image" with imageId=null and fitMode="fill") — the user will replace it with an actual image later.
+**Sketch mode:** Treat the sketch as a blueprint — interpret it precisely and produce a clean, grid-aligned layout.
+
+Rules:
+1. Drawn boxes = content zones (image placeholders or colorBlocks). Scribbles/wavy lines = text areas. Blobs = image placeholders.
+2. SNAP TO GRID: If two elements have nearly the same position (within ~10px), give them the EXACT same coordinate. If two elements have nearly the same width or height, make them EXACTLY the same size. The output should look like it was placed on a grid, not hand-drawn.
+3. ALIGN ROWS AND COLUMNS: Elements that appear to form a row should share the exact same "top" value. Elements in a column should share the exact same "left" value. Elements in a grid should have uniform widths, heights, and gaps.
+4. UNIFORM SIZING: If multiple boxes look roughly the same size, make them exactly the same width and height. Product cards, image slots, or info blocks that repeat should be identical dimensions.
+5. Ignore notebook/ruled paper lines, grid lines, and paper patterns — these are artifacts, not layout.
+6. Boxes labeled "Img", "Image", "Photo", "Pic", or containing an X/cross = image placeholder (customType="image", imageId=null, fitMode="fill").
+7. Produce a clean, professional blueprint — as if an architect drew it, not a person sketching on paper.
 
 **Prompt mode:** Generate a complete, print-ready leaflet design based on the text description. Infer the brand feel, content structure, and visual hierarchy from the description.`;
 }
@@ -461,9 +469,9 @@ export function buildUserPrompt(request: GenerationRequest): string {
       return `Design a professional leaflet based on the following description:\n\n${request.prompt ?? 'A general purpose leaflet'}`;
 
     case 'photo':
-      return `Create a simple structural draft inspired by this image. Identify the main content zones (header, sections, images, footer) and their approximate positions. Use colored rectangles for backgrounds, short placeholder text ("Headline", "Body text", "CTA"), and image placeholders where photos appear. Keep it simple — 8 to 15 elements max. Do NOT copy text from the image verbatim. Focus on layout structure, not visual reproduction.`;
+      return `Extract every colored region from this image as a colorBlock rectangle with the exact background color, position, and size. Add image placeholders where photos appear. Add short placeholder text where text appears. The colored regions are the layout — do not skip any.`;
 
     case 'sketch':
-      return `Interpret this sketch as a leaflet layout blueprint. Treat rectangular boxes as content zones (image placeholders or text areas), scribbles as text regions, and filled areas as color blocks. Produce a polished, professional leaflet design that respects the spatial layout shown in the sketch. IMPORTANT: The sketch may be drawn on ruled/lined notebook paper or grid paper — completely ignore all horizontal lines, vertical lines, or grid patterns that are part of the paper itself. Only interpret the hand-drawn marks as layout elements. Boxes labeled "Img", "Image", "Photo", or containing an X/cross must be image placeholders (customType="image", imageId=null, fitMode="fill").`;
+      return `Interpret this sketch as a precise blueprint. Snap elements to a grid: elements with nearly the same position get the exact same coordinates, elements with nearly the same size get identical dimensions. Rows align, columns align, repeating elements are uniform. Ignore paper lines/grid patterns. Any box labeled "Img", "img", "IMG", "Image", "image", "Photo", "photo", "Pic", "pic", or containing an X/cross pattern MUST become an image placeholder (customType="image", imageId=null, fitMode="fill"). Produce a clean, architect-quality layout.`;
   }
 }

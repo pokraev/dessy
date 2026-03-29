@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, Upload, Loader2 } from 'lucide-react';
 import { FoldTypePicker } from '../FoldTypePicker';
 import { StylePicker } from '../StylePicker';
@@ -24,6 +24,7 @@ export function PhotoTab({
   onGenerate,
   isGenerating,
 }: PhotoTabProps) {
+  const { t } = useTranslation();
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +69,7 @@ export function PhotoTab({
           fontWeight: 500,
         }}
       >
-        Upload a photo of an existing leaflet
+        {t('generate.uploadPhoto')}
       </div>
 
       {/* Drop zone */}
@@ -92,12 +93,12 @@ export function PhotoTab({
         {isConverting ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <Loader2 size={32} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: '13px', color: '#888888' }}>Converting image...</span>
+            <span style={{ fontSize: '13px', color: '#888888' }}>{t('generate.convertingImage')}</span>
           </div>
         ) : imagePreview ? (
           <img
             src={imagePreview}
-            alt="Preview"
+            alt={t('generate.photo')}
             style={{ maxHeight: '176px', objectFit: 'contain' }}
           />
         ) : (
@@ -111,7 +112,7 @@ export function PhotoTab({
           >
             <Upload size={32} style={{ color: '#888888' }} />
             <span style={{ fontSize: '13px', color: '#888888' }}>
-              Click or drag to upload
+              {t('generate.clickOrDrag')}
             </span>
           </div>
         )}
@@ -135,7 +136,7 @@ export function PhotoTab({
           margin: 0,
         }}
       >
-        The AI will analyze the layout structure and create an editable version with placeholder text
+        {t('generate.photoNote')}
       </p>
 
       {/* Fold type picker */}
@@ -168,7 +169,7 @@ export function PhotoTab({
         }}
       >
         <Sparkles size={16} />
-        Generate from Photo
+        {t('generate.generateFromPhoto')}
       </button>
     </div>
   );

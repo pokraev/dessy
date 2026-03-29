@@ -1,7 +1,7 @@
-'use client';
 
 import { useState } from 'react';
-import { ChevronDown, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ChevronDown, AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, Plus } from 'lucide-react';
 import { GoogleFontsDropdown } from '@/components/editor/panels/GoogleFontsDropdown';
 import { NumberInput } from '@/components/editor/panels/NumberInput';
 import { ColorPicker } from '@/components/editor/panels/ColorPicker';
@@ -83,11 +83,11 @@ interface TypographySectionProps {
 }
 
 const FONT_WEIGHTS = [
-  { value: 300, label: 'Light' },
-  { value: 400, label: 'Regular' },
-  { value: 500, label: 'Medium' },
-  { value: 600, label: 'SemiBold' },
-  { value: 700, label: 'Bold' },
+  { value: 300, labelKey: 'typography.light' },
+  { value: 400, labelKey: 'typography.regular' },
+  { value: 500, labelKey: 'typography.medium' },
+  { value: 600, labelKey: 'typography.semiBold' },
+  { value: 700, labelKey: 'typography.bold' },
 ];
 
 type TextTransform = 'none' | 'lowercase' | 'uppercase' | 'capitalize';
@@ -107,6 +107,7 @@ const TEXT_ALIGNMENTS = [
 ] as const;
 
 export function TypographySection({ snapshot }: TypographySectionProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const { typographyPresets, setTypographyPresets } = useBrandStore();
 
@@ -221,7 +222,7 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Typography
+          {t('typography.title')}
         </span>
         <ChevronDown
           size={16}
@@ -259,21 +260,45 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
           >
             {FONT_WEIGHTS.map((w) => (
               <option key={w.value} value={w.value}>
-                {w.value} — {w.label}
+                {w.value} — {t(w.labelKey)}
               </option>
             ))}
           </select>
 
           {/* 3. Font size + line height row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <NumberInput
-              value={currentFontSize}
-              onChange={(v) => updateCanvasObject({ fontSize: v })}
-              suffix="pt"
-              step={1}
-              min={1}
-              max={999}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <button
+                onClick={() => updateCanvasObject({ fontSize: Math.max(1, currentFontSize - 1) })}
+                style={{
+                  width: '24px', height: '24px', borderRadius: '4px',
+                  background: 'transparent', border: '1px solid #2a2a2a',
+                  cursor: 'pointer', color: '#888', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}
+              >
+                <Minus size={12} />
+              </button>
+              <NumberInput
+                value={currentFontSize}
+                onChange={(v) => updateCanvasObject({ fontSize: v })}
+                suffix="pt"
+                step={1}
+                min={1}
+                max={999}
+              />
+              <button
+                onClick={() => updateCanvasObject({ fontSize: Math.min(999, currentFontSize + 1) })}
+                style={{
+                  width: '24px', height: '24px', borderRadius: '4px',
+                  background: 'transparent', border: '1px solid #2a2a2a',
+                  cursor: 'pointer', color: '#888', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
             <NumberInput
               value={currentLineHeight}
               onChange={(v) => updateCanvasObject({ lineHeight: v })}
@@ -325,7 +350,7 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
                 marginBottom: '4px',
               }}
             >
-              Align
+              {t('typography.align')}
             </div>
             <div style={{ display: 'flex' }}>
               {TEXT_ALIGNMENTS.map(({ value, Icon }, idx) => {
@@ -337,7 +362,7 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
                     key={value}
                     onClick={() => updateCanvasObject({ textAlign: value })}
                     style={buttonGroupStyle(isFirst, isLast, isActive)}
-                    title={`Align ${value}`}
+                    title={t(`typography.align${value.charAt(0).toUpperCase() + value.slice(1)}`)}
                   >
                     <Icon
                       size={14}
@@ -359,7 +384,7 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
                 marginBottom: '4px',
               }}
             >
-              Transform
+              {t('typography.transform')}
             </div>
             <div style={{ display: 'flex' }}>
               {TEXT_TRANSFORMS.map(({ value, label }, idx) => {
@@ -390,7 +415,7 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
                 marginBottom: '4px',
               }}
             >
-              Presets
+              {t('typography.presets')}
             </div>
             {/* Top row: Headline, Subhead */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '4px' }}>

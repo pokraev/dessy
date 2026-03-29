@@ -1,7 +1,7 @@
-'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import i18n from '@/i18n';
 import { POPULAR_FONTS } from '@/constants/popular-fonts';
 
 // Track which font+weight combos have already been injected
@@ -37,7 +37,7 @@ export async function loadGoogleFont(family: string, weight = 400): Promise<void
     const { cache } = await import('fabric');
     cache.clearFontCache(family);
   } catch {
-    toast.error('Font unavailable. Falling back to system font.', { duration: 3000 });
+    toast.error(i18n.t('canvas.fontUnavailable'), { duration: 3000 });
   }
 }
 
@@ -56,7 +56,7 @@ export function useGoogleFonts(): GoogleFontsResult {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_FONTS_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_FONTS_API_KEY as string | undefined;
     if (!apiKey) {
       // No API key — use popular fonts only (already set as initial state)
       return;

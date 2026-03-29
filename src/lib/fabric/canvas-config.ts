@@ -17,6 +17,7 @@ export function getCanvasOptions(
     preserveObjectStacking: true,
     fireRightClick: true,
     stopContextMenu: true,
+    perPixelTargetFind: true,
     selection: true,
     backgroundColor: '#1a1a1a', // pasteboard color (dark)
   };

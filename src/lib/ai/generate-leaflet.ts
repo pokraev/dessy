@@ -226,7 +226,7 @@ export async function generateLeaflet(
     style: request.style,
   };
 
-  const systemPrompt = buildSystemPrompt(request.foldType, formatDimensions, brandContext);
+  const systemPrompt = buildSystemPrompt(request.foldType, formatDimensions, brandContext, request.maxObjects);
   const userPrompt = buildUserPrompt(request);
 
   const image = request.mode !== 'prompt' ? request.imageBase64! : undefined;

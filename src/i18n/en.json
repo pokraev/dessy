@@ -1,0 +1,281 @@
+{
+  "app": {
+    "loadingCanvas": "Loading canvas...",
+    "untitledLeaflet": "Untitled Leaflet"
+  },
+  "header": {
+    "clickToRename": "Click to rename",
+    "aiGenerate": "AI Generate",
+    "undo": "Undo",
+    "redo": "Redo",
+    "saveProject": "Save project",
+    "exportJson": "Export JSON",
+    "importJson": "Import JSON",
+    "clearCanvas": "Clear Canvas",
+    "clearCanvasConfirm": "This will remove all elements and reset to a single blank page. This action cannot be undone.",
+    "cancel": "Cancel",
+    "clearEverything": "Clear Everything"
+  },
+  "tabs": {
+    "tools": "Tools",
+    "layers": "Layers",
+    "pages": "Pages"
+  },
+  "toolGroups": {
+    "pointer": "Pointer",
+    "shapes": "Shapes",
+    "content": "Content",
+    "arrange": "Arrange",
+    "zOrder": "Z-Order",
+    "edit": "Edit"
+  },
+  "tools": {
+    "select": "Select",
+    "text": "Text",
+    "triangle": "Triangle",
+    "rect": "Rectangle",
+    "circle": "Circle",
+    "line": "Line",
+    "image": "Image",
+    "pan": "Pan",
+    "distributeH": "Distribute Horizontally",
+    "distributeV": "Distribute Vertically",
+    "sameSize": "Make Same Size"
+  },
+  "layers": {
+    "layerName": "Layer name",
+    "toggleVisibility": "Toggle visibility",
+    "toggleLock": "Toggle lock",
+    "noLayers": "No layers yet",
+    "noLayersHint": "Add elements to the canvas to see them here."
+  },
+  "layerGroups": {
+    "backgrounds": "Backgrounds",
+    "text": "Text",
+    "images": "Images",
+    "lines": "Lines",
+    "byType": "By Type",
+    "byGrouping": "Grouping",
+    "noGroups": "No groups. Select objects and click Group to create one."
+  },
+  "pages": {
+    "keepPage": "Keep Page",
+    "deletePage": "Delete Page",
+    "deleteConfirm": "Delete this page? This cannot be undone.",
+    "duplicatePage": "Duplicate Page",
+    "page": "Page",
+    "addPage": "Add Page"
+  },
+  "properties": {
+    "objectsSelected": "{{count}} objects selected",
+    "document": "Document",
+    "selectElement": "Select an element to edit its properties",
+    "background": "Background"
+  },
+  "actions": {
+    "bringToFront": "Bring to Front",
+    "bringForward": "Bring Forward",
+    "sendBackward": "Send Backward",
+    "sendToBack": "Send to Back",
+    "duplicate": "Duplicate",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "delete": "Delete",
+    "deleteCount": "Delete {{count}} objects",
+    "group": "Group",
+    "ungroup": "Ungroup",
+    "convertToImage": "Convert to Image Frame"
+  },
+  "image": {
+    "title": "Image",
+    "upload": "Upload Image",
+    "replace": "Replace Image"
+  },
+  "textContent": {
+    "title": "Text Content"
+  },
+  "position": {
+    "title": "Position",
+    "aspectLocked": "Aspect ratio locked",
+    "aspectUnlocked": "Aspect ratio unlocked — click to lock",
+    "radius": "Radius"
+  },
+  "fill": {
+    "title": "Fill",
+    "solid": "Solid",
+    "gradient": "Gradient",
+    "none": "None",
+    "from": "From",
+    "to": "To"
+  },
+  "stroke": {
+    "title": "Stroke",
+    "color": "Color",
+    "width": "Width",
+    "style": "Style",
+    "solid": "Solid",
+    "dashed": "Dashed",
+    "dotted": "Dotted"
+  },
+  "shadow": {
+    "title": "Shadow",
+    "blur": "Blur",
+    "color": "Color"
+  },
+  "fitMode": {
+    "title": "Fit Mode",
+    "fill": "Fill",
+    "fit": "Fit",
+    "stretch": "Stretch"
+  },
+  "typography": {
+    "title": "Typography",
+    "align": "Align",
+    "transform": "Transform",
+    "presets": "Presets",
+    "light": "Light",
+    "regular": "Regular",
+    "medium": "Medium",
+    "semiBold": "SemiBold",
+    "bold": "Bold",
+    "alignLeft": "Align left",
+    "alignCenter": "Align center",
+    "alignRight": "Align right",
+    "alignJustify": "Align justify"
+  },
+  "brand": {
+    "colors": "Brand Colors",
+    "addSwatch": "Add brand swatch",
+    "removeConfirm": "Remove this swatch? Elements using it will keep the color value.",
+    "keepSwatch": "Keep Swatch",
+    "removeSwatch": "Remove Swatch",
+    "swatchName": "Swatch name",
+    "color": "Color",
+    "generatePalette": "Generate Palette",
+    "baseColor": "Base color",
+    "generate": "Generate",
+    "addToBrand": "Add to brand colors",
+    "addAllToBrand": "Add all to brand colors",
+    "typographyPresets": "Typography Presets",
+    "fromWebsite": "Brand from Website",
+    "websitePlaceholder": "example.com",
+    "extract": "Extract",
+    "noApiKey": "Set an API key in the AI Generator settings first",
+    "extracting": "Extracting brand from website...",
+    "noBrand": "No brand selected",
+    "saveBrand": "Save brand",
+    "renameBrand": "Rename brand",
+    "clearBrand": "Clear brand",
+    "untitledBrand": "Untitled Brand",
+    "preview": "Preview",
+    "previewSubhead": "Making pixels pretty since this morning",
+    "previewSectionTitle": "Why We're Awesome",
+    "previewBody": "We put the 'fun' in 'fundamental design principles'. Our colors don't clash, our fonts don't fight, and our layouts never ghost you.",
+    "previewFeature1": "Pixel Perfect",
+    "previewFeature2": "Color Harmony",
+    "previewFeature3": "Font Magic",
+    "previewCta": "Take My Money",
+    "previewFooter": "No designers were harmed in the making of this brand"
+  },
+  "colorPicker": {
+    "notSupported": "Color picker not supported in this browser",
+    "pickFromScreen": "Pick from screen",
+    "recent": "Recent",
+    "brand": "Brand",
+    "addAsBrand": "Add current color as brand swatch",
+    "palettes": "Palettes",
+    "hex": "HEX",
+    "rgb": "RGB",
+    "hsl": "HSL"
+  },
+  "fonts": {
+    "search": "Search fonts...",
+    "popular": "Popular",
+    "allFonts": "All fonts",
+    "loading": "Loading fonts..."
+  },
+  "generate": {
+    "title": "AI Leaflet Generator",
+    "settings": "Settings",
+    "prompt": "Prompt",
+    "photo": "Photo",
+    "sketch": "Sketch",
+    "geminiKey": "Gemini API Key",
+    "claudeKey": "Claude API Key",
+    "saved": "saved",
+    "enterGeminiKey": "Enter your Gemini API key",
+    "enterClaudeKey": "Enter your Claude API key",
+    "save": "Save",
+    "closeSettings": "Close settings",
+    "describeLeaflet": "Describe your leaflet",
+    "promptPlaceholder": "e.g. Tri-fold leaflet for a yoga studio, calm and minimal design with earth tones",
+    "generateBtn": "Generate",
+    "uploadPhoto": "Upload a photo of an existing leaflet",
+    "convertingImage": "Converting image...",
+    "clickOrDrag": "Click or drag to upload",
+    "photoNote": "The AI will analyze the layout structure and create an editable version with placeholder text",
+    "generateFromPhoto": "Generate from Photo",
+    "uploadSketch": "Upload a photo of your hand-drawn sketch",
+    "clickOrDragSketch": "Click or drag to upload your sketch",
+    "sketchNote": "The AI will interpret boxes as content zones, scribbles as text, and blobs as image placeholders",
+    "generateFromSketch": "Generate from Sketch",
+    "generating": "Generating your leaflet...",
+    "loadIntoEditor": "Load into Editor",
+    "tryAgain": "Try Again",
+    "regenerate": "Regenerate",
+    "maxObjects": "Max elements:"
+  },
+  "foldType": {
+    "single": "Single Page",
+    "singleDesc": "One flat page, front only",
+    "singlePages": "1 page",
+    "bifold": "Bi-fold",
+    "bifoldDesc": "Folded in half, 4 printable sides",
+    "bifoldPages": "4 panels",
+    "tripanel": "3-Panel",
+    "tripanelDesc": "3 separate pages side by side",
+    "tripanelPages": "3 pages",
+    "trifold": "Tri-fold",
+    "trifoldDesc": "Letter fold, 6 printable panels",
+    "trifoldPages": "6 panels",
+    "zfold": "Z-fold",
+    "zfoldDesc": "Accordion fold, 6 printable panels",
+    "zfoldPages": "6 panels"
+  },
+  "style": {
+    "minimal": "Minimal",
+    "bold": "Bold",
+    "corporate": "Corporate",
+    "playful": "Playful",
+    "elegant": "Elegant"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "tools": "Tools",
+    "canvas": "Canvas",
+    "edit": "Edit",
+    "file": "File"
+  },
+  "bottomBar": {
+    "zoomLevel": "Zoom level",
+    "clickToSetZoom": "Click to set zoom level",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "toggleGrid": "Toggle grid"
+  },
+  "canvas": {
+    "storageFull": "Storage full. Export your project to free up space.",
+    "projectSaved": "Project saved",
+    "projectExported": "Project exported",
+    "projectLoaded": "Project loaded",
+    "projectLoadError": "Could not load project. Make sure the file is a valid Leaflet Factory JSON.",
+    "fontUnavailable": "Font unavailable. Falling back to system font.",
+    "nothingToUndo": "Nothing left to undo",
+    "nothingToRedo": "Nothing left to redo",
+    "canvasReady": "Your canvas is ready — select a tool to start designing"
+  },
+  "lang": {
+    "bg": "Български",
+    "en": "English"
+  }
+}

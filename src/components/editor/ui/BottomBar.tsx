@@ -1,12 +1,13 @@
-'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Grid3x3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useProjectStore } from '@/stores/projectStore';
 
 export function BottomBar() {
+  const { t } = useTranslation();
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [zoomInput, setZoomInput] = useState('');
 
@@ -69,7 +70,7 @@ export function BottomBar() {
             width: '160px',
             accentColor: '#6366f1',
           }}
-          aria-label="Zoom level"
+          aria-label={t('bottomBar.zoomLevel')}
         />
         {isEditingZoom ? (
           <input
@@ -98,7 +99,7 @@ export function BottomBar() {
               minWidth: '44px',
             }}
             onClick={handleZoomLabelClick}
-            title="Click to set zoom level"
+            title={t('bottomBar.clickToSetZoom')}
           >
             {zoomPct}%
           </span>
@@ -108,7 +109,7 @@ export function BottomBar() {
       {/* Center: Page navigator */}
       <div className="flex items-center gap-1 select-none">
         <button
-          aria-label="Previous page"
+          aria-label={t('bottomBar.previousPage')}
           disabled={currentPageIndex === 0}
           onClick={() => {
             const fn = useCanvasStore.getState().triggerSwitchPage;
@@ -154,7 +155,7 @@ export function BottomBar() {
           </button>
         ))}
         <button
-          aria-label="Next page"
+          aria-label={t('bottomBar.nextPage')}
           disabled={currentPageIndex >= totalPages - 1}
           onClick={() => {
             const fn = useCanvasStore.getState().triggerSwitchPage;
@@ -178,7 +179,7 @@ export function BottomBar() {
 
       {/* Right: Grid toggle */}
       <button
-        aria-label="Toggle grid"
+        aria-label={t('bottomBar.toggleGrid')}
         onClick={toggleGrid}
         className="flex items-center justify-center transition-colors"
         style={{

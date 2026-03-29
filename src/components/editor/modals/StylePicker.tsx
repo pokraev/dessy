@@ -1,4 +1,5 @@
-'use client';
+
+import { useTranslation } from 'react-i18next';
 
 interface StylePickerProps {
   value: string;
@@ -8,6 +9,7 @@ interface StylePickerProps {
 const STYLES = ['minimal', 'bold', 'corporate', 'playful', 'elegant'] as const;
 
 export function StylePicker({ value, onChange }: StylePickerProps) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
       {STYLES.map((style) => {
@@ -33,7 +35,7 @@ export function StylePicker({ value, onChange }: StylePickerProps) {
               transition: 'background 0.15s, color 0.15s',
             }}
           >
-            {style}
+            {t(`style.${style}`)}
           </button>
         );
       })}

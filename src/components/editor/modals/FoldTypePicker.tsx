@@ -1,5 +1,5 @@
-'use client';
 
+import { useTranslation } from 'react-i18next';
 import type { FoldType } from '@/types/generation';
 
 interface FoldTypePickerProps {
@@ -9,9 +9,9 @@ interface FoldTypePickerProps {
 
 interface FoldOption {
   type: FoldType;
-  label: string;
-  description: string;
-  pages: string;
+  labelKey: string;
+  descriptionKey: string;
+  pagesKey: string;
   icon: React.ReactNode;
 }
 
@@ -115,14 +115,15 @@ function ZfoldIcon() {
 }
 
 const FOLD_OPTIONS: FoldOption[] = [
-  { type: 'single', label: 'Single Page', description: 'One flat page, front only', pages: '1 page', icon: <SingleIcon /> },
-  { type: 'bifold', label: 'Bi-fold', description: 'Folded in half, 4 printable sides', pages: '4 panels', icon: <BifoldIcon /> },
-  { type: 'tripanel', label: '3-Panel', description: '3 separate pages side by side', pages: '3 pages', icon: <TripanelIcon /> },
-  { type: 'trifold', label: 'Tri-fold', description: 'Letter fold, 6 printable panels', pages: '6 panels', icon: <TrifoldIcon /> },
-  { type: 'zfold', label: 'Z-fold', description: 'Accordion fold, 6 printable panels', pages: '6 panels', icon: <ZfoldIcon /> },
+  { type: 'single', labelKey: 'foldType.single', descriptionKey: 'foldType.singleDesc', pagesKey: 'foldType.singlePages', icon: <SingleIcon /> },
+  { type: 'bifold', labelKey: 'foldType.bifold', descriptionKey: 'foldType.bifoldDesc', pagesKey: 'foldType.bifoldPages', icon: <BifoldIcon /> },
+  { type: 'tripanel', labelKey: 'foldType.tripanel', descriptionKey: 'foldType.tripanelDesc', pagesKey: 'foldType.tripanelPages', icon: <TripanelIcon /> },
+  { type: 'trifold', labelKey: 'foldType.trifold', descriptionKey: 'foldType.trifoldDesc', pagesKey: 'foldType.trifoldPages', icon: <TrifoldIcon /> },
+  { type: 'zfold', labelKey: 'foldType.zfold', descriptionKey: 'foldType.zfoldDesc', pagesKey: 'foldType.zfoldPages', icon: <ZfoldIcon /> },
 ];
 
 export function FoldTypePicker({ value, onChange }: FoldTypePickerProps) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
       {FOLD_OPTIONS.map((option) => {
@@ -149,17 +150,17 @@ export function FoldTypePicker({ value, onChange }: FoldTypePickerProps) {
           >
             {option.icon}
             <span style={{ fontSize: '12px', color: '#f5f5f5', fontWeight: 600 }}>
-              {option.label}
+              {t(option.labelKey)}
             </span>
             <span style={{ fontSize: '10px', color: '#888888', textAlign: 'center', lineHeight: 1.3 }}>
-              {option.description}
+              {t(option.descriptionKey)}
             </span>
             <span style={{
               fontSize: '10px',
               color: isSelected ? '#818cf8' : '#666',
               fontWeight: 500,
             }}>
-              {option.pages}
+              {t(option.pagesKey)}
             </span>
           </button>
         );

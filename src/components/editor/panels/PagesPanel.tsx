@@ -1,6 +1,6 @@
-'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   closestCenter,
@@ -26,6 +26,7 @@ interface DeleteConfirmProps {
 }
 
 function DeleteConfirmDialog({ onConfirm, onCancel }: DeleteConfirmProps) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -60,7 +61,7 @@ function DeleteConfirmDialog({ onConfirm, onCancel }: DeleteConfirmProps) {
             margin: 0,
           }}
         >
-          Delete this page? This cannot be undone.
+          {t('pages.deleteConfirm')}
         </p>
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
           <button
@@ -77,7 +78,7 @@ function DeleteConfirmDialog({ onConfirm, onCancel }: DeleteConfirmProps) {
               color: '#f5f5f5',
             }}
           >
-            Keep Page
+            {t('pages.keepPage')}
           </button>
           <button
             onClick={onConfirm}
@@ -93,7 +94,7 @@ function DeleteConfirmDialog({ onConfirm, onCancel }: DeleteConfirmProps) {
               color: '#f5f5f5',
             }}
           >
-            Delete Page
+            {t('pages.deletePage')}
           </button>
         </div>
       </div>
@@ -198,6 +199,7 @@ function PageThumbnailRow({
 // ── PagesPanel ────────────────────────────────────────────────────────────────
 
 export function PagesPanel() {
+  const { t } = useTranslation();
   const currentProject = useProjectStore((s) => s.currentProject);
   const addPageAction = useProjectStore((s) => s.addPage);
   const duplicatePageAction = useProjectStore((s) => s.duplicatePage);
@@ -218,15 +220,47 @@ export function PagesPanel() {
   const captureCurrentThumbnail = useCallback(() => {
     if (!currentProject) return;
     const canvas = useCanvasStore.getState().canvasRef;
-    if (canvas) {
-      const dataUrl = canvas.toDataURL({ multiplier: 0.15, format: 'jpeg', quality: 0.6 });
-      setThumbnails((prev) => ({ ...prev, [currentProject.currentPageIndex]: dataUrl }));
+    if (!canvas) return;
+
+    // Find the document background rect to get the document bounds
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bgRect = canvas.getObjects().find((o: any) => o._isDocBackground);
+    const left = bgRect?.left ?? 0;
+    const top = bgRect?.top ?? 0;
+    const width = (bgRect?.width ?? 595) * (bgRect?.scaleX ?? 1);
+    const height = (bgRect?.height ?? 842) * (bgRect?.scaleY ?? 1);
+
+    // AligningGuidelines hooks into 'before:render' and tries to access an overlay context
+    // that doesn't exist on the temp canvas created by toDataURL/toCanvasElement.
+    // Temporarily remove the listener to prevent the crash.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const listeners = (canvas as any).__eventListeners?.['before:render'];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (listeners) (canvas as any).__eventListeners['before:render'] = [];
+    let dataUrl: string;
+    try {
+      dataUrl = canvas.toDataURL({
+        left, top, width, height,
+        multiplier: 0.15,
+        format: 'jpeg',
+        quality: 0.6,
+      });
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (listeners) (canvas as any).__eventListeners['before:render'] = listeners;
     }
+    setThumbnails((prev) => ({ ...prev, [currentProject.currentPageIndex]: dataUrl }));
   }, [currentProject]);
 
-  // Capture thumbnail on mount and whenever active page changes
+  // Capture thumbnail on mount, page change, and after AI generation loads
   useEffect(() => {
     captureCurrentThumbnail();
+    function onCanvasLoaded() {
+      // Delay slightly to ensure canvas has rendered
+      setTimeout(captureCurrentThumbnail, 200);
+    }
+    window.addEventListener('dessy-canvas-loaded', onCanvasLoaded);
+    return () => window.removeEventListener('dessy-canvas-loaded', onCanvasLoaded);
   }, [captureCurrentThumbnail, currentProject?.currentPageIndex]);
 
   // Close context menu on outside click / Escape
@@ -400,7 +434,7 @@ export function PagesPanel() {
           }}
         >
           <Plus size={14} />
-          Add Page
+          {t('pages.addPage')}
         </button>
       </div>
 
@@ -444,7 +478,7 @@ export function PagesPanel() {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
             }}
           >
-            Duplicate Page
+            {t('pages.duplicatePage')}
           </button>
           <button
             role="menuitem"
@@ -472,7 +506,7 @@ export function PagesPanel() {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
             }}
           >
-            Delete Page
+            {t('pages.deletePage')}
           </button>
         </div>
       )}

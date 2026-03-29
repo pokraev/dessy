@@ -1,19 +1,20 @@
-'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ToolBar } from './ToolBar';
 import { LayersPanel } from './LayersPanel';
 import { PagesPanel } from './PagesPanel';
 
 type TabId = 'tools' | 'layers' | 'pages';
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'tools', label: 'Tools' },
-  { id: 'layers', label: 'Layers' },
-  { id: 'pages', label: 'Pages' },
+const TABS: { id: TabId; i18nKey: string }[] = [
+  { id: 'tools', i18nKey: 'tabs.tools' },
+  { id: 'layers', i18nKey: 'tabs.layers' },
+  { id: 'pages', i18nKey: 'tabs.pages' },
 ];
 
 export function LeftPanel() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabId>('tools');
 
   return (
@@ -70,7 +71,7 @@ export function LeftPanel() {
                 }
               }}
             >
-              {tab.label}
+              {t(tab.i18nKey)}
             </button>
           );
         })}

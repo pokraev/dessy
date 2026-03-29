@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Shadow } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { ColorPicker } from '../ColorPicker';
@@ -24,6 +24,7 @@ function updateCanvasObject(updates: Record<string, unknown>) {
 }
 
 export function ShadowSection({ snapshot }: ShadowSectionProps) {
+  const { t } = useTranslation();
   const hasShadow = snapshot.shadow !== null;
   const [isOn, setIsOn] = useState(hasShadow);
 
@@ -86,13 +87,13 @@ export function ShadowSection({ snapshot }: ShadowSectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Shadow
+          {t('shadow.title')}
         </span>
         <label
           style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
         >
           <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>
-            Shadow
+            {t('shadow.title')}
           </span>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <input
@@ -145,7 +146,7 @@ export function ShadowSection({ snapshot }: ShadowSectionProps) {
           {/* Blur row */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
             <div style={{ flex: 1 }}>
-              <NumberInput value={blur} onChange={handleBlur} step={1} min={0} suffix="px" label="Blur" />
+              <NumberInput value={blur} onChange={handleBlur} step={1} min={0} suffix="px" label={t('shadow.blur')} />
             </div>
             <div style={{ flex: 1 }} />
           </div>
@@ -153,7 +154,7 @@ export function ShadowSection({ snapshot }: ShadowSectionProps) {
           {/* Color row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', width: '40px' }}>
-              Color
+              {t('shadow.color')}
             </span>
             <ColorPicker value={color.startsWith('#') ? color : '#000000'} onChange={handleColor} />
           </div>

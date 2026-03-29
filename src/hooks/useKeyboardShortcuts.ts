@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useRef } from 'react';
 import type { Canvas, FabricObject, Group } from 'fabric';
@@ -39,6 +38,11 @@ export function useKeyboardShortcuts(
       const key = e.key;
       const isCtrl = e.ctrlKey || e.metaKey;
       const isShift = e.shiftKey;
+
+      // Skip all shortcuts when focus is in an input, textarea, or contenteditable
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isInInput = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
+      if (isInInput) return;
 
       // Check if user is currently editing text — skip most shortcuts
       const activeObj = canvas.getActiveObject() as (FabricObject & { isEditing?: boolean }) | undefined;

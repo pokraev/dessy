@@ -1,6 +1,6 @@
-'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MousePointer2,
   Type,
@@ -13,73 +13,78 @@ import {
   AlignHorizontalDistributeCenter,
   AlignVerticalDistributeCenter,
   RectangleHorizontal,
+  ArrowUpToLine,
+  ArrowUp,
+  ArrowDown,
+  ArrowDownToLine,
+  Copy,
+  Lock,
+  Unlock,
+  Trash2,
+  Group,
+  Ungroup,
 } from 'lucide-react';
 import { useCanvasStore, type ToolId } from '@/stores/canvasStore';
+import {
+  bringToFront, bringForward, sendBackward, sendToBack,
+  duplicateSelection, toggleLock, groupSelection, ungroupSelection, deleteSelection,
+} from './SelectionActions';
 
 interface ToolItem {
   id: ToolId;
   icon: React.ReactNode;
-  label: string;
+  labelKey: string;
   shortcut: string;
-  ariaLabel: string;
 }
 
 const TOOLS: ToolItem[] = [
   {
     id: 'select',
     icon: <MousePointer2 size={16} />,
-    label: 'Select',
+    labelKey: 'tools.select',
     shortcut: 'V',
-    ariaLabel: 'Select tool (V)',
   },
   {
     id: 'text',
     icon: <Type size={16} />,
-    label: 'Text',
+    labelKey: 'tools.text',
     shortcut: 'T',
-    ariaLabel: 'Text tool (T)',
   },
   {
     id: 'triangle',
     icon: <Triangle size={16} />,
-    label: 'Triangle',
+    labelKey: 'tools.triangle',
     shortcut: 'G',
-    ariaLabel: 'Triangle tool (G)',
   },
   {
     id: 'rect',
     icon: <Square size={16} />,
-    label: 'Rectangle',
+    labelKey: 'tools.rect',
     shortcut: 'R',
-    ariaLabel: 'Rectangle tool (R)',
   },
   {
     id: 'circle',
     icon: <Circle size={16} />,
-    label: 'Circle',
+    labelKey: 'tools.circle',
     shortcut: 'C',
-    ariaLabel: 'Circle tool (C)',
   },
   {
     id: 'line',
     icon: <Minus size={16} />,
-    label: 'Line',
+    labelKey: 'tools.line',
     shortcut: 'L',
-    ariaLabel: 'Line tool (L)',
   },
   {
     id: 'image',
     icon: <Image size={16} />,
-    label: 'Image',
+    labelKey: 'tools.image',
     shortcut: 'I',
-    ariaLabel: 'Image tool (I)',
   },
   {
     id: 'hand',
     icon: <Hand size={16} />,
-    label: 'Pan',
+    labelKey: 'tools.pan',
     shortcut: 'H',
-    ariaLabel: 'Pan tool (H)',
   },
 ];
 
@@ -90,6 +95,7 @@ interface ToolButtonProps {
 }
 
 function ToolButton({ tool, isActive, onSelect }: ToolButtonProps) {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -124,7 +130,7 @@ function ToolButton({ tool, isActive, onSelect }: ToolButtonProps) {
   return (
     <div className="relative">
       <button
-        aria-label={tool.ariaLabel}
+        aria-label={`${t(tool.labelKey)} (${tool.shortcut})`}
         aria-pressed={isActive}
         onClick={() => onSelect(tool.id)}
         onMouseEnter={handleMouseEnter}
@@ -161,7 +167,7 @@ function ToolButton({ tool, isActive, onSelect }: ToolButtonProps) {
             transition: 'opacity 0.1s ease-in',
           }}
         >
-          {tool.label} {tool.shortcut}
+          {t(tool.labelKey)} {tool.shortcut}
         </div>
       )}
     </div>
@@ -303,56 +309,124 @@ function ActionButton({ icon, label, disabled, onClick }: ActionButtonProps) {
   );
 }
 
+function AccordionGroup({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ borderBottom: '1px solid #2a2a2a' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%',
+          padding: '6px 4px',
+          fontSize: '10px',
+          fontWeight: 600,
+          color: '#666',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          fontFamily: 'Inter, sans-serif',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{ transform: open ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.15s', fontSize: '8px' }}>&#9654;</span>
+        {title}
+      </button>
+      {open && <div style={{ padding: '0 4px 6px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>{children}</div>}
+    </div>
+  );
+}
+
 export function ToolBar() {
+  const { t } = useTranslation();
   const activeTool = useCanvasStore((s) => s.activeTool);
   const selectedCount = useCanvasStore((s) => s.selectedObjectIds.length);
+  const isLocked = useCanvasStore((s) => {
+    const c = s.canvasRef;
+    if (!c || s.selectedObjectIds.length === 0) return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (c.getActiveObject() as any)?.locked === true;
+  });
+  const isGroup = useCanvasStore((s) => {
+    const c = s.canvasRef;
+    return c?.getActiveObject()?.type === 'Group';
+  });
 
   function handleSelect(id: ToolId) {
     useCanvasStore.getState().setActiveTool(id);
   }
 
+  const pointerGroup = TOOLS.filter((t) => t.id === 'select' || t.id === 'hand');
+  const shapeGroup = TOOLS.filter((t) => ['rect', 'circle', 'triangle', 'line'].includes(t.id));
+  const contentGroup = TOOLS.filter((t) => t.id === 'text' || t.id === 'image');
+
   return (
     <div
-      className="flex flex-col items-center bg-surface"
+      className="bg-surface"
       style={{
-        padding: '8px',
-        gap: '8px',
-        height: '100%',
+        padding: '4px',
         width: '280px',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {/* Drawing tools */}
-      {TOOLS.map((tool) => (
-        <ToolButton
-          key={tool.id}
-          tool={tool}
-          isActive={activeTool === tool.id}
-          onSelect={handleSelect}
+      <AccordionGroup title={t('toolGroups.pointer')}>
+        {pointerGroup.map((tool) => (
+          <ToolButton key={tool.id} tool={tool} isActive={activeTool === tool.id} onSelect={handleSelect} />
+        ))}
+      </AccordionGroup>
+
+      <AccordionGroup title={t('toolGroups.shapes')}>
+        {shapeGroup.map((tool) => (
+          <ToolButton key={tool.id} tool={tool} isActive={activeTool === tool.id} onSelect={handleSelect} />
+        ))}
+      </AccordionGroup>
+
+      <AccordionGroup title={t('toolGroups.content')}>
+        {contentGroup.map((tool) => (
+          <ToolButton key={tool.id} tool={tool} isActive={activeTool === tool.id} onSelect={handleSelect} />
+        ))}
+      </AccordionGroup>
+
+      <AccordionGroup title={t('toolGroups.arrange')}>
+        <ActionButton
+          icon={<AlignHorizontalDistributeCenter size={16} />}
+          label={t('tools.distributeH')}
+          disabled={selectedCount < 3}
+          onClick={distributeHorizontally}
         />
-      ))}
+        <ActionButton
+          icon={<AlignVerticalDistributeCenter size={16} />}
+          label={t('tools.distributeV')}
+          disabled={selectedCount < 3}
+          onClick={distributeVertically}
+        />
+        <ActionButton
+          icon={<RectangleHorizontal size={16} />}
+          label={t('tools.sameSize')}
+          disabled={selectedCount < 2}
+          onClick={makeSameSize}
+        />
+      </AccordionGroup>
 
-      {/* Separator */}
-      <div style={{ width: '24px', height: '1px', background: '#2a2a2a', margin: '4px 0' }} />
+      <AccordionGroup title={t('toolGroups.zOrder')}>
+        <ActionButton icon={<ArrowUpToLine size={16} />} label={t('actions.bringToFront')} disabled={selectedCount === 0} onClick={bringToFront} />
+        <ActionButton icon={<ArrowUp size={16} />} label={t('actions.bringForward')} disabled={selectedCount === 0} onClick={bringForward} />
+        <ActionButton icon={<ArrowDown size={16} />} label={t('actions.sendBackward')} disabled={selectedCount === 0} onClick={sendBackward} />
+        <ActionButton icon={<ArrowDownToLine size={16} />} label={t('actions.sendToBack')} disabled={selectedCount === 0} onClick={sendToBack} />
+      </AccordionGroup>
 
-      {/* Arrangement actions */}
-      <ActionButton
-        icon={<AlignHorizontalDistributeCenter size={16} />}
-        label="Distribute Horizontally"
-        disabled={selectedCount < 3}
-        onClick={distributeHorizontally}
-      />
-      <ActionButton
-        icon={<AlignVerticalDistributeCenter size={16} />}
-        label="Distribute Vertically"
-        disabled={selectedCount < 3}
-        onClick={distributeVertically}
-      />
-      <ActionButton
-        icon={<RectangleHorizontal size={16} />}
-        label="Make Same Size"
-        disabled={selectedCount < 2}
-        onClick={makeSameSize}
-      />
+      <AccordionGroup title={t('toolGroups.edit')}>
+        <ActionButton icon={<Copy size={16} />} label={t('actions.duplicate')} disabled={selectedCount === 0} onClick={() => duplicateSelection()} />
+        <ActionButton icon={isLocked ? <Unlock size={16} /> : <Lock size={16} />} label={isLocked ? t('actions.unlock') : t('actions.lock')} disabled={selectedCount === 0} onClick={toggleLock} />
+        <ActionButton icon={<Group size={16} />} label={t('actions.group')} disabled={selectedCount < 2} onClick={() => groupSelection()} />
+        <ActionButton icon={<Ungroup size={16} />} label={t('actions.ungroup')} disabled={!isGroup} onClick={() => ungroupSelection()} />
+        <ActionButton icon={<Trash2 size={16} />} label={t('actions.delete')} disabled={selectedCount === 0} onClick={deleteSelection} />
+      </AccordionGroup>
     </div>
   );
 }

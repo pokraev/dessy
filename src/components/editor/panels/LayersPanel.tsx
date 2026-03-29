@@ -1,6 +1,6 @@
-'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   closestCenter,
@@ -22,8 +22,9 @@ import {
   EyeOff,
   Lock,
   Unlock,
+  ChevronRight,
 } from 'lucide-react';
-import { useCanvasLayers, type LayerItem } from '@/hooks/useCanvasLayers';
+import { useCanvasLayers, type LayerItem, type GroupTreeNode } from '@/hooks/useCanvasLayers';
 import { useCanvasStore } from '@/stores/canvasStore';
 
 // ── LayerRow ─────────────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ function LayerRow({
   onToggleLock,
   onRename,
 }: LayerRowProps) {
+  const { t } = useTranslation();
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(layer.name);
   const [isHovered, setIsHovered] = useState(false);
@@ -159,7 +161,7 @@ function LayerRow({
             onChange={(e) => setRenameValue(e.target.value)}
             onBlur={commitRename}
             onKeyDown={handleRenameKeyDown}
-            placeholder="Layer name"
+            placeholder={t('layers.layerName')}
             onClick={(e) => e.stopPropagation()}
             style={{
               fontSize: '13px',
@@ -256,9 +258,13 @@ function LayerRow({
 // ── LayersPanel ───────────────────────────────────────────────────────────────
 
 export function LayersPanel() {
-  const { layers, moveLayer, toggleVisibility, toggleLock, renameLayer, selectLayer } =
+  const { t } = useTranslation();
+  const { layers, groupTree, moveLayer, toggleVisibility, toggleLock, renameLayer, selectLayer } =
     useCanvasLayers();
   const selectedObjectIds = useCanvasStore((s) => s.selectedObjectIds);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [treeCollapsed, setTreeCollapsed] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<'type' | 'grouping'>('type');
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -290,7 +296,7 @@ export function LayersPanel() {
             fontWeight: 600,
           }}
         >
-          No layers yet
+          {t('layers.noLayers')}
         </p>
         <p
           style={{
@@ -300,29 +306,216 @@ export function LayersPanel() {
             margin: 0,
           }}
         >
-          Add elements to the canvas to see them here.
+          {t('layers.noLayersHint')}
         </p>
       </div>
     );
   }
 
-  return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={layers.map((l) => l.id)} strategy={verticalListSortingStrategy}>
-        <div style={{ paddingTop: '4px', paddingBottom: '4px' }}>
-          {layers.map((layer) => (
-            <LayerRow
-              key={layer.id}
-              layer={layer}
-              isSelected={selectedObjectIds.includes(layer.id)}
-              onSelect={selectLayer}
-              onToggleVisibility={toggleVisibility}
-              onToggleLock={toggleLock}
-              onRename={renameLayer}
+  // Group layers by type
+  type GroupKey = 'backgrounds' | 'text' | 'images' | 'lines';
+  const groupLabels: Record<GroupKey, string> = {
+    backgrounds: t('layerGroups.backgrounds'),
+    text: t('layerGroups.text'),
+    images: t('layerGroups.images'),
+    lines: t('layerGroups.lines'),
+  };
+
+  function getGroup(layer: LayerItem): GroupKey {
+    if (layer.type === 'text') return 'text';
+    if (layer.type === 'image') return 'images';
+    // shapes, colorBlocks, rects, triangles, circles = backgrounds
+    return 'backgrounds';
+  }
+
+  const groupOrder: GroupKey[] = ['text', 'images', 'backgrounds', 'lines'];
+  const grouped = new Map<GroupKey, LayerItem[]>();
+  for (const g of groupOrder) grouped.set(g, []);
+  for (const layer of layers) {
+    const g = getGroup(layer);
+    grouped.get(g)!.push(layer);
+  }
+  // Sort within each group by position: top first, then left
+  for (const items of grouped.values()) {
+    items.sort((a, b) => a.top - b.top || a.left - b.left);
+  }
+
+  const hasGroups = groupTree.some((n) => n.type === 'group');
+
+  function TreeNode({ node, depth = 0 }: { node: GroupTreeNode; depth?: number }) {
+    const isOpen = treeCollapsed[node.id] !== true;
+    const isGroup = node.type === 'group';
+    const isSelected = selectedObjectIds.includes(node.id);
+    const layer = layers.find((l) => l.id === node.id);
+
+    return (
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            paddingLeft: `${8 + depth * 16}px`,
+            paddingRight: '8px',
+            height: '32px',
+            cursor: 'pointer',
+            background: isSelected ? '#1e1e1e' : 'transparent',
+            fontSize: '13px',
+            color: '#f5f5f5',
+            fontFamily: 'Inter, sans-serif',
+            userSelect: 'none',
+          }}
+          onClick={() => {
+            if (isGroup) {
+              setTreeCollapsed((c) => ({ ...c, [node.id]: !c[node.id] }));
+            } else {
+              selectLayer(node.id);
+            }
+          }}
+          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'rgba(30,30,30,0.6)'; }}
+          onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+        >
+          {isGroup ? (
+            <ChevronRight
+              size={12}
+              style={{
+                transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
+                transition: 'transform 0.15s',
+                flexShrink: 0,
+                color: '#666',
+                width: '16px',
+              }}
             />
+          ) : (
+            <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, width: '16px' }}>
+              <TypeIcon type={node.type as LayerItem['type']} />
+            </span>
+          )}
+          <span style={{
+            flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            fontWeight: isGroup ? 600 : 400,
+            color: isGroup ? '#aaa' : '#f5f5f5',
+          }}>
+            {node.name}
+          </span>
+          {isGroup && (
+            <span style={{ fontSize: '10px', color: '#555', flexShrink: 0 }}>
+              {node.childCount}
+            </span>
+          )}
+          {!isGroup && layer && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleVisibility(node.id); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '20px', height: '20px', background: 'transparent',
+                  border: 'none', cursor: 'pointer', color: '#888', flexShrink: 0, padding: 0,
+                }}
+              >
+                {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleLock(node.id); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '20px', height: '20px', background: 'transparent',
+                  border: 'none', cursor: 'pointer', color: '#888', flexShrink: 0, padding: 0,
+                }}
+              >
+                {layer.locked ? <Lock size={14} /> : <Unlock size={14} />}
+              </button>
+            </>
+          )}
+        </div>
+        {isGroup && isOpen && node.children.map((child) => (
+          <TreeNode key={child.id} node={child} depth={depth + 1} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* View toggle */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a' }}>
+          {(['type', 'grouping'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                flex: 1, padding: '5px', fontSize: '10px', fontWeight: 600,
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: viewMode === mode ? '#f5f5f5' : '#555',
+                borderBottom: viewMode === mode ? '2px solid #6366f1' : '2px solid transparent',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              {t(mode === 'type' ? 'layerGroups.byType' : 'layerGroups.byGrouping')}
+            </button>
           ))}
         </div>
-      </SortableContext>
-    </DndContext>
+
+      {viewMode === 'type' ? (
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={layers.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ paddingTop: '4px', paddingBottom: '4px' }}>
+              {groupOrder.map((groupKey) => {
+                const items = grouped.get(groupKey)!;
+                if (items.length === 0) return null;
+                const isCollapsed = collapsed[groupKey] === true;
+                return (
+                  <div key={groupKey}>
+                    <button
+                      onClick={() => setCollapsed((c) => ({ ...c, [groupKey]: !c[groupKey] }))}
+                      style={{
+                        width: '100%', padding: '6px 12px', fontSize: '10px',
+                        fontWeight: 600, color: '#666', textTransform: 'uppercase',
+                        letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif',
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '4px', textAlign: 'left',
+                      }}
+                    >
+                      <ChevronRight
+                        size={12}
+                        style={{
+                          transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                          transition: 'transform 0.15s', flexShrink: 0,
+                        }}
+                      />
+                      {groupLabels[groupKey]} ({items.length})
+                    </button>
+                    {!isCollapsed && items.map((layer) => (
+                      <LayerRow
+                        key={layer.id}
+                        layer={layer}
+                        isSelected={selectedObjectIds.includes(layer.id)}
+                        onSelect={selectLayer}
+                        onToggleVisibility={toggleVisibility}
+                        onToggleLock={toggleLock}
+                        onRename={renameLayer}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <div style={{ paddingTop: '4px', paddingBottom: '4px' }}>
+          {hasGroups ? (
+            groupTree.map((node) => (
+              <TreeNode key={node.id} node={node} />
+            ))
+          ) : (
+            <p style={{ padding: '16px', fontSize: '11px', color: '#555', fontFamily: 'Inter, sans-serif', margin: 0 }}>
+              {t('layerGroups.noGroups')}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

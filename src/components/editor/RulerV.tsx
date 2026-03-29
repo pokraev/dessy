@@ -1,4 +1,3 @@
-'use client';
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useCanvasStore } from '@/stores/canvasStore';

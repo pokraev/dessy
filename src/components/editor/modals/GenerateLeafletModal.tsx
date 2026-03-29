@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Sparkles, Camera, Pencil } from 'lucide-react';
 import { useBrandStore } from '@/stores/brandStore';
@@ -36,9 +36,11 @@ const TABS: TabDef[] = [
 ];
 
 export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLeafletModalProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<GenerationMode>('prompt');
   const [foldType, setFoldType] = useState<FoldType>('single');
   const [style, setStyle] = useState('minimal');
+  const [maxObjects, setMaxObjects] = useState(50);
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +112,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
         brandColors: brandState.brandColors.map((c) => c.hex),
         typographyPresets: brandState.typographyPresets,
         style,
+        maxObjects: activeTab === 'sketch' ? undefined : maxObjects,
       }, provider);
       setResponse(result);
     } catch (err) {
@@ -180,7 +183,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
               }}
             >
               <span style={{ fontSize: '16px', fontWeight: 600, color: '#f5f5f5' }}>
-                AI Leaflet Generator
+                {t('generate.title')}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {!showKeyInput && (
@@ -196,7 +199,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                       padding: '4px 8px',
                     }}
                   >
-                    Settings
+                    {t('generate.settings')}
                   </button>
                 )}
                 <button
@@ -286,14 +289,14 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
 
                   {/* Gemini key */}
                   <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    Gemini API Key {geminiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>saved</span>}
+                    {t('generate.geminiKey')} {geminiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
                   </label>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                     <input
                       type="password"
                       value={geminiKeyDraft}
                       onChange={(e) => setGeminiKeyDraft(e.target.value)}
-                      placeholder={geminiKey ? '••••••••' : 'Enter your Gemini API key'}
+                      placeholder={geminiKey ? '••••••••' : t('generate.enterGeminiKey')}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveGeminiKey()}
                       style={{
                         flex: 1,
@@ -320,20 +323,20 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                         cursor: 'pointer',
                       }}
                     >
-                      Save
+                      {t('generate.save')}
                     </button>
                   </div>
 
                   {/* Claude key */}
                   <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    Claude API Key {claudeKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>saved</span>}
+                    {t('generate.claudeKey')} {claudeKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
                   </label>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                     <input
                       type="password"
                       value={claudeKeyDraft}
                       onChange={(e) => setClaudeKeyDraft(e.target.value)}
-                      placeholder={claudeKey ? '••••••••' : 'Enter your Claude API key'}
+                      placeholder={claudeKey ? '••••••••' : t('generate.enterClaudeKey')}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveClaudeKey()}
                       style={{
                         flex: 1,
@@ -360,7 +363,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                         cursor: 'pointer',
                       }}
                     >
-                      Save
+                      {t('generate.save')}
                     </button>
                   </div>
 
@@ -391,9 +394,39 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                         cursor: 'pointer',
                       }}
                     >
-                      Close settings
+                      {t('generate.closeSettings')}
                     </button>
                   )}
+                </div>
+              )}
+              {/* Max objects selector — shown for photo and prompt modes */}
+              {!showPreview && activeTab !== 'sketch' && (
+                <div style={{
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <span style={{ fontSize: '12px', color: '#888' }}>{t('generate.maxObjects')}</span>
+                  {[20, 50, 100].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setMaxObjects(n)}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        background: maxObjects === n ? '#6366f1' : '#0a0a0a',
+                        color: maxObjects === n ? '#fff' : '#888',
+                        border: `1px solid ${maxObjects === n ? '#6366f1' : '#333'}`,
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {n}
+                    </button>
+                  ))}
                 </div>
               )}
               {showPreview ? (

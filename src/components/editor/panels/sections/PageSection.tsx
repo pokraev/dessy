@@ -1,12 +1,13 @@
-'use client';
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { ColorPicker } from '../ColorPicker';
 import { FORMATS } from '@/constants/formats';
 
 export function PageSection() {
+  const { t } = useTranslation();
   const canvasRef = useCanvasStore((s) => s.canvasRef);
   const currentProject = useProjectStore((s) => s.currentProject);
   const setCurrentProject = useProjectStore((s) => s.setCurrentProject);
@@ -54,7 +55,7 @@ export function PageSection() {
           margin: '0 0 4px',
         }}
       >
-        Document
+        {t('properties.document')}
       </p>
       <p
         style={{
@@ -64,7 +65,7 @@ export function PageSection() {
           margin: '0 0 16px',
         }}
       >
-        Select an element to edit its properties
+        {t('properties.selectElement')}
       </p>
 
       {/* Format info */}
@@ -82,7 +83,7 @@ export function PageSection() {
       {/* Background color */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', width: '80px' }}>
-          Background
+          {t('properties.background')}
         </span>
         <ColorPicker value={bgColor} onChange={handleBgChange} />
         <span style={{ fontSize: '13px', color: '#f5f5f5', fontFamily: "'JetBrains Mono', monospace" }}>

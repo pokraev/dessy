@@ -1,4 +1,3 @@
-'use client';
 
 import {
   useState,
@@ -6,6 +5,7 @@ import {
   useEffect,
   useCallback,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { HexColorPicker, HexColorInput } from 'react-colorful';
@@ -28,6 +28,7 @@ function ensureHash(hex: string): string {
 }
 
 export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<ColorTab>('HEX');
   const [paletteOpen, setPaletteOpen] = useState<string | null>(null);
@@ -149,24 +150,24 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
           borderBottom: '1px solid #2a2a2a',
         }}
       >
-        {(['HEX', 'RGB', 'HSL'] as ColorTab[]).map((t) => (
+        {(['HEX', 'RGB', 'HSL'] as ColorTab[]).map((ct) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={ct}
+            onClick={() => setTab(ct)}
             style={{
               flex: 1,
               height: '28px',
               background: 'transparent',
               border: 'none',
-              borderBottom: tab === t ? '2px solid #6366f1' : '2px solid transparent',
+              borderBottom: tab === ct ? '2px solid #6366f1' : '2px solid transparent',
               cursor: 'pointer',
               fontSize: '11px',
               fontFamily: 'Inter, sans-serif',
-              color: tab === t ? '#f5f5f5' : '#888888',
+              color: tab === ct ? '#f5f5f5' : '#888888',
               padding: 0,
             }}
           >
-            {t}
+            {t(`colorPicker.${ct.toLowerCase()}`)}
           </button>
         ))}
       </div>
@@ -258,7 +259,7 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
         <button
           onClick={handleEyeDropper}
           disabled={!isSupported()}
-          title={!isSupported() ? 'Color picker not supported in this browser' : undefined}
+          title={!isSupported() ? t('colorPicker.notSupported') : undefined}
           style={{
             width: '100%',
             height: '28px',
@@ -277,14 +278,14 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
           }}
         >
           <Pipette size={12} />
-          Pick from screen
+          {t('colorPicker.pickFromScreen')}
         </button>
       </div>
 
       {/* Recent colors */}
       {recentColors.length > 0 && (
         <div style={{ padding: '0 8px 8px' }}>
-          <span style={sectionLabel}>Recent</span>
+          <span style={sectionLabel}>{t('colorPicker.recent')}</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
             {recentColors.slice(0, 12).map((hex) => (
               <button
@@ -308,7 +309,7 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
 
       {/* Brand swatches */}
       <div style={{ padding: '0 8px 8px' }}>
-        <span style={sectionLabel}>Brand</span>
+        <span style={sectionLabel}>{t('colorPicker.brand')}</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
           {brandColors.map((swatch) => {
             const isSelected = swatch.hex.toLowerCase() === safeHex.toLowerCase();
@@ -346,7 +347,7 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
                 fontSize: '14px',
                 lineHeight: 1,
               }}
-              title="Add current color as brand swatch"
+              title={t('colorPicker.addAsBrand')}
             >
               +
             </button>
@@ -374,7 +375,7 @@ export function ColorPicker({ value, onChange, onSwatchApply }: ColorPickerProps
             textTransform: 'uppercase',
           }}
         >
-          <span>Palettes</span>
+          <span>{t('colorPicker.palettes')}</span>
           <span>{paletteOpen === '__all__' ? '▲' : '▼'}</span>
         </button>
         {paletteOpen === '__all__' && (

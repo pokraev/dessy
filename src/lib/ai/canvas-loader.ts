@@ -1,7 +1,9 @@
-import type { Canvas } from 'fabric';
+import type { Canvas, FabricObject } from 'fabric';
 import type { GenerationResponse } from '@/types/generation';
 import type { Page } from '@/types/project';
 import { useProjectStore } from '@/stores/projectStore';
+
+const PLACEHOLDER_SRC = `${import.meta.env.BASE_URL}image-placeholder.svg`;
 
 export function loadGeneratedLeaflet(
   response: GenerationResponse,
@@ -47,8 +49,66 @@ export function loadGeneratedLeaflet(
 
   // Load first page canvasJSON onto the active canvas
   const firstPageJSON = pages[0].canvasJSON;
-  canvas.loadFromJSON(firstPageJSON).then(() => {
+  const rawObjects = (firstPageJSON.objects ?? []) as Record<string, unknown>[];
+  canvas.loadFromJSON(firstPageJSON).then(async () => {
+    // Re-apply custom properties that loadFromJSON drops
+    const loaded = canvas.getObjects();
+    for (let i = 0; i < loaded.length && i < rawObjects.length; i++) {
+      const raw = rawObjects[i];
+      const obj = loaded[i] as FabricObject & Record<string, unknown>;
+      for (const key of ['customType', 'imageId', 'locked', 'name', 'id', 'shapeKind', 'fitMode', 'swatchId', 'presetId', '_isDocBackground']) {
+        if (key in raw) obj[key] = raw[key];
+      }
+    }
+    // Replace image placeholder rects with actual Image objects showing the placeholder SVG
+    await replaceImagePlaceholders(canvas);
     canvas.renderAll();
     useProjectStore.getState().markDirty();
+    // Notify PagesPanel to recapture thumbnail
+    window.dispatchEvent(new Event('dessy-canvas-loaded'));
   });
+}
+
+async function replaceImagePlaceholders(canvas: Canvas) {
+  const { FabricImage } = await import('fabric');
+  const objects = canvas.getObjects() as (FabricObject & Record<string, unknown>)[];
+  // After loadFromJSON, check both customType and imageId to find image placeholders
+  const placeholders = objects.filter((o) => {
+    const isRect = o.type === 'Rect' || o.type === 'rect';
+    const isImageType = o.customType === 'image';
+    const hasImageId = 'imageId' in o;
+    return isRect && (isImageType || hasImageId);
+  });
+
+  for (const rect of placeholders) {
+    try {
+      const img = await FabricImage.fromURL(PLACEHOLDER_SRC);
+      const w = (rect.width ?? 100) * (rect.scaleX ?? 1);
+      const h = (rect.height ?? 100) * (rect.scaleY ?? 1);
+      img.set({
+        left: rect.left,
+        top: rect.top,
+        originX: 'left',
+        originY: 'top',
+        scaleX: w / (img.width || 1),
+        scaleY: h / (img.height || 1),
+      });
+      Object.assign(img, {
+        customType: 'image',
+        name: rect.name || 'Image Placeholder',
+        id: rect.id || crypto.randomUUID(),
+        locked: rect.locked ?? false,
+        visible: true,
+        imageId: null,
+        fitMode: rect.fitMode || 'fill',
+      });
+      const prev = canvas.renderOnAddRemove;
+      canvas.renderOnAddRemove = false;
+      canvas.insertAt(canvas.getObjects().indexOf(rect as FabricObject), img);
+      canvas.remove(rect as FabricObject);
+      canvas.renderOnAddRemove = prev;
+    } catch (err) {
+      console.warn('Failed to replace image placeholder:', err);
+    }
+  }
 }

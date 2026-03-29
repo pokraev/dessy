@@ -1,7 +1,7 @@
-'use client';
 
 import type { Canvas } from 'fabric';
 import { toast } from 'react-hot-toast';
+import i18n from '@/i18n';
 import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 import { useCanvasStore } from '@/stores/canvasStore';
 
@@ -75,7 +75,7 @@ export function createHistory() {
    */
   async function undo(canvas: Canvas) {
     if (undoStack.length === 0) {
-      toast.error('Nothing left to undo');
+      toast.error(i18n.t('canvas.nothingToUndo'));
       return;
     }
 
@@ -104,7 +104,7 @@ export function createHistory() {
    */
   async function redo(canvas: Canvas) {
     if (redoStack.length === 0) {
-      toast.error('Nothing left to redo');
+      toast.error(i18n.t('canvas.nothingToRedo'));
       return;
     }
 

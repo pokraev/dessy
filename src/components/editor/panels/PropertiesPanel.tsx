@@ -1,6 +1,6 @@
-'use client';
 
 import { ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useSelectedObject } from '@/hooks/useSelectedObject';
 import { PositionSection } from './sections/PositionSection';
@@ -11,6 +11,8 @@ import { FitModeSection } from './sections/FitModeSection';
 import { PageSection } from './sections/PageSection';
 import { StyleSection } from './sections/StyleSection';
 import { TypographySection } from './sections/TypographySection';
+import { TextContentSection } from './sections/TextContentSection';
+import { ImageSection } from './sections/ImageSection';
 
 interface SectionHeaderProps {
   title: string;
@@ -53,6 +55,7 @@ export function SectionHeader({ title, isOpen, onToggle }: SectionHeaderProps) {
 }
 
 export function PropertiesPanel() {
+  const { t } = useTranslation();
   const selectedObjectIds = useCanvasStore((s) => s.selectedObjectIds);
   const snapshot = useSelectedObject();
   const selectionCount = selectedObjectIds.length;
@@ -87,18 +90,30 @@ export function PropertiesPanel() {
                 margin: 0,
               }}
             >
-              Multiple selected
+              {t('properties.objectsSelected', { count: selectionCount })}
             </p>
           </div>
           <PositionSection snapshot={snapshot} />
+          {snapshot.type === 'text' && <TypographySection snapshot={snapshot} />}
+          {(snapshot.type === 'text' || snapshot.type === 'shape' || snapshot.type === 'colorBlock') && (
+            <FillSection snapshot={snapshot} />
+          )}
+          {snapshot.type === 'shape' && (
+            <>
+              <StrokeSection snapshot={snapshot} />
+              <ShadowSection snapshot={snapshot} />
+            </>
+          )}
+          {snapshot.type === 'image' && <FitModeSection snapshot={snapshot} />}
         </div>
       )}
 
       {/* Single selection: text */}
       {selectionCount === 1 && snapshot?.type === 'text' && (
         <div>
-          <PositionSection snapshot={snapshot} />
+          <TextContentSection snapshot={snapshot} />
           <TypographySection snapshot={snapshot} />
+          <PositionSection snapshot={snapshot} />
           <FillSection snapshot={snapshot} />
         </div>
       )}
@@ -116,6 +131,7 @@ export function PropertiesPanel() {
       {/* Single selection: image */}
       {selectionCount === 1 && snapshot?.type === 'image' && (
         <div>
+          <ImageSection snapshot={snapshot} />
           <PositionSection snapshot={snapshot} />
           <FitModeSection snapshot={snapshot} />
         </div>

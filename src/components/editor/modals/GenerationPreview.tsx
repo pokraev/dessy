@@ -1,5 +1,5 @@
-'use client';
 
+import { useTranslation } from 'react-i18next';
 import type { GeneratedPage } from '@/types/generation';
 
 interface GenerationPreviewProps {
@@ -17,6 +17,8 @@ export function GenerationPreview({
   onRegenerate,
   onLoadIntoEditor,
 }: GenerationPreviewProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div
@@ -40,7 +42,7 @@ export function GenerationPreview({
           }}
         />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        <span style={{ fontSize: '13px', color: '#888888' }}>Generating your leaflet...</span>
+        <span style={{ fontSize: '13px', color: '#888888' }}>{t('generate.generating')}</span>
       </div>
     );
   }
@@ -72,7 +74,7 @@ export function GenerationPreview({
             cursor: 'pointer',
           }}
         >
-          Try Again
+          {t('generate.tryAgain')}
         </button>
       </div>
     );
@@ -150,7 +152,7 @@ export function GenerationPreview({
             cursor: 'pointer',
           }}
         >
-          Load into Editor
+          {t('generate.loadIntoEditor')}
         </button>
         <button
           type="button"
@@ -167,7 +169,7 @@ export function GenerationPreview({
             cursor: 'pointer',
           }}
         >
-          Regenerate
+          {t('generate.regenerate')}
         </button>
       </div>
     </div>

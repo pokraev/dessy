@@ -8,6 +8,7 @@ interface CanvasState {
   canvasRef: Canvas | null;
   activeTool: ToolId;
   zoom: number;
+  busyMessage: string | null; // non-null = UI locked with overlay showing this message
   selectedObjectIds: string[];
   canUndo: boolean;
   canRedo: boolean;
@@ -27,6 +28,8 @@ interface CanvasState {
   triggerClearCanvas: (() => void) | null;
   // Switch page callback — saves current page, loads target page
   triggerSwitchPage: ((pageIndex: number) => void) | null;
+  // Capture undo checkpoint — call after programmatic property changes (fill, font, text, etc.)
+  captureUndoState: (() => void) | null;
   // Actions
   setActiveTool: (tool: ToolId) => void;
   setZoom: (zoom: number) => void;
@@ -35,19 +38,22 @@ interface CanvasState {
   setViewportTransform: (vt: number[]) => void;
   setHistoryFns: (
     triggerUndo: () => Promise<void>,
-    triggerRedo: () => Promise<void>
+    triggerRedo: () => Promise<void>,
+    captureUndoState: () => void
   ) => void;
   setPersistFns: (triggerSave: () => void, triggerExport: () => void, triggerImport: () => void) => void;
   setLoadGeneratedFn: (fn: ((response: GenerationResponse) => void) | null) => void;
   setClearCanvasFn: (fn: (() => void) | null) => void;
   setSwitchPageFn: (fn: ((pageIndex: number) => void) | null) => void;
   setCanvasRef: (canvas: Canvas | null) => void;
+  setBusyMessage: (msg: string | null) => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
   canvasRef: null,
   activeTool: 'select',
   zoom: 1,
+  busyMessage: null,
   selectedObjectIds: [],
   canUndo: false,
   canRedo: false,
@@ -60,15 +66,17 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   triggerLoadGenerated: null,
   triggerClearCanvas: null,
   triggerSwitchPage: null,
+  captureUndoState: null,
   setActiveTool: (tool) => set({ activeTool: tool }),
   setZoom: (zoom) => set({ zoom }),
   setSelection: (ids) => set({ selectedObjectIds: ids }),
   setUndoRedo: (canUndo, canRedo) => set({ canUndo, canRedo }),
   setViewportTransform: (vt) => set({ viewportTransform: vt }),
-  setHistoryFns: (triggerUndo, triggerRedo) => set({ triggerUndo, triggerRedo }),
+  setHistoryFns: (triggerUndo, triggerRedo, captureUndoState) => set({ triggerUndo, triggerRedo, captureUndoState }),
   setPersistFns: (triggerSave, triggerExport, triggerImport) => set({ triggerSave, triggerExport, triggerImport }),
   setLoadGeneratedFn: (fn) => set({ triggerLoadGenerated: fn }),
   setClearCanvasFn: (fn: (() => void) | null) => set({ triggerClearCanvas: fn }),
   setSwitchPageFn: (fn: ((pageIndex: number) => void) | null) => set({ triggerSwitchPage: fn }),
   setCanvasRef: (canvas) => set({ canvasRef: canvas }),
+  setBusyMessage: (msg) => set({ busyMessage: msg }),
 }));

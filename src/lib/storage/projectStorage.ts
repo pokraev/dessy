@@ -7,7 +7,7 @@ interface SaveResult { success: boolean; error?: 'quota' | 'unknown'; }
 
 export function saveProject(
   projectId: string,
-  data: { meta: ProjectMeta; canvasJSON: object; pageData: object }
+  data: { meta: ProjectMeta; canvasJSON: object; pageData: object; brandData?: object }
 ): SaveResult {
   try {
     localStorage.setItem(
@@ -31,7 +31,7 @@ export function saveProject(
 }
 
 export function loadProject(projectId: string): {
-  meta: ProjectMeta; canvasJSON: object; pageData: object
+  meta: ProjectMeta; canvasJSON: object; pageData: object; brandData?: object
 } | null {
   const raw = localStorage.getItem(`${PROJECT_PREFIX}${projectId}`);
   if (!raw) return null;

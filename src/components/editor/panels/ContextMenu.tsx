@@ -1,6 +1,6 @@
-'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Canvas, FabricObject } from 'fabric';
 
 interface ContextMenuProps {
@@ -11,45 +11,60 @@ interface MenuState {
   visible: boolean;
   x: number;
   y: number;
-  target: (FabricObject & { locked?: boolean }) | null;
+  targets: (FabricObject & { locked?: boolean })[];
 }
 
-/**
- * ContextMenu — right-click context menu for canvas elements.
- *
- * Attaches to the canvas wrapper via onContextMenu and shows a styled menu.
- *
- * Menu items (per UI-SPEC):
- *   Bring Forward
- *   Send Backward
- *   ───────────────────
- *   Duplicate               Ctrl D
- *   ───────────────────
- *   Lock / Unlock
- *   ───────────────────
- *   Delete                  Del     (red text)
- *
- * Styling (per UI-SPEC Context Menu section):
- *   Background: #1e1e1e, border-radius 8px, border 1px #2a2a2a
- *   Shadow: 0 8px 24px rgba(0,0,0,0.5)
- *   Item height: 32px, padding-x: 16px
- *   Font: 13px Inter, #f5f5f5
- *   Destructive (Delete): #ef4444
- *   Shortcut hint: right-aligned, 12px, #888888
- */
 export function ContextMenu({ canvas }: ContextMenuProps) {
+  const { t } = useTranslation();
   const [menu, setMenu] = useState<MenuState>({
     visible: false,
     x: 0,
     y: 0,
-    target: null,
+    targets: [],
   });
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => {
-    setMenu((m) => ({ ...m, visible: false, target: null }));
+    setMenu((m) => ({ ...m, visible: false, targets: [] }));
   }, []);
+
+  // Use Fabric's built-in right-click support (fireRightClick: true, stopContextMenu: true)
+  useEffect(() => {
+    if (!canvas) return;
+
+    function onMouseDown(opt: { e: MouseEvent; target?: FabricObject }) {
+      // DOM button 2 = right click
+      if (opt.e.button !== 2) return;
+
+      const activeObjects = canvas!.getActiveObjects() as (FabricObject & { locked?: boolean })[];
+
+      if (activeObjects.length > 0) {
+        setMenu({
+          visible: true,
+          x: opt.e.clientX,
+          y: opt.e.clientY,
+          targets: activeObjects,
+        });
+      } else if (opt.target) {
+        canvas!.setActiveObject(opt.target);
+        canvas!.requestRenderAll();
+        setMenu({
+          visible: true,
+          x: opt.e.clientX,
+          y: opt.e.clientY,
+          targets: [opt.target as FabricObject & { locked?: boolean }],
+        });
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.on('mouse:down', onMouseDown as any);
+    return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      canvas.off('mouse:down', onMouseDown as any);
+    };
+  }, [canvas]);
 
   // Close on click outside or Escape
   useEffect(() => {
@@ -73,90 +88,72 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
     };
   }, [menu.visible, close]);
 
-  // Handle right-click on canvas wrapper
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!canvas) return;
-
-      e.preventDefault();
-
-      // Find the object at the click point
-      const canvasEl = canvas.getElement();
-      const rect = canvasEl.getBoundingClientRect();
-      const canvasX = e.clientX - rect.left;
-      const canvasY = e.clientY - rect.top;
-
-      const target = canvas.findTarget({
-        clientX: e.clientX,
-        clientY: e.clientY,
-      } as MouseEvent) as unknown as (FabricObject & { locked?: boolean }) | undefined;
-
-      if (!target) {
-        close();
-        return;
-      }
-
-      // Select the target if not already selected
-      canvas.setActiveObject(target);
-      canvas.requestRenderAll();
-      void canvasX; // suppress unused warning
-
-      setMenu({
-        visible: true,
-        x: e.clientX,
-        y: e.clientY,
-        target: target,
-      });
-    },
-    [canvas, close]
-  );
-
   // ── Menu actions ──────────────────────────────────────────────────────────
 
+  function handleBringToFront() {
+    if (!canvas || !menu.targets.length) return;
+    for (const obj of menu.targets) canvas.bringObjectToFront(obj);
+    canvas.requestRenderAll();
+    close();
+  }
+
   function handleBringForward() {
-    if (!canvas || !menu.target) return;
-    canvas.bringObjectForward(menu.target);
+    if (!canvas || !menu.targets.length) return;
+    for (const obj of menu.targets) canvas.bringObjectForward(obj);
     canvas.requestRenderAll();
     close();
   }
 
   function handleSendBackward() {
-    if (!canvas || !menu.target) return;
-    canvas.sendObjectBackwards(menu.target);
+    if (!canvas || !menu.targets.length) return;
+    for (const obj of [...menu.targets].reverse()) canvas.sendObjectBackwards(obj);
+    canvas.requestRenderAll();
+    close();
+  }
+
+  function handleSendToBack() {
+    if (!canvas || !menu.targets.length) return;
+    for (const obj of [...menu.targets].reverse()) canvas.sendObjectToBack(obj);
     canvas.requestRenderAll();
     close();
   }
 
   async function handleDuplicate() {
-    if (!canvas || !menu.target) return;
-    const cloned = await menu.target.clone() as FabricObject;
-    cloned.set({
-      left: (cloned.left ?? 0) + 10,
-      top: (cloned.top ?? 0) + 10,
-    });
-    canvas.add(cloned);
-    canvas.setActiveObject(cloned);
+    if (!canvas || !menu.targets.length) return;
+    const clones: FabricObject[] = [];
+    for (const obj of menu.targets) {
+      const cloned = await obj.clone() as FabricObject;
+      cloned.set({
+        left: (cloned.left ?? 0) + 10,
+        top: (cloned.top ?? 0) + 10,
+      });
+      canvas.add(cloned);
+      clones.push(cloned);
+    }
+    if (clones.length === 1) {
+      canvas.setActiveObject(clones[0]);
+    }
     canvas.requestRenderAll();
     close();
   }
 
   function handleLockUnlock() {
-    if (!canvas || !menu.target) return;
-    const obj = menu.target as FabricObject & { locked?: boolean };
-    const locked = !obj.locked;
-    obj.set({
-      selectable: !locked,
-      evented: !locked,
-      locked: locked,
-    } as Partial<FabricObject>);
+    if (!canvas || !menu.targets.length) return;
+    const locked = !menu.targets[0]?.locked;
+    for (const obj of menu.targets) {
+      obj.set({
+        selectable: !locked,
+        evented: !locked,
+        locked: locked,
+      } as Partial<FabricObject>);
+    }
     canvas.requestRenderAll();
     close();
   }
 
   function handleConvertToImage() {
-    if (!canvas || !menu.target) return;
-    const obj = menu.target as FabricObject & { customType?: string; shapeKind?: string };
-    // Convert the shape to an image placeholder
+    if (!canvas || !menu.targets.length) return;
+    const obj = menu.targets[0] as FabricObject & { customType?: string; shapeKind?: string };
     obj.set({
       fill: '#1e1e1e',
       stroke: '#2a2a2a',
@@ -169,91 +166,76 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
       fitMode: 'fill',
       name: 'Image Frame',
     });
-    // Remove shape-specific props
     delete obj.shapeKind;
     canvas.requestRenderAll();
     close();
   }
 
   function handleDelete() {
-    if (!canvas || !menu.target) return;
-    canvas.remove(menu.target);
+    if (!canvas || !menu.targets.length) return;
+    canvas.discardActiveObject();
+    for (const obj of menu.targets) canvas.remove(obj);
     canvas.requestRenderAll();
     close();
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────────
 
-  const isLocked = menu.target?.locked === true;
-  const targetCustomType = (menu.target as FabricObject & { customType?: string })?.customType;
-  const canConvertToImage = targetCustomType === 'shape' || targetCustomType === 'colorBlock';
+  if (!menu.visible) return null;
 
-  if (!menu.visible) {
-    return (
-      <div
-        className="absolute inset-0"
-        onContextMenu={handleContextMenu}
-        style={{ pointerEvents: 'none' }}
-      />
-    );
-  }
+  const isMulti = menu.targets.length > 1;
+  const isLocked = menu.targets[0]?.locked === true;
+  const targetCustomType = (menu.targets[0] as FabricObject & { customType?: string })?.customType;
+  const canConvertToImage = !isMulti && (targetCustomType === 'shape' || targetCustomType === 'colorBlock');
 
   return (
-    <>
-      {/* Invisible overlay to capture context menu events on canvas */}
-      <div
-        className="absolute inset-0"
-        onContextMenu={handleContextMenu}
-        style={{ pointerEvents: 'none' }}
+    <div
+      ref={menuRef}
+      role="menu"
+      className="fixed z-50 py-1"
+      style={{
+        left: menu.x,
+        top: menu.y,
+        background: '#1e1e1e',
+        borderRadius: '8px',
+        border: '1px solid #2a2a2a',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        minWidth: '200px',
+        userSelect: 'none',
+      }}
+    >
+      <MenuItem label={t('actions.bringToFront')} onClick={handleBringToFront} />
+      <MenuItem label={t('actions.bringForward')} onClick={handleBringForward} />
+      <MenuItem label={t('actions.sendBackward')} onClick={handleSendBackward} />
+      <MenuItem label={t('actions.sendToBack')} onClick={handleSendToBack} />
+
+      <Separator />
+
+      <MenuItem label={t('actions.duplicate')} shortcut="Ctrl D" onClick={handleDuplicate} />
+
+      <Separator />
+
+      <MenuItem
+        label={isLocked ? t('actions.unlock') : t('actions.lock')}
+        onClick={handleLockUnlock}
       />
 
-      {/* Context menu */}
-      <div
-        ref={menuRef}
-        role="menu"
-        className="fixed z-50 py-1"
-        style={{
-          left: menu.x,
-          top: menu.y,
-          background: '#1e1e1e',
-          borderRadius: '8px',
-          border: '1px solid #2a2a2a',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-          minWidth: '200px',
-          userSelect: 'none',
-        }}
-      >
-        <MenuItem label="Bring Forward" onClick={handleBringForward} />
-        <MenuItem label="Send Backward" onClick={handleSendBackward} />
+      {canConvertToImage && (
+        <>
+          <Separator />
+          <MenuItem label={t('actions.convertToImage')} onClick={handleConvertToImage} />
+        </>
+      )}
 
-        <Separator />
+      <Separator />
 
-        <MenuItem label="Duplicate" shortcut="Ctrl D" onClick={handleDuplicate} />
-
-        <Separator />
-
-        <MenuItem
-          label={isLocked ? 'Unlock' : 'Lock'}
-          onClick={handleLockUnlock}
-        />
-
-        {canConvertToImage && (
-          <>
-            <Separator />
-            <MenuItem label="Convert to Image Frame" onClick={handleConvertToImage} />
-          </>
-        )}
-
-        <Separator />
-
-        <MenuItem
-          label="Delete"
-          shortcut="Del"
-          onClick={handleDelete}
-          destructive
-        />
-      </div>
-    </>
+      <MenuItem
+        label={isMulti ? t('actions.deleteCount', { count: menu.targets.length }) : t('actions.delete')}
+        shortcut="Del"
+        onClick={handleDelete}
+        destructive
+      />
+    </div>
   );
 }
 

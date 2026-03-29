@@ -1,6 +1,6 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { Header } from '@/components/editor/ui/Header';
 import { BottomBar } from '@/components/editor/ui/BottomBar';
@@ -8,12 +8,14 @@ import { LeftPanel } from '@/components/editor/panels/LeftPanel';
 import { PropertiesPanel } from '@/components/editor/panels/PropertiesPanel';
 import { ToastProvider } from '@/components/ui/Toast';
 import { CanvasArea } from '@/components/editor/CanvasArea';
-import EditorCanvasClient from '@/components/editor/EditorCanvas.client';
 import { useProjectStore } from '@/stores/projectStore';
+import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 import { ensureFormatPageCount } from '@/lib/pages/page-crud';
 import type { LeafletFormatId } from '@/types/project';
+
+const EditorCanvasInner = lazy(() => import('@/components/editor/EditorCanvasInner'));
 
 const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-headline', name: 'Headline', fontFamily: 'Inter', fontSize: 32, fontWeight: 700, lineHeight: 1.2, letterSpacing: 0, color: '#000000' },
@@ -23,8 +25,16 @@ const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-cta', name: 'CTA', fontFamily: 'Inter', fontSize: 16, fontWeight: 700, lineHeight: 1.2, letterSpacing: 40, color: '#6366f1' },
 ];
 
-export default function EditorPage() {
-  // Read project ID from URL query param (no useSearchParams to avoid Suspense)
+function CanvasLoading() {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full h-full bg-bg flex items-center justify-center">
+      <p className="text-text-secondary text-[13px]">{t('app.loadingCanvas')}</p>
+    </div>
+  );
+}
+
+export default function App() {
   const [projectId, setProjectId] = useState('default');
   const [formatId, setFormatId] = useState<LeafletFormatId>('A4');
   const [ready, setReady] = useState(false);
@@ -50,13 +60,20 @@ export default function EditorPage() {
       useProjectStore.getState().setCurrentProject(ensured);
       sessionStorage.setItem(`dessy-canvas-restore-${id}`, JSON.stringify(saved.canvasJSON));
 
-      // Sync brand swatches from project to brand store
-      useBrandStore.getState().setBrandColors(ensured.brandSwatches ?? []);
+      // Restore brand data if saved
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const brandData = (saved as any).brandData;
+      if (brandData) {
+        if (brandData.brandColors) useBrandStore.getState().setBrandColors(brandData.brandColors);
+        if (brandData.typographyPresets) useBrandStore.getState().setTypographyPresets(brandData.typographyPresets);
+      } else {
+        useBrandStore.getState().setBrandColors(ensured.brandSwatches ?? []);
+      }
     } else if (!useProjectStore.getState().currentProject) {
       const baseProject = {
         meta: {
           id,
-          name: 'Untitled Leaflet',
+          name: i18n.t('app.untitledLeaflet'),
           format,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -71,7 +88,6 @@ export default function EditorPage() {
       useProjectStore.getState().setCurrentProject(ensured);
     }
 
-    // Initialize default typography presets if none are loaded
     if (useBrandStore.getState().typographyPresets.length === 0) {
       useBrandStore.getState().setTypographyPresets(DEFAULT_TYPOGRAPHY_PRESETS);
     }
@@ -79,20 +95,64 @@ export default function EditorPage() {
     setReady(true);
   }, []);
 
+  const busyMessage = useCanvasStore((s) => s.busyMessage);
+
   if (!ready) return null;
 
   return (
+    <>
+    {busyMessage && (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          zIndex: 999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'all',
+        }}
+      >
+        <div style={{
+          background: '#1e1e1e',
+          border: '1px solid #2a2a2a',
+          borderRadius: '12px',
+          padding: '24px 32px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: '2px solid #6366f1',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <span style={{ color: '#f5f5f5', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}>
+            {busyMessage}
+          </span>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )}
     <EditorLayout
       header={<Header />}
       leftPanel={<LeftPanel />}
       canvas={
         <CanvasArea>
-          <EditorCanvasClient projectId={projectId} formatId={formatId} />
+          <Suspense fallback={<CanvasLoading />}>
+            <EditorCanvasInner projectId={projectId} formatId={formatId} />
+          </Suspense>
         </CanvasArea>
       }
       rightPanel={<PropertiesPanel />}
       bottomBar={<BottomBar />}
       toastProvider={<ToastProvider />}
     />
+    </>
   );
 }

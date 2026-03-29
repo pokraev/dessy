@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import type { Canvas, FabricObject } from 'fabric';
@@ -12,6 +11,16 @@ export interface LayerItem {
   type: LayerType;
   visible: boolean;
   locked: boolean;
+  top: number;
+  left: number;
+}
+
+export interface GroupTreeNode {
+  id: string;
+  name: string;
+  type: 'group' | LayerType;
+  children: GroupTreeNode[];
+  childCount: number; // total leaf objects (recursive)
 }
 
 type FabricObjectWithCustom = FabricObject & {
@@ -39,19 +48,73 @@ function getObjectId(obj: FabricObjectWithCustom): string {
 }
 
 function extractLayers(canvas: Canvas): LayerItem[] {
-  const objects = canvas.getObjects() as FabricObjectWithCustom[];
+  const objects = canvas.getObjects() as (FabricObjectWithCustom & { _isDocBackground?: boolean })[];
   // Reverse so top-most object appears first in the list (Figma convention)
-  return [...objects].reverse().map((obj) => ({
-    id: getObjectId(obj),
-    name: obj.name ?? obj.customType ?? 'Layer',
-    type: mapCustomType(obj.customType),
-    visible: obj.visible !== false,
-    locked: obj.locked === true,
-  }));
+  // Filter out the document background rect
+  return [...objects]
+    .reverse()
+    .filter((obj) => !obj._isDocBackground)
+    .map((obj) => ({
+      id: getObjectId(obj),
+      name: obj.name ?? obj.customType ?? 'Layer',
+      type: mapCustomType(obj.customType),
+      visible: obj.visible !== false,
+      locked: obj.locked === true,
+      top: obj.top ?? 0,
+      left: obj.left ?? 0,
+    }));
+}
+
+function buildGroupTree(canvas: Canvas): GroupTreeNode[] {
+  const objects = canvas.getObjects() as (FabricObjectWithCustom & { _isDocBackground?: boolean; getObjects?: () => FabricObject[] })[];
+
+  function buildNode(obj: FabricObjectWithCustom & { getObjects?: () => FabricObject[] }): GroupTreeNode {
+    if (obj.type === 'Group' && obj.getObjects) {
+      const groupChildren = obj.getObjects();
+      const children = groupChildren.map((child) =>
+        buildNode(child as FabricObjectWithCustom & { getObjects?: () => FabricObject[] })
+      );
+      // Sort children: groups first (by childCount desc), then leaves
+      children.sort((a, b) => {
+        if (a.type === 'group' && b.type !== 'group') return -1;
+        if (a.type !== 'group' && b.type === 'group') return 1;
+        return b.childCount - a.childCount;
+      });
+      const childCount = children.reduce((sum, c) => sum + c.childCount, 0);
+      return {
+        id: getObjectId(obj),
+        name: obj.name ?? 'Group',
+        type: 'group',
+        children,
+        childCount,
+      };
+    }
+    return {
+      id: getObjectId(obj),
+      name: obj.name ?? obj.customType ?? 'Object',
+      type: mapCustomType(obj.customType),
+      children: [],
+      childCount: 1,
+    };
+  }
+
+  const nodes = objects
+    .filter((o) => !o._isDocBackground)
+    .map((o) => buildNode(o));
+
+  // Sort top-level: groups first (most children first), then individual objects
+  nodes.sort((a, b) => {
+    if (a.type === 'group' && b.type !== 'group') return -1;
+    if (a.type !== 'group' && b.type === 'group') return 1;
+    return b.childCount - a.childCount;
+  });
+
+  return nodes;
 }
 
 interface UseCanvasLayersReturn {
   layers: LayerItem[];
+  groupTree: GroupTreeNode[];
   moveLayer: (fromIndex: number, toIndex: number) => void;
   toggleVisibility: (id: string) => void;
   toggleLock: (id: string) => void;
@@ -61,14 +124,17 @@ interface UseCanvasLayersReturn {
 
 export function useCanvasLayers(): UseCanvasLayersReturn {
   const [layers, setLayers] = useState<LayerItem[]>([]);
+  const [groupTree, setGroupTree] = useState<GroupTreeNode[]>([]);
 
   const syncLayers = useCallback(() => {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) {
       setLayers([]);
+      setGroupTree([]);
       return;
     }
     setLayers(extractLayers(canvas));
+    setGroupTree(buildGroupTree(canvas));
   }, []);
 
   useEffect(() => {
@@ -187,5 +253,5 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
     useCanvasStore.getState().setActiveTool('select');
   }, []);
 
-  return { layers, moveLayer, toggleVisibility, toggleLock, renameLayer, selectLayer };
+  return { layers, groupTree, moveLayer, toggleVisibility, toggleLock, renameLayer, selectLayer };
 }

@@ -1,13 +1,15 @@
-'use client';
 
 import { useState, useRef } from 'react';
-import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe } from 'lucide-react';
+import { setLanguage } from '@/i18n';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeafletModal';
 
 export function Header() {
+  const { t, i18n } = useTranslation();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -72,7 +74,7 @@ export function Header() {
             className="text-text-primary cursor-pointer hover:bg-surface-raised rounded px-2 py-1 transition-colors truncate"
             style={{ fontSize: '13px', fontWeight: 500, height: '32px', lineHeight: '32px' }}
             onClick={handleNameClick}
-            title="Click to rename"
+            title={t('header.clickToRename')}
           >
             {projectName}
           </span>
@@ -80,7 +82,7 @@ export function Header() {
 
         {/* AI Generate button */}
         <button
-          aria-label="Open AI leaflet generator"
+          aria-label={t('header.aiGenerate')}
           className="flex items-center gap-1.5 text-white font-medium"
           style={{
             height: '32px',
@@ -98,14 +100,14 @@ export function Header() {
           onClick={() => { useEditorStore.getState().setGenerateModalOpen(true); }}
         >
           <Sparkles size={14} />
-          AI Generate
+          {t('header.aiGenerate')}
         </button>
       </div>
 
       {/* Center: Undo/Redo */}
       <div className="flex items-center gap-1">
         <button
-          aria-label="Undo"
+          aria-label={t('header.undo')}
           disabled={!canUndo}
           className="flex items-center justify-center rounded-lg transition-colors"
           style={{
@@ -127,7 +129,7 @@ export function Header() {
           />
         </button>
         <button
-          aria-label="Redo"
+          aria-label={t('header.redo')}
           disabled={!canRedo}
           className="flex items-center justify-center rounded-lg transition-colors"
           style={{
@@ -153,7 +155,7 @@ export function Header() {
       {/* Right: Save Project + Export/Import JSON */}
       <div className="flex items-center gap-2">
         <button
-          aria-label="Save project"
+          aria-label={t('header.saveProject')}
           className="flex items-center gap-1.5 justify-center text-text-primary font-medium transition-colors"
           style={{
             height: '32px',
@@ -171,10 +173,10 @@ export function Header() {
           }}
         >
           <Save size={14} />
-          Save Project
+          {t('header.saveProject')}
         </button>
         <button
-          aria-label="Export project as JSON"
+          aria-label={t('header.exportJson')}
           className="flex items-center gap-1.5 justify-center text-text-primary transition-colors hover:bg-surface-raised"
           style={{
             height: '32px',
@@ -191,10 +193,10 @@ export function Header() {
           }}
         >
           <Download size={14} />
-          Export JSON
+          {t('header.exportJson')}
         </button>
         <button
-          aria-label="Import project from JSON"
+          aria-label={t('header.importJson')}
           className="flex items-center gap-1.5 justify-center text-text-primary transition-colors hover:bg-surface-raised"
           style={{
             height: '32px',
@@ -211,13 +213,42 @@ export function Header() {
           }}
         >
           <Upload size={14} />
-          Import JSON
+          {t('header.importJson')}
+        </button>
+
+        <div style={{ width: '1px', height: '20px', background: '#2a2a2a', flexShrink: 0 }} />
+
+        {/* Language selector */}
+        <button
+          onClick={() => {
+            const next = i18n.language === 'bg' ? 'en' : 'bg';
+            setLanguage(next);
+          }}
+          title={t('lang.' + (i18n.language === 'bg' ? 'en' : 'bg'))}
+          style={{
+            height: '32px',
+            paddingLeft: '8px',
+            paddingRight: '8px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontWeight: 500,
+            background: 'transparent',
+            border: '1px solid #2a2a2a',
+            cursor: 'pointer',
+            color: '#888',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <Globe size={14} />
+          {i18n.language.toUpperCase()}
         </button>
 
         <div style={{ width: '1px', height: '20px', background: '#2a2a2a', flexShrink: 0 }} />
 
         <button
-          aria-label="Clear canvas"
+          aria-label={t('header.clearCanvas')}
           className="flex items-center gap-1.5 justify-center transition-colors"
           style={{
             height: '32px',
@@ -263,10 +294,10 @@ export function Header() {
             }}
           >
             <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, color: '#f5f5f5' }}>
-              Clear Canvas
+              {t('header.clearCanvas')}
             </h3>
             <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#888888', lineHeight: 1.5 }}>
-              This will remove all elements and reset to a single blank page. This action cannot be undone.
+              {t('header.clearCanvasConfirm')}
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button
@@ -283,7 +314,7 @@ export function Header() {
                   cursor: 'pointer',
                 }}
               >
-                Cancel
+                {t('header.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -304,7 +335,7 @@ export function Header() {
                   cursor: 'pointer',
                 }}
               >
-                Clear Everything
+                {t('header.clearEverything')}
               </button>
             </div>
           </div>

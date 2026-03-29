@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { Gradient } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
@@ -61,6 +61,7 @@ function AngleArrow({ angle }: { angle: number }) {
 }
 
 export function FillSection({ snapshot }: FillSectionProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const [fillMode, setFillMode] = useState<FillMode>('solid');
   const [gradStop1, setGradStop1] = useState('#6366f1');
@@ -143,7 +144,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Fill
+          {t('fill.title')}
         </span>
         <ChevronDown
           size={16}
@@ -161,13 +162,13 @@ export function FillSection({ snapshot }: FillSectionProps) {
           {canGradient && (
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
               <button style={modeButtonStyle(fillMode === 'solid')} onClick={() => setFillMode('solid')}>
-                Solid
+                {t('fill.solid')}
               </button>
               <button style={modeButtonStyle(fillMode === 'gradient')} onClick={() => setFillMode('gradient')}>
-                Gradient
+                {t('fill.gradient')}
               </button>
               <button style={modeButtonStyle(fillMode === 'none')} onClick={() => { setFillMode('none'); handleClearFill(); }}>
-                None
+                {t('fill.none')}
               </button>
             </div>
           )}
@@ -175,10 +176,10 @@ export function FillSection({ snapshot }: FillSectionProps) {
           {!canGradient && (
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
               <button style={modeButtonStyle(fillMode !== 'none')} onClick={() => setFillMode('solid')}>
-                Solid
+                {t('fill.solid')}
               </button>
               <button style={modeButtonStyle(fillMode === 'none')} onClick={() => { setFillMode('none'); handleClearFill(); }}>
-                None
+                {t('fill.none')}
               </button>
             </div>
           )}
@@ -203,7 +204,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
               {/* Stop colors */}
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>From</span>
+                  <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>{t('fill.from')}</span>
                   <ColorPicker
                     value={gradStop1}
                     onChange={(hex) => {
@@ -213,7 +214,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>To</span>
+                  <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>{t('fill.to')}</span>
                   <ColorPicker
                     value={gradStop2}
                     onChange={(hex) => {

@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import type { Canvas as FabricCanvas, FabricObject } from 'fabric';
@@ -86,33 +85,56 @@ export function useFabricCanvas(
       const history = historyRef.current;
       useCanvasStore.getState().setHistoryFns(
         () => history.undo(canvas!),
-        () => history.redo(canvas!)
+        () => history.redo(canvas!),
+        () => history.captureState(canvas!)
       );
 
       setCanvasInstance(canvas);
 
       // Bridge Fabric.js selection events to Zustand
-      canvas.on('selection:created', (e) => {
-        const ids = (e.selected ?? []).map((obj) => (obj as { id?: string }).id ?? '');
+      // Always use getActiveObjects() to get the full selection (not just e.selected which may be partial)
+      function syncSelection() {
+        const ids = canvas!.getActiveObjects().map((obj) => (obj as { id?: string }).id ?? '');
         useCanvasStore.getState().setSelection(ids);
-      });
+      }
 
-      canvas.on('selection:updated', (e) => {
-        const ids = (e.selected ?? []).map((obj) => (obj as { id?: string }).id ?? '');
-        useCanvasStore.getState().setSelection(ids);
-      });
+      canvas.on('selection:created', syncSelection);
+      canvas.on('selection:updated', syncSelection);
 
       canvas.on('selection:cleared', () => {
         useCanvasStore.getState().setSelection([]);
       });
 
-      // Track right-click context position using getScenePoint (not getPointer — removed in Fabric.js 7)
-      canvas.on('mouse:down', (opt) => {
-        if ((opt.e as MouseEvent).button === 2) {
-          // Scene coordinates for context menu positioning
-          const _point = canvas!.getScenePoint(opt.e as MouseEvent);
-          void _point; // Available for future context menu use
+      // Double-click on image placeholder — trigger file upload
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      canvas.on('mouse:dblclick', (opt: any) => {
+        const target = opt.target as FabricObject & { customType?: string } | undefined;
+        if (target?.customType === 'image') {
+          window.dispatchEvent(new CustomEvent('dessy-image-upload', { detail: { targetId: (target as FabricObject & { id?: string }).id } }));
         }
+      });
+
+      // Alt+click cycling — select the object below the current one
+      canvas.on('mouse:down', (opt) => {
+        const e = opt.e as MouseEvent;
+        if (e.button !== 0 || !e.altKey) return;
+
+        const point = canvas!.getScenePoint(e);
+        const allAtPoint = canvas!.getObjects().filter((obj) => {
+          const custom = obj as FabricObject & { _isDocBackground?: boolean };
+          if (custom._isDocBackground) return false;
+          return obj.containsPoint(point);
+        });
+        if (allAtPoint.length < 2) return;
+
+        const current = canvas!.getActiveObject();
+        const currentIdx = current ? allAtPoint.indexOf(current) : -1;
+        // Cycle: go one below, wrap around to top
+        const nextIdx = currentIdx <= 0 ? allAtPoint.length - 1 : currentIdx - 1;
+        canvas!.setActiveObject(allAtPoint[nextIdx]);
+        canvas!.requestRenderAll();
+        e.preventDefault();
+        e.stopPropagation();
       });
 
       // Fabric.js 7 built-in AligningGuidelines — handles move + scale snap properly
@@ -140,7 +162,23 @@ export function useFabricCanvas(
 
     initCanvas();
 
+    // Resize canvas when container changes size
+    const container = canvasEl.parentElement;
+    let resizeObserver: ResizeObserver | null = null;
+    if (container) {
+      resizeObserver = new ResizeObserver((entries) => {
+        if (!canvas) return;
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          canvas.setDimensions({ width, height });
+          canvas.requestRenderAll();
+        }
+      });
+      resizeObserver.observe(container);
+    }
+
     return () => {
+      resizeObserver?.disconnect();
       isMounted = false;
       if (canvas) {
         canvas.off('selection:created');

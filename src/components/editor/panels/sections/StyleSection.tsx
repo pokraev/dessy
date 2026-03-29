@@ -1,7 +1,10 @@
-'use client';
 
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ChevronDown, Globe } from 'lucide-react';
+import { extractBrandFromUrl } from '@/lib/brand/extract-from-url';
+import { getApiKey, getClaudeApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
+import { saveBrand, setActiveBrandId } from '@/lib/storage/brandStorage';
 import { useBrandStore } from '@/stores/brandStore';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -13,6 +16,7 @@ import { NumberInput } from '@/components/editor/panels/NumberInput';
 import { GoogleFontsDropdown } from '@/components/editor/panels/GoogleFontsDropdown';
 import { loadGoogleFont } from '@/hooks/useGoogleFonts';
 import type { TypographyPreset } from '@/types/brand';
+import { BrandManager } from './BrandManager';
 
 // Default presets used when brandStore has no custom presets
 const DEFAULT_PRESETS: TypographyPreset[] = [
@@ -24,11 +28,11 @@ const DEFAULT_PRESETS: TypographyPreset[] = [
 ];
 
 const FONT_WEIGHTS = [
-  { value: 300, label: 'Light' },
-  { value: 400, label: 'Regular' },
-  { value: 500, label: 'Medium' },
-  { value: 600, label: 'SemiBold' },
-  { value: 700, label: 'Bold' },
+  { value: 300, labelKey: 'typography.light' },
+  { value: 400, labelKey: 'typography.regular' },
+  { value: 500, labelKey: 'typography.medium' },
+  { value: 600, labelKey: 'typography.semiBold' },
+  { value: 700, labelKey: 'typography.bold' },
 ];
 
 const sectionHeaderStyle: React.CSSProperties = {
@@ -43,7 +47,8 @@ const sectionHeaderStyle: React.CSSProperties = {
 };
 
 export function StyleSection() {
-  const { brandColors, typographyPresets, addBrandSwatch, updateBrandSwatch, removeBrandSwatch, setTypographyPresets } = useBrandStore();
+  const { t } = useTranslation();
+  const { brandColors, typographyPresets, addBrandSwatch, updateBrandSwatch, removeBrandSwatch, setBrandColors, setTypographyPresets } = useBrandStore();
   const canvasRef = useCanvasStore((s) => s.canvasRef);
   const currentProject = useProjectStore((s) => s.currentProject);
 
@@ -61,6 +66,132 @@ export function StyleSection() {
 
   // Typography Presets state
   const [expandedPresetId, setExpandedPresetId] = useState<string | null>(null);
+
+  // Website brand extraction
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestRef = useRef<HTMLDivElement>(null);
+
+  function handleUrlChange(value: string) {
+    setWebsiteUrl(value);
+    if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current);
+    if (value.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    suggestTimerRef.current = setTimeout(async () => {
+      try {
+        const googleUrl = `https://suggestqueries.google.com/complete/search?client=firefox%26q=${encodeURIComponent(value)}`;
+        const res = await fetch(`https://api.codetabs.com/v1/proxy/?quest=${googleUrl}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const items = (Array.isArray(data[1]) ? data[1] : []) as string[];
+        setSuggestions(items.slice(0, 5));
+        setShowSuggestions(items.length > 0);
+      } catch { /* ignore */ }
+    }, 300);
+  }
+
+  function selectSuggestion(value: string) {
+    setWebsiteUrl(value);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    if (!showSuggestions) return;
+    function onMouseDown(e: MouseEvent) {
+      if (suggestRef.current && !suggestRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [showSuggestions]);
+
+  async function handleExtractBrand() {
+    if (!websiteUrl.trim()) return;
+    const provider = getProvider();
+    const apiKey = provider === 'claude' ? getClaudeApiKey() : getApiKey();
+    if (!apiKey) {
+      setExtractError(t('brand.noApiKey'));
+      return;
+    }
+    setExtracting(true);
+    setExtractError(null);
+    useCanvasStore.getState().setBusyMessage(t('brand.extracting'));
+    try {
+      let url = websiteUrl.trim();
+      // "dnevnik bg" → "dnevnik.bg", "apple" → "apple.com"
+      url = url.replace(/\s+(com|net|org|io|bg|de|fr|uk|eu|co|us|ru|info|biz|me|tv|cc|ai)$/i, '.$1');
+      url = url.replace(/\s+/g, '');
+      if (!url.includes('.')) url += '.com';
+      if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+      const brand = await extractBrandFromUrl(url, apiKey, provider);
+
+      // Capture undo state before applying
+      useCanvasStore.getState().captureUndoState?.();
+
+      // Save brand and activate it
+      saveBrand(brand);
+      setActiveBrandId(brand.id);
+      window.dispatchEvent(new Event('dessy-brands-changed'));
+
+      // Apply colors and typography to stores
+      setBrandColors(brand.colors);
+      if (brand.typographyPresets.length > 0) {
+        setTypographyPresets(brand.typographyPresets);
+      }
+
+      // Apply brand to canvas objects immediately
+      const canvas = canvasRef;
+      if (canvas && brand.colors.length > 0) {
+        const colors = brand.colors.map((c) => c.hex);
+
+        // Load brand fonts
+        const fontFamilies = [...new Set(brand.typographyPresets.map((p) => p.fontFamily))];
+        for (const family of fontFamilies) {
+          await loadGoogleFont(family);
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const objects = canvas.getObjects() as any[];
+        for (const obj of objects) {
+          if (obj._isDocBackground) {
+            const bgColor = brand.colors.find((c) => c.name?.toLowerCase().includes('background'))?.hex ?? colors[colors.length - 1];
+            if (bgColor) obj.set({ fill: bgColor });
+            continue;
+          }
+          if (obj.customType === 'text') {
+            const textColor = brand.colors.find((c) => c.name?.toLowerCase().includes('text'))?.hex ?? colors[0];
+            if (textColor) obj.set({ fill: textColor });
+            const headlinePreset = brand.typographyPresets.find((p) => p.name === 'Headline');
+            const bodyPreset = brand.typographyPresets.find((p) => p.name === 'Body');
+            const fontSize = obj.fontSize ?? 14;
+            const preset = fontSize >= 20 ? headlinePreset : bodyPreset;
+            if (preset) obj.set({ fontFamily: preset.fontFamily, fontWeight: preset.fontWeight });
+          } else if (obj.customType === 'colorBlock' || obj.customType === 'shape') {
+            const accent = brand.colors.find((c) => c.name?.toLowerCase().includes('accent') || c.name?.toLowerCase().includes('primary'))?.hex ?? colors[1];
+            if (accent) obj.set({ fill: accent });
+          }
+        }
+        canvas.requestRenderAll();
+      }
+
+      setWebsiteUrl('');
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setExtracting(false);
+      useCanvasStore.getState().setBusyMessage(null);
+    }
+  }
 
   // Brand Colors: section open/closed
   const [brandColorsOpen, setBrandColorsOpen] = useState(true);
@@ -176,6 +307,95 @@ export function StyleSection() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
 
+      {/* BRAND MANAGER */}
+      <BrandManager />
+
+      {/* EXTRACT FROM WEBSITE */}
+      <div style={{ padding: '8px 16px 12px', borderBottom: '1px solid #2a2a2a' }}>
+        <span style={{ ...sectionHeaderStyle, marginBottom: '6px' }}>{t('brand.fromWebsite')}</span>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <div ref={suggestRef} style={{ flex: 1, position: 'relative' }}>
+            <input
+              type="text"
+              value={websiteUrl}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { setShowSuggestions(false); handleExtractBrand(); }
+                if (e.key === 'Escape') setShowSuggestions(false);
+              }}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+              placeholder={t('brand.websitePlaceholder')}
+              style={{
+                width: '100%',
+                padding: '6px 8px',
+                fontSize: '12px',
+                background: '#0a0a0a',
+                border: '1px solid #2a2a2a',
+                borderRadius: '4px',
+                color: '#f5f5f5',
+                outline: 'none',
+              }}
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                marginTop: '2px',
+                background: '#1e1e1e',
+                border: '1px solid #2a2a2a',
+                borderRadius: '6px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                zIndex: 20,
+                overflow: 'hidden',
+              }}>
+                {suggestions.map((s, i) => (
+                  <div
+                    key={i}
+                    onClick={() => selectSuggestion(s)}
+                    style={{
+                      padding: '6px 10px',
+                      fontSize: '12px',
+                      color: '#f5f5f5',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#2a2a2a'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleExtractBrand}
+            disabled={extracting || !websiteUrl.trim()}
+            style={{
+              padding: '6px 10px',
+              fontSize: '12px',
+              fontWeight: 500,
+              background: '#6366f1',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: extracting ? 'wait' : 'pointer',
+              opacity: extracting || !websiteUrl.trim() ? 0.5 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <Globe size={12} />
+            {extracting ? '...' : t('brand.extract')}
+          </button>
+        </div>
+        {extractError && (
+          <p style={{ fontSize: '11px', color: '#ef4444', margin: '4px 0 0' }}>{extractError}</p>
+        )}
+      </div>
+
       {/* BRAND COLORS */}
       <div style={{ borderBottom: '1px solid #2a2a2a' }}>
         <button
@@ -192,7 +412,7 @@ export function StyleSection() {
             cursor: 'pointer',
           }}
         >
-          <span style={sectionHeaderStyle as React.CSSProperties}>BRAND COLORS</span>
+          <span style={sectionHeaderStyle as React.CSSProperties}>{t('brand.colors')}</span>
           <ChevronDown
             size={16}
             style={{
@@ -244,7 +464,7 @@ export function StyleSection() {
                     fontSize: '14px',
                     lineHeight: 1,
                   }}
-                  title="Add brand swatch"
+                  title={t('brand.addSwatch')}
                 >
                   +
                 </button>
@@ -262,26 +482,26 @@ export function StyleSection() {
                       value={swatch.hex}
                       onChange={(hex) => handleSwatchColorChange(swatch.id, hex)}
                     />
-                    <span style={{ fontSize: '12px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>Color</span>
+                    <span style={{ fontSize: '12px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>{t('brand.color')}</span>
                   </div>
                   <input
                     type="text"
                     value={swatch.name ?? ''}
                     onChange={(e) => handleSwatchNameChange(swatch.id, e.target.value)}
-                    placeholder="Swatch name"
+                    placeholder={t('brand.swatchName')}
                     style={{ ...inputStyle, fontSize: '12px' }}
                   />
                   {removeConfirmId === swatch.id ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <p style={{ fontSize: '11px', color: '#f5f5f5', fontFamily: 'Inter, sans-serif', margin: 0 }}>
-                        Remove this swatch? Elements using it will keep the color value.
+                        {t('brand.removeConfirm')}
                       </p>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button
                           onClick={() => setRemoveConfirmId(null)}
                           style={{ ...btnStyle, flex: 1 }}
                         >
-                          Keep Swatch
+                          {t('brand.keepSwatch')}
                         </button>
                         <button
                           onClick={() => {
@@ -291,7 +511,7 @@ export function StyleSection() {
                           }}
                           style={{ ...btnStyle, flex: 1, background: '#ef4444', border: '1px solid #ef4444' }}
                         >
-                          Remove Swatch
+                          {t('brand.removeSwatch')}
                         </button>
                       </div>
                     </div>
@@ -308,7 +528,7 @@ export function StyleSection() {
                         fontSize: '11px',
                       }}
                     >
-                      Remove Swatch
+                      {t('brand.removeSwatch')}
                     </button>
                   )}
                 </div>
@@ -334,7 +554,7 @@ export function StyleSection() {
             cursor: 'pointer',
           }}
         >
-          <span style={sectionHeaderStyle as React.CSSProperties}>GENERATE PALETTE</span>
+          <span style={sectionHeaderStyle as React.CSSProperties}>{t('brand.generatePalette')}</span>
           <ChevronDown
             size={16}
             style={{
@@ -350,7 +570,7 @@ export function StyleSection() {
             {/* Base color + generate button row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ColorPicker value={paletteBaseColor} onChange={setPaletteBaseColor} />
-              <span style={{ fontSize: '12px', color: '#888888', fontFamily: 'Inter, sans-serif', flex: 1 }}>Base color</span>
+              <span style={{ fontSize: '12px', color: '#888888', fontFamily: 'Inter, sans-serif', flex: 1 }}>{t('brand.baseColor')}</span>
               <button
                 onClick={handleGeneratePalette}
                 style={{
@@ -361,7 +581,7 @@ export function StyleSection() {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#6366f1'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#2a2a2a'; }}
               >
-                Generate
+                {t('brand.generate')}
               </button>
             </div>
 
@@ -399,7 +619,7 @@ export function StyleSection() {
                     cursor: brandColors.length >= 10 ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  Add all to brand colors
+                  {t('brand.addAllToBrand')}
                 </button>
               </div>
             )}
@@ -423,7 +643,7 @@ export function StyleSection() {
             cursor: 'pointer',
           }}
         >
-          <span style={sectionHeaderStyle as React.CSSProperties}>TYPOGRAPHY PRESETS</span>
+          <span style={sectionHeaderStyle as React.CSSProperties}>{t('brand.typographyPresets')}</span>
           <ChevronDown
             size={16}
             style={{
@@ -497,7 +717,7 @@ export function StyleSection() {
                         style={selectStyle}
                       >
                         {FONT_WEIGHTS.map((w) => (
-                          <option key={w.value} value={w.value}>{w.value} — {w.label}</option>
+                          <option key={w.value} value={w.value}>{w.value} — {t(w.labelKey)}</option>
                         ))}
                       </select>
 
@@ -534,7 +754,7 @@ export function StyleSection() {
                       {/* Color */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
-                          Color
+                          {t('brand.color')}
                         </span>
                         <ColorPicker
                           value={preset.color}

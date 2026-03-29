@@ -1,6 +1,6 @@
-'use client';
 
 import { useRef, useState, useCallback, useEffect, type RefCallback } from 'react';
+import i18n from '@/i18n';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
@@ -13,6 +13,7 @@ import { loadGeneratedLeaflet } from '@/lib/ai/canvas-loader';
 import type { GenerationResponse } from '@/types/generation';
 import { useProjectStore } from '@/stores/projectStore';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { useBrandStore } from '@/stores/brandStore';
 import GuidesOverlay from '@/components/editor/GuidesOverlay';
 import { ContextMenu } from '@/components/editor/panels/ContextMenu';
 import { KeyboardShortcutsModal } from '@/components/editor/ui/KeyboardShortcutsModal';
@@ -31,7 +32,8 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
     setCanvasEl(el);
   }, []);
   const [hasElements, setHasElements] = useState(false);
-  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number; _t?: number } | null>(null);
+  const imageUploadRef = useRef<HTMLInputElement>(null);
 
   // Mount Fabric.js canvas — canvasInstance becomes non-null once async init completes
   const { canvasRef, canvasInstance, historyRef } = useFabricCanvas(canvasEl, formatId);
@@ -66,6 +68,59 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
     };
   }, [canvasInstance]);
 
+  // Double-click on image placeholder — open file picker
+  useEffect(() => {
+    function onImageUpload() {
+      imageUploadRef.current?.click();
+    }
+    window.addEventListener('dessy-image-upload', onImageUpload);
+    return () => window.removeEventListener('dessy-image-upload', onImageUpload);
+  }, []);
+
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !canvasInstance) return;
+
+    const obj = canvasInstance.getActiveObject();
+    if (!obj) return;
+
+    useCanvasStore.getState().captureUndoState?.();
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const { FabricImage } = await import('fabric');
+    const img = await FabricImage.fromURL(dataUrl);
+    const targetW = (obj.width ?? 100) * (obj.scaleX ?? 1);
+    const targetH = (obj.height ?? 100) * (obj.scaleY ?? 1);
+    img.set({
+      left: obj.left, top: obj.top,
+      originX: 'left', originY: 'top',
+      scaleX: targetW / (img.width || 1),
+      scaleY: targetH / (img.height || 1),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const custom = obj as any;
+    Object.assign(img, {
+      customType: 'image', name: custom.name || 'Image',
+      id: custom.id || crypto.randomUUID(), locked: false,
+      visible: true, imageId: 'uploaded', fitMode: custom.fitMode || 'fill',
+    });
+    const prev = canvasInstance.renderOnAddRemove;
+    canvasInstance.renderOnAddRemove = false;
+    const idx = canvasInstance.getObjects().indexOf(obj);
+    canvasInstance.insertAt(idx, img as unknown as FabricObject);
+    canvasInstance.remove(obj);
+    canvasInstance.renderOnAddRemove = prev;
+    canvasInstance.setActiveObject(img as unknown as FabricObject);
+    canvasInstance.requestRenderAll();
+    if (imageUploadRef.current) imageUploadRef.current.value = '';
+  }, [canvasInstance]);
+
   // Register triggerSave and triggerExport callbacks in canvasStore so Header can call them
   useEffect(() => {
     const canvas = canvasInstance;
@@ -75,16 +130,22 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       const { currentProject } = useProjectStore.getState();
       if (!currentProject) return;
       const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+      const brandState = useBrandStore.getState();
       const result = saveProject(projectId, {
         meta: currentProject.meta,
         canvasJSON,
         pageData: { pages: currentProject.pages, currentPageIndex: currentProject.currentPageIndex },
+        brandData: {
+          brandColors: brandState.brandColors,
+          typographyPresets: brandState.typographyPresets,
+          recentColors: brandState.recentColors,
+        },
       });
       if (result.success) {
         useProjectStore.getState().setLastSaved(new Date());
-        toast.success('Project saved');
+        toast.success(i18n.t('canvas.projectSaved'));
       } else if (result.error === 'quota') {
-        toast.error('Storage full. Export your project to free up space.');
+        toast.error(i18n.t('canvas.storageFull'));
       }
     };
 
@@ -92,7 +153,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       const { currentProject } = useProjectStore.getState();
       if (!currentProject) return;
       exportProjectJSON(canvas, currentProject.meta);
-      toast.success('Project exported');
+      toast.success(i18n.t('canvas.projectExported'));
     };
 
     const triggerImport = () => {
@@ -115,7 +176,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       useProjectStore.getState().setCurrentProject({
         meta: {
           id: projectId,
-          name: 'Untitled Leaflet',
+          name: i18n.t('app.untitledLeaflet'),
           format: 'A4',
           createdAt: now,
           updatedAt: now,
@@ -230,9 +291,9 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
           typographyPresets: [],
         });
         setHasElements(canvasInstance.getObjects().length > 0);
-        toast.success('Project loaded');
+        toast.success(i18n.t('canvas.projectLoaded'));
       } catch {
-        toast.error('Could not load project. Make sure the file is a valid Leaflet Factory JSON.');
+        toast.error(i18n.t('canvas.projectLoadError'));
       }
     },
     [canvasInstance]
@@ -309,7 +370,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
   // Prevent default browser context menu on the canvas area
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setContextMenuPos({ x: e.clientX, y: e.clientY });
+    setContextMenuPos({ x: e.clientX, y: e.clientY, _t: Date.now() });
   }, []);
 
   return (
@@ -319,6 +380,14 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       onDragOver={handleDragOver}
       onContextMenu={handleContextMenu}
     >
+      {/* Hidden file input for image upload — triggered by double-click on image placeholder */}
+      <input
+        ref={imageUploadRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleImageUpload}
+      />
       {/* Hidden file input for JSON import — triggered via triggerImport callback */}
       <input
         ref={importFileRef}
@@ -344,7 +413,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
             whiteSpace: 'nowrap',
           }}
         >
-          Your canvas is ready &mdash; select a tool to start designing
+          {i18n.t('canvas.canvasReady')}
         </div>
       )}
 

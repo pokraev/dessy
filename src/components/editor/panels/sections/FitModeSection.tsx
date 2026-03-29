@@ -1,6 +1,6 @@
-'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import type { ObjectSnapshot } from '@/hooks/useSelectedObject';
@@ -24,6 +24,7 @@ function updateCanvasObject(updates: Record<string, unknown>) {
 }
 
 export function FitModeSection({ snapshot }: FitModeSectionProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
 
   if (snapshot.type !== 'image') return null;
@@ -74,7 +75,7 @@ export function FitModeSection({ snapshot }: FitModeSectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Fit Mode
+          {t('fitMode.title')}
         </span>
         <ChevronDown
           size={16}
@@ -93,19 +94,19 @@ export function FitModeSection({ snapshot }: FitModeSectionProps) {
               style={{ ...buttonStyle(activeFitMode === 'fill'), borderRadius: '4px 0 0 4px' }}
               onClick={() => handleFitMode('fill')}
             >
-              Fill
+              {t('fitMode.fill')}
             </button>
             <button
               style={{ ...buttonStyle(activeFitMode === 'fit'), borderRadius: '0', borderLeft: 'none', borderRight: 'none' }}
               onClick={() => handleFitMode('fit')}
             >
-              Fit
+              {t('fitMode.fit')}
             </button>
             <button
               style={{ ...buttonStyle(activeFitMode === 'stretch'), borderRadius: '0 4px 4px 0' }}
               onClick={() => handleFitMode('stretch')}
             >
-              Stretch
+              {t('fitMode.stretch')}
             </button>
           </div>
         </div>

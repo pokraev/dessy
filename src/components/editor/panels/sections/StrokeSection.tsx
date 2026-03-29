@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { ColorPicker } from '../ColorPicker';
 import { NumberInput } from '../NumberInput';
@@ -47,6 +47,7 @@ function styleButtonStyle(active: boolean): React.CSSProperties {
 }
 
 export function StrokeSection({ snapshot }: StrokeSectionProps) {
+  const { t } = useTranslation();
   const [isOn, setIsOn] = useState(snapshot.strokeWidth > 0);
   const [strokeStyle, setStrokeStyle] = useState<StrokeStyle>('solid');
 
@@ -97,14 +98,14 @@ export function StrokeSection({ snapshot }: StrokeSectionProps) {
             fontFamily: 'Inter, sans-serif',
           }}
         >
-          Stroke
+          {t('stroke.title')}
         </span>
         <label
           style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-          title="Stroke"
+          title={t('stroke.title')}
         >
           <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif' }}>
-            Stroke
+            {t('stroke.title')}
           </span>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <input
@@ -147,7 +148,7 @@ export function StrokeSection({ snapshot }: StrokeSectionProps) {
           {/* Color row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', width: '40px' }}>
-              Color
+              {t('stroke.color')}
             </span>
             <ColorPicker value={strokeColor} onChange={handleColorChange} />
           </div>
@@ -155,7 +156,7 @@ export function StrokeSection({ snapshot }: StrokeSectionProps) {
           {/* Width row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', width: '40px' }}>
-              Width
+              {t('stroke.width')}
             </span>
             <div style={{ flex: 1 }}>
               <NumberInput
@@ -171,26 +172,26 @@ export function StrokeSection({ snapshot }: StrokeSectionProps) {
           {/* Style buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0px', marginBottom: '4px' }}>
             <span style={{ fontSize: '11px', color: '#888888', fontFamily: 'Inter, sans-serif', width: '40px', marginRight: '8px' }}>
-              Style
+              {t('stroke.style')}
             </span>
             <div style={{ display: 'flex' }}>
               <button
                 style={{ ...styleButtonStyle(strokeStyle === 'solid'), borderRadius: '4px 0 0 4px' }}
                 onClick={() => handleStyleChange('solid')}
               >
-                Solid
+                {t('stroke.solid')}
               </button>
               <button
                 style={{ ...styleButtonStyle(strokeStyle === 'dashed'), borderRadius: '0', borderLeft: 'none', borderRight: 'none' }}
                 onClick={() => handleStyleChange('dashed')}
               >
-                Dashed
+                {t('stroke.dashed')}
               </button>
               <button
                 style={{ ...styleButtonStyle(strokeStyle === 'dotted'), borderRadius: '0 4px 4px 0' }}
                 onClick={() => handleStyleChange('dotted')}
               >
-                Dotted
+                {t('stroke.dotted')}
               </button>
             </div>
           </div>

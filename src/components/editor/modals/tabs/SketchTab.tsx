@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, Upload, Loader2 } from 'lucide-react';
 import { FoldTypePicker } from '../FoldTypePicker';
 import { StylePicker } from '../StylePicker';
@@ -24,6 +24,7 @@ export function SketchTab({
   onGenerate,
   isGenerating,
 }: SketchTabProps) {
+  const { t } = useTranslation();
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +69,7 @@ export function SketchTab({
           fontWeight: 500,
         }}
       >
-        Upload a photo of your hand-drawn sketch
+        {t('generate.uploadSketch')}
       </div>
 
       {/* Drop zone */}
@@ -92,12 +93,12 @@ export function SketchTab({
         {isConverting ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <Loader2 size={32} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: '13px', color: '#888888' }}>Converting image...</span>
+            <span style={{ fontSize: '13px', color: '#888888' }}>{t('generate.convertingImage')}</span>
           </div>
         ) : imagePreview ? (
           <img
             src={imagePreview}
-            alt="Sketch preview"
+            alt={t('generate.sketch')}
             style={{ maxHeight: '176px', objectFit: 'contain' }}
           />
         ) : (
@@ -111,7 +112,7 @@ export function SketchTab({
           >
             <Upload size={32} style={{ color: '#888888' }} />
             <span style={{ fontSize: '13px', color: '#888888' }}>
-              Click or drag to upload your sketch
+              {t('generate.clickOrDragSketch')}
             </span>
           </div>
         )}
@@ -135,7 +136,7 @@ export function SketchTab({
           margin: 0,
         }}
       >
-        The AI will interpret boxes as content zones, scribbles as text, and blobs as image placeholders
+        {t('generate.sketchNote')}
       </p>
 
       {/* Fold type picker */}
@@ -168,7 +169,7 @@ export function SketchTab({
         }}
       >
         <Sparkles size={16} />
-        Generate from Sketch
+        {t('generate.generateFromSketch')}
       </button>
     </div>
   );

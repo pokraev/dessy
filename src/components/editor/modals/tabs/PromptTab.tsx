@@ -1,6 +1,6 @@
-'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { FoldTypePicker } from '../FoldTypePicker';
 import { StylePicker } from '../StylePicker';
@@ -23,6 +23,7 @@ export function PromptTab({
   onGenerate,
   isGenerating,
 }: PromptTabProps) {
+  const { t } = useTranslation();
   const [prompt, setPrompt] = useState('');
 
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
@@ -39,7 +40,7 @@ export function PromptTab({
           fontWeight: 500,
         }}
       >
-        Describe your leaflet
+        {t('generate.describeLeaflet')}
       </div>
 
       {/* Textarea */}
@@ -47,7 +48,7 @@ export function PromptTab({
         rows={4}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="e.g. Tri-fold leaflet for a yoga studio, calm and minimal design with earth tones"
+        placeholder={t('generate.promptPlaceholder')}
         style={{
           width: '100%',
           background: '#1e1e1e',
@@ -96,7 +97,7 @@ export function PromptTab({
         }}
       >
         <Sparkles size={16} />
-        Generate
+        {t('generate.generateBtn')}
       </button>
     </div>
   );

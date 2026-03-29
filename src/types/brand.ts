@@ -14,3 +14,14 @@ export interface TypographyPreset {
   letterSpacing: number;
   color: string;        // hex
 }
+
+export interface SavedBrand {
+  id: string;
+  name: string;
+  sourceUrl?: string;
+  colors: ColorSwatch[];
+  typographyPresets: TypographyPreset[];
+  style?: string;
+  createdAt: string;
+  updatedAt: string;
+}

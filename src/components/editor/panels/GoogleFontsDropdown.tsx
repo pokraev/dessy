@@ -1,6 +1,6 @@
-'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useGoogleFonts, loadGoogleFont } from '@/hooks/useGoogleFonts';
@@ -14,6 +14,7 @@ interface GoogleFontsDropdownProps {
 const PREVIEW_BATCH = 5;
 
 export function GoogleFontsDropdown({ value, onChange }: GoogleFontsDropdownProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number }>({
     top: 0,
@@ -195,7 +196,7 @@ export function GoogleFontsDropdown({ value, onChange }: GoogleFontsDropdownProp
       <div style={{ flexShrink: 0, padding: '6px 8px', borderBottom: '1px solid #2a2a2a' }}>
         <input
           type="text"
-          placeholder="Search fonts..."
+          placeholder={t('fonts.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
@@ -220,7 +221,7 @@ export function GoogleFontsDropdown({ value, onChange }: GoogleFontsDropdownProp
         {/* Popular section */}
         {popularFiltered.length > 0 && (
           <>
-            <div style={sectionHeaderStyle}>Popular</div>
+            <div style={sectionHeaderStyle}>{t('fonts.popular')}</div>
             {popularFiltered.map((fontName) => (
               <div
                 key={`popular-${fontName}`}
@@ -249,7 +250,7 @@ export function GoogleFontsDropdown({ value, onChange }: GoogleFontsDropdownProp
         {otherFonts.length > 0 && (
           <>
             <div style={{ height: '1px', background: '#2a2a2a', margin: '4px 0' }} />
-            <div style={sectionHeaderStyle}>All fonts</div>
+            <div style={sectionHeaderStyle}>{t('fonts.allFonts')}</div>
             {otherFonts.map((fontName) => (
               <div
                 key={`all-${fontName}`}
@@ -287,7 +288,7 @@ export function GoogleFontsDropdown({ value, onChange }: GoogleFontsDropdownProp
               fontFamily: 'Inter, sans-serif',
             }}
           >
-            Loading fonts...
+            {t('fonts.loading')}
           </div>
         )}
 
