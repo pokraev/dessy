@@ -12,7 +12,7 @@ Starting from nothing, the plugin is built in five phases: a loadable scaffold w
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Scaffold** - Loadable UXP plugin with correct manifest, InDesign DOM access, and file I/O wired
+- [x] **Phase 1: Scaffold** - Loadable UXP plugin with correct manifest, InDesign DOM access, and file I/O wired (completed 2026-03-29)
 - [ ] **Phase 2: Data and Template Discovery** - Excel parsed into panel state; document tags scanned and listed
 - [ ] **Phase 3: Mapping UI** - User maps Excel columns to template tags and selects a data row
 - [ ] **Phase 4: Fill Engine** - Template copied non-destructively and all placeholders filled as a single undo step
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. InDesign DOM is accessible via `require('indesign')` with no runtime errors
   4. File picker opens and returns a selected file path via UXP Storage API
   5. All InDesign DOM collection access uses `.item(n)`, not bracket notation
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md — Initialize bolt-uxp scaffold with Preact, manifest v5, and project structure
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffold | 0/2 | Not started | - |
+| 1. Scaffold | 2/2 | Complete   | 2026-03-29 |
 | 2. Data and Template Discovery | 0/3 | Not started | - |
 | 3. Mapping UI | 0/2 | Not started | - |
 | 4. Fill Engine | 0/3 | Not started | - |

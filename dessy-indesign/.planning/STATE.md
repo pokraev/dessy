@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 01-scaffold/01-01-PLAN.md
-last_updated: "2026-03-29T12:13:12.422Z"
+status: phase-complete
+stopped_at: Completed 01-scaffold/01-02-PLAN.md
+last_updated: "2026-03-29T13:03:06.599Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 ## Current Position
 
-Phase: 01 (scaffold) — EXECUTING
-Plan: 2 of 2
+Phase: 01 (scaffold) — COMPLETE
+Plan: 2 of 2 (all plans complete)
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Plan: 2 of 2
 
 *Updated after each plan completion*
 | Phase 01 P01 | 20 | 2 tasks | 13 files |
+| Phase 01-scaffold P02 | 60 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,8 @@ Recent decisions affecting current work:
 - [Phase 01]: vite-uxp-plugin uses named export { uxp }, not default — must import { uxp } from vite-uxp-plugin
 - [Phase 01]: uxp.config.ts must export UXP_Config shape with manifest embedded (not plugins array)
 - [Phase 01]: bolt-uxp CLI requires TTY; scaffold created manually from RESEARCH.md patterns
+- [Phase 01-scaffold]: require('indesign') must be called inside function body to avoid build-time errors outside InDesign
+- [Phase 01-scaffold]: ESM imports with rollup externals for uxp/indesign — Preact bundled inline, platform modules external
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T12:13:12.393Z
-Stopped at: Completed 01-scaffold/01-01-PLAN.md
+Last session: 2026-03-29T13:03:06.571Z
+Stopped at: Completed 01-scaffold/01-02-PLAN.md
 Resume file: None
