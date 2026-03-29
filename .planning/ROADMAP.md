@@ -109,14 +109,20 @@ Plans:
 - [ ] 04-02-PLAN.md — PromptCrafter modal UI, Header/ImageSection wiring, visual checkpoint
 
 ### Phase 5: Dashboard and Templates
-**Goal**: Users can manage projects from a dashboard and start from templates
+**Goal**: Users can manage projects from a dashboard with card grid, create new projects from blank formats or starter templates, and navigate between dashboard and editor via Zustand view switching
 **Depends on**: Phase 3
 **Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, TMPL-01, TMPL-02
 **Success Criteria** (what must be TRUE):
   1. User can see a project grid with thumbnails, titles, last-edited dates, and format badges
   2. User can create, delete, duplicate, and rename projects from the dashboard
   3. User can open the template gallery, choose a starter template, and open it as a new editable project
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Foundation: appStore (view switching), thumbnailDb (IndexedDB), projectStorage extensions, relativeTime utility, i18n strings
+- [ ] 05-02-PLAN.md — Dashboard UI: Dashboard, ProjectGrid, ProjectCard, ProjectCardMenu, EmptyState components
+- [ ] 05-03-PLAN.md — Templates: 10 template JSON files, templates-index manifest, NewLeafletModal, TemplateGallery
+- [ ] 05-04-PLAN.md — Wiring: App.tsx view switching, Header logo navigation, thumbnail capture on save, integration checkpoint
 
 ## Progress
 
@@ -127,4 +133,4 @@ Plans:
 | 2. Editor Surface | 7/7 | Complete   | 2026-03-29 |
 | 3. Export | 0/4 | Not started | - |
 | 4. AI PromptCrafter | 2/2 | Complete   | 2026-03-29 |
-| 5. Dashboard and Templates | 0/TBD | Not started | - |
+| 5. Dashboard and Templates | 0/4 | Not started | - |
