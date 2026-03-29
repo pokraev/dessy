@@ -30,11 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. InDesign DOM is accessible via `require('indesign')` with no runtime errors
   4. File picker opens and returns a selected file path via UXP Storage API
   5. All InDesign DOM collection access uses `.item(n)`, not bracket notation
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: Initialize bolt-uxp scaffold with correct manifest v5, permissions, and entry point
-- [ ] 01-02: Wire InDesign DOM access, verify `.item(n)` patterns, and implement UXP Storage file picker
+- [ ] 01-01-PLAN.md — Initialize bolt-uxp scaffold with Preact, manifest v5, and project structure
+- [ ] 01-02-PLAN.md — Wire InDesign DOM access, file picker, and verify all platform integrations
 
 ### Phase 2: Data and Template Discovery
 **Goal**: Users can load an Excel file and see its columns/rows in the panel; the panel also shows all `{{Tag}}` placeholders found in the active document
@@ -102,7 +102,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
