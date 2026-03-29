@@ -33,8 +33,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Initialize bolt-uxp scaffold with Preact, manifest v5, and project structure
-- [ ] 01-02-PLAN.md — Wire InDesign DOM access, file picker, and verify all platform integrations
+- [x] 01-01-PLAN.md — Initialize bolt-uxp scaffold with Preact, manifest v5, and project structure
+- [x] 01-02-PLAN.md — Wire InDesign DOM access, file picker, and verify all platform integrations
 
 ### Phase 2: Data and Template Discovery
 **Goal**: Users can load an Excel file and see its columns/rows in the panel; the panel also shows all `{{Tag}}` placeholders found in the active document
@@ -46,12 +46,12 @@ Plans:
   3. Panel lists every unique `{{Tag}}` found in text frames across all pages
   4. Panel lists every `{{Tag}}` found in image/graphic frames
   5. Tagged frames are visually highlighted on the InDesign canvas after scanning
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01: Implement Excel parser service using SheetJS standalone bundle via UXP Storage
-- [ ] 02-02: Implement template scanner service that regex-extracts tags from text and graphic frames
-- [ ] 02-03: Wire row selector UI and canvas highlight for tagged frames
+- [ ] 02-01-PLAN.md — Download SheetJS bundle, implement Excel parser service, create unit tests
+- [ ] 02-02-PLAN.md — Implement template scanner with tag extraction, navigation, and highlight
+- [ ] 02-03-PLAN.md — Build panel UI with data table, tag list, row selection, and highlight toggle
 
 ### Phase 3: Mapping UI
 **Goal**: Users can manually assign each Excel column to a template tag, see which tags are mapped, and save/reload mapping presets
