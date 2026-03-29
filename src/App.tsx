@@ -13,6 +13,9 @@ import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 import { ensureFormatPageCount } from '@/lib/pages/page-crud';
+import { saveThumbnail } from '@/lib/storage/thumbnailDb';
+import { useAppStore } from '@/stores/appStore';
+import { Dashboard } from '@/components/dashboard/Dashboard';
 import type { LeafletFormatId } from '@/types/project';
 
 const EditorCanvasInner = lazy(() => import('@/components/editor/EditorCanvasInner'));
@@ -25,6 +28,41 @@ const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-cta', name: 'CTA', fontFamily: 'Inter', fontSize: 16, fontWeight: 700, lineHeight: 1.2, letterSpacing: 40, color: '#6366f1' },
 ];
 
+export async function captureThumbnail(projectId: string) {
+  const canvas = useCanvasStore.getState().canvasRef;
+  if (!canvas) return;
+
+  // Find the document background rect for crop bounds
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bgRect = canvas.getObjects().find((o: any) => o._isDocBackground);
+  const left = bgRect?.left ?? 0;
+  const top = bgRect?.top ?? 0;
+  const width = (bgRect?.width ?? 595) * (bgRect?.scaleX ?? 1);
+  const height = (bgRect?.height ?? 842) * (bgRect?.scaleY ?? 1);
+
+  // AligningGuidelines hooks into 'before:render' and tries to access an overlay context
+  // that doesn't exist on the temp canvas created by toDataURL/toCanvasElement.
+  // Temporarily remove the listener to prevent the crash.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listeners = (canvas as any).__eventListeners?.['before:render'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (listeners) (canvas as any).__eventListeners['before:render'] = [];
+  let dataUrl: string;
+  try {
+    dataUrl = canvas.toDataURL({
+      left, top, width, height,
+      multiplier: 0.15,
+      format: 'jpeg',
+      quality: 0.6,
+    });
+  } finally {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (listeners) (canvas as any).__eventListeners['before:render'] = listeners;
+  }
+
+  await saveThumbnail(projectId, dataUrl);
+}
+
 function CanvasLoading() {
   const { t } = useTranslation();
   return (
@@ -34,20 +72,12 @@ function CanvasLoading() {
   );
 }
 
-export default function App() {
-  const [projectId, setProjectId] = useState('default');
+function EditorRoot({ projectId }: { projectId: string }) {
   const [formatId, setFormatId] = useState<LeafletFormatId>('A4');
   const [ready, setReady] = useState(false);
+
   useEffect(() => {
-
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id') ?? `project-${Date.now()}`;
-    const format = (params.get('format') ?? 'A4') as LeafletFormatId;
-
-    setProjectId(id);
-    setFormatId(format);
-
-    const saved = loadProject(id);
+    const saved = loadProject(projectId);
     if (saved) {
       const baseProject = {
         meta: saved.meta,
@@ -59,7 +89,8 @@ export default function App() {
       };
       const ensured = ensureFormatPageCount(baseProject);
       useProjectStore.getState().setCurrentProject(ensured);
-      sessionStorage.setItem(`dessy-canvas-restore-${id}`, JSON.stringify(saved.canvasJSON));
+      sessionStorage.setItem(`dessy-canvas-restore-${projectId}`, JSON.stringify(saved.canvasJSON));
+      setFormatId(saved.meta.format);
 
       // Restore brand data if saved
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,9 +104,9 @@ export default function App() {
     } else if (!useProjectStore.getState().currentProject) {
       const baseProject = {
         meta: {
-          id,
+          id: projectId,
           name: i18n.t('app.untitledLeaflet'),
-          format,
+          format: 'A4' as LeafletFormatId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -94,7 +125,28 @@ export default function App() {
     }
 
     setReady(true);
-  }, []);
+
+    // Subscribe to triggerSave being set by EditorCanvasInner and wrap it with thumbnail capture
+    const unsubscribe = useCanvasStore.subscribe((state, prevState) => {
+      if (state.triggerSave !== prevState.triggerSave && state.triggerSave) {
+        const originalTriggerSave = state.triggerSave;
+        useCanvasStore.setState({
+          triggerSave: () => {
+            originalTriggerSave();
+            captureThumbnail(projectId).catch(() => {
+              // Thumbnail capture failure should not break manual save
+            });
+          },
+        });
+        unsubscribe();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   const busyMessage = useCanvasStore((s) => s.busyMessage);
 
@@ -156,4 +208,16 @@ export default function App() {
     />
     </>
   );
+}
+
+export default function App() {
+  const currentView = useAppStore((s) => s.currentView);
+  const activeProjectId = useAppStore((s) => s.activeProjectId);
+
+  if (currentView === 'dashboard') {
+    return <Dashboard />;
+  }
+
+  // Editor view — activeProjectId is guaranteed non-null when view is 'editor'
+  return <EditorRoot projectId={activeProjectId!} />;
 }
