@@ -11,6 +11,14 @@ export default defineConfig(({ mode }) => ({
   ],
   build: {
     sourcemap: true,
-    minify: false
+    minify: false,
+    rollupOptions: {
+      external: ['uxp', 'indesign'],
+      output: {
+        format: 'cjs',
+        entryFileNames: 'index.js',
+        inlineDynamicImports: true
+      }
+    }
   }
 }));

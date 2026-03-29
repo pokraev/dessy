@@ -1,6 +1,6 @@
-const { h } = require('preact');
-const { useState } = require('preact/hooks');
-const { openXlsxPicker } = require('../utils/fileIO');
+import { h } from 'preact';
+import { useState } from 'preact/hooks';
+import { openXlsxPicker } from '../utils/fileIO';
 
 function App() {
   const [status, setStatus] = useState('Ready');
@@ -21,7 +21,8 @@ function App() {
 
   function testInDesignDOM() {
     try {
-      const { app } = require('indesign');
+      const indesign = require('indesign');
+      const app = indesign.app;
       if (app.documents.length === 0) {
         setStatus('No document open');
         return;
@@ -46,4 +47,4 @@ function App() {
   );
 }
 
-module.exports = { default: App };
+export default App;

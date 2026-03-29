@@ -1,6 +1,6 @@
-const { entrypoints } = require('uxp');
-const { render, h } = require('preact');
-const App = require('./ui/App').default;
+import { entrypoints } from 'uxp';
+import { render, h } from 'preact';
+import App from './ui/App';
 
 entrypoints.setup({
   panels: {
