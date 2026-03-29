@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Checkpoint: 04-ai-promptcrafter plan 02 awaiting human verification"
-last_updated: "2026-03-29T20:55:16.408Z"
+stopped_at: "Completed 04-ai-promptcrafter plan 02 (04-02-PLAN.md)"
+last_updated: "2026-03-29T21:10:00.000Z"
 progress:
   total_phases: 6
   completed_phases: 4
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 04 (ai-promptcrafter) — EXECUTING
-Plan: 1 of 2
+Phase: 04 (ai-promptcrafter) — COMPLETE
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -114,6 +114,9 @@ Recent decisions affecting current work:
 - [Phase 04-ai-promptcrafter]: Log-ratio (not linear) comparison for snapAspectRatio — perceptually uniform distance across wide and portrait ranges
 - [Phase 04-ai-promptcrafter]: generateThumbnail falls back to original dataUrl when OffscreenCanvas unavailable (test/SSR env)
 - [Phase 04-ai-promptcrafter]: PromptCrafterModal step machine: useEffect on step='generating' drives callGeminiImage; HistoryStrip extracted as shared sub-component
+- [04-02]: element-factory.ts: replaced require() with ESM import to fix browser runtime crash
+- [04-02]: Gemini Imagen API: correct model is imagen-3.0-generate-002; aspectRatio belongs in generationConfig not parameters
+- [04-02]: API errors parsed to human-readable messages before display — raw JSON never shown to user
 
 ### Pending Todos
 

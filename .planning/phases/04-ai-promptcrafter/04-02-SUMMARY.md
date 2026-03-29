@@ -40,6 +40,9 @@ key-decisions:
   - "Combined Task 1 and Task 2 modal implementation into a single component with all steps (idle/enriching/customizing/generating/result/history) — cleaner than two partial implementations"
   - "useEffect on step='generating' drives callGeminiImage — separates trigger (button click) from async work"
   - "History strip rendered as shared HistoryStrip sub-component used in both customizing and result steps"
+  - "element-factory.ts: replaced require() with ESM import to fix browser runtime crash"
+  - "Gemini Imagen API: correct model is imagen-3.0-generate-002; aspectRatio belongs in generationConfig not parameters"
+  - "API errors parsed to human-readable messages before display — raw JSON never shown to user"
 
 patterns-established:
   - "PromptCrafter step machine: step state drives conditional rendering of each workflow phase"
@@ -66,11 +69,11 @@ completed: 2026-03-29
 
 ## Performance
 
-- **Duration:** ~5 min
+- **Duration:** ~15 min (including human verification and bug fixes)
 - **Started:** 2026-03-29T20:49:58Z
-- **Completed:** 2026-03-29T20:54:14Z
-- **Tasks:** 2 (+ checkpoint:human-verify pending user approval)
-- **Files modified:** 5
+- **Completed:** 2026-03-29T21:05:00Z
+- **Tasks:** 3 (2 auto + 1 human-verify — approved after bug fixes)
+- **Files modified:** 7
 
 ## Accomplishments
 
@@ -86,6 +89,9 @@ completed: 2026-03-29
 
 1. **Task 1: editorStore + i18n + PromptCrafterModal shell** - `bd63e5a` (feat)
 2. **Task 2: Wire into Header and ImageSection** - `6639f8c` (feat)
+3. **Task 3: Human verification (bugs found and fixed)**
+   - `4e30a6a` (fix) — replace require() with ESM import in element-factory.ts
+   - `8666d0f` (fix) — correct Gemini API model name, aspectRatio location, human-readable errors
 
 ## Files Created/Modified
 
@@ -95,6 +101,8 @@ completed: 2026-03-29
 - `src/i18n/bg.json` - Added Bulgarian translations for same keys
 - `src/components/editor/ui/Header.tsx` - AI Image button + PromptCrafterModal render
 - `src/components/editor/panels/sections/ImageSection.tsx` - AI Generate button
+- `src/lib/element-factory.ts` - Replaced require() with ESM import (bug fix)
+- `src/lib/ai/generate-image.ts` - Corrected Gemini model name, aspectRatio field location, error formatting
 
 ## Decisions Made
 
@@ -104,17 +112,59 @@ completed: 2026-03-29
 
 ## Deviations from Plan
 
-None — plan executed exactly as written. The generate/result/history steps specified in Task 2's action were implemented in Task 1's component (no behavior difference; just merged the implementation for cleanliness).
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Replace require() with ESM import in element-factory.ts**
+- **Found during:** Task 3 (human verification)
+- **Issue:** `element-factory.ts` used `require()` which fails in the browser ESM context, causing a runtime crash when the editor loads
+- **Fix:** Replaced `require()` call with proper ESM `import` statement
+- **Files modified:** `src/lib/element-factory.ts`
+- **Verification:** Editor loads without error in browser
+- **Committed in:** `4e30a6a`
+
+**2. [Rule 1 - Bug] Correct Gemini Imagen API model name and aspectRatio field location**
+- **Found during:** Task 3 (human verification — image generation returning errors)
+- **Issue 1:** Wrong model name used — correct Gemini image model is `imagen-3.0-generate-002`
+- **Issue 2:** `aspectRatio` placed in the wrong part of the API payload; must be inside `generationConfig`, not `parameters`
+- **Fix:** Updated `callGeminiImage` in `src/lib/ai/generate-image.ts` with the correct model identifier and correct field nesting
+- **Files modified:** `src/lib/ai/generate-image.ts`
+- **Verification:** Image generation succeeds and returns base64 image data
+- **Committed in:** `8666d0f`
+
+**3. [Rule 1 - Bug] Human-readable error messages instead of raw JSON**
+- **Found during:** Task 3 (human verification — error banner showing raw JSON)
+- **Issue:** API error responses were displayed verbatim as JSON strings in the modal error banner — confusing and unreadable for users
+- **Fix:** Added error parsing logic that extracts the human-readable message field from API error JSON; falls back to a generic message when parsing fails
+- **Files modified:** `src/lib/ai/generate-image.ts`, `src/components/editor/modals/PromptCrafterModal.tsx`
+- **Verification:** Error banners show plain English text instead of raw JSON
+- **Committed in:** `8666d0f`
+
+---
+
+**Total deviations:** 3 auto-fixed (Rule 1 — runtime and API integration bugs found during human verification)
+**Impact on plan:** All three fixes were necessary for the feature to work. No scope creep.
 
 ## Issues Encountered
 
-Pre-existing TypeScript errors in EditorCanvasInner.tsx, useGoogleFonts.ts, and canvas-loader.ts (unrelated to this plan). No new errors introduced.
+Three bugs surfaced during the human-verify checkpoint and were fixed before final approval:
+
+1. `element-factory.ts` require() — pre-existing issue exposed by new modal code path; caused editor load failure
+2. Gemini Imagen API spec mismatch — wrong model name and wrong field location for aspectRatio
+3. Raw JSON error strings shown to user — UX issue making the error banner unhelpful
+
+All three fixed in `4e30a6a` and `8666d0f`. User re-tested and approved.
 
 ## Next Phase Readiness
 
-- Full AI image generation flow is complete and accessible from both Header and ImageSection
-- Awaiting human verification (Task 3 checkpoint) to confirm browser flow works end-to-end
-- Phase 5 (export and polish) can begin after checkpoint approval
+- Phase 04 is complete — full AI PromptCrafter feature is live and verified end-to-end
+- PromptCrafter modal is accessible from both Header (Wand2 button) and ImageSection ("AI Generate" button)
+- Phase 05 (export) can proceed — no dependencies on PromptCrafter internals
+- Any component can open the modal via `useEditorStore.getState().setPromptCrafterModalOpen(true)`
+
+## Self-Check: PASSED
+
+- `src/components/editor/modals/PromptCrafterModal.tsx` — exists (verified in key-files)
+- Commits `bd63e5a`, `6639f8c`, `4e30a6a`, `8666d0f` — all present in git log
 
 ---
 *Phase: 04-ai-promptcrafter*
