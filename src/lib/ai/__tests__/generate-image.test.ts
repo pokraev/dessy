@@ -205,8 +205,8 @@ describe('snapAspectRatio', () => {
     expect(snapAspectRatio(1000, 100)).toBe('16:9');
   });
 
-  it('maps 350x400 to 3:4 (close enough)', () => {
-    expect(snapAspectRatio(350, 400)).toBe('3:4');
+  it('maps 320x400 to 3:4 (close enough)', () => {
+    expect(snapAspectRatio(320, 400)).toBe('3:4');
   });
 });
 
