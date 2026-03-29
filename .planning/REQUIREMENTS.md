@@ -70,9 +70,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Right Panel — Style
 
-- [ ] **STYL-01**: User can define brand colors (up to 10 swatches) with color picker
-- [ ] **STYL-02**: User can generate complementary palette from a single color
-- [ ] **STYL-03**: User can define and apply typography presets globally
+- [x] **STYL-01**: User can define brand colors (up to 10 swatches) with color picker
+- [x] **STYL-02**: User can generate complementary palette from a single color
+- [x] **STYL-03**: User can define and apply typography presets globally
 - [x] **STYL-04**: User can set background color per page
 
 ### AI — PromptCrafter
@@ -96,7 +96,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **COLR-02**: User can use eyedropper tool to pick color from canvas
 - [x] **COLR-03**: User can choose from 20+ predefined curated palettes
 - [x] **COLR-04**: User can see recently used colors
-- [ ] **COLR-05**: User can define global swatches that update everywhere when changed
+- [x] **COLR-05**: User can define global swatches that update everywhere when changed
 
 ### Export
 
@@ -215,15 +215,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TYPO-02 | Phase 2 | Complete |
 | TYPO-03 | Phase 2 | Complete |
 | TYPO-04 | Phase 2 | Complete |
-| STYL-01 | Phase 2 | Pending |
-| STYL-02 | Phase 2 | Pending |
-| STYL-03 | Phase 2 | Pending |
+| STYL-01 | Phase 2 | Complete |
+| STYL-02 | Phase 2 | Complete |
+| STYL-03 | Phase 2 | Complete |
 | STYL-04 | Phase 2 | Complete |
 | COLR-01 | Phase 2 | Complete |
 | COLR-02 | Phase 2 | Complete |
 | COLR-03 | Phase 2 | Complete |
 | COLR-04 | Phase 2 | Complete |
-| COLR-05 | Phase 2 | Pending |
+| COLR-05 | Phase 2 | Complete |
 | AIPC-01 | Phase 3 | Pending |
 | AIPC-02 | Phase 3 | Pending |
 | AIPC-03 | Phase 3 | Pending |

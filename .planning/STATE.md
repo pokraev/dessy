@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-editor-surface plan 04
-last_updated: "2026-03-29T06:32:59.490Z"
+stopped_at: Completed 02-editor-surface plan 06
+last_updated: "2026-03-29T08:08:00Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 02 (editor-surface) — EXECUTING
-Plan: 5 of 7
+Plan: 7 of 7
 
 ## Performance Metrics
 
@@ -106,6 +106,9 @@ Recent decisions affecting current work:
 - [02-05]: Thumbnail index shifting kept in PagesPanel component (UI concern, not store/pure fn concern)
 - [Phase 02]: fabric v7 uses cache.clearFontCache(family) not clearFabricFontCache; textTransform applies immediately to obj.text content in Fabric.js
 - [02-03]: canvas.fire('object:modified', ...) uses as any — Fabric.js 7 strict event types; Shadow/Gradient imported as value classes from fabric in client-only sections
+- [02-06]: propagateSwatchChange/propagatePresetChange update live canvas first, then mutate sessionStorage JSON for all other pages
+- [02-06]: StyleSection initializes DEFAULT_PRESETS into brandStore only on first change (lazy init — avoids overwriting loaded project presets)
+- [02-06]: Swatch name update uses useBrandStore.setState directly (no dedicated name-update store action exists)
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T07:00:00.000Z
-Stopped at: Completed 02-editor-surface plan 03
+Last session: 2026-03-29T08:08:00Z
+Stopped at: Completed 02-editor-surface plan 06
 Resume file: None
