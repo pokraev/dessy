@@ -4,6 +4,7 @@ import { uxp } from 'vite-uxp-plugin';
 import config from './uxp.config';
 
 export default defineConfig(({ mode }) => ({
+  base: './',
   plugins: [
     preact(),
     uxp(config, mode)
