@@ -123,7 +123,7 @@ describe('callGeminiImage', () => {
       text: async () => 'billing required',
     });
 
-    await expect(callGeminiImage('bad-key', 'prompt', '1:1')).rejects.toThrow('403');
+    await expect(callGeminiImage('bad-key', 'prompt', '1:1')).rejects.toThrow('access denied');
   });
 
   it('throws on missing inline_data', async () => {
