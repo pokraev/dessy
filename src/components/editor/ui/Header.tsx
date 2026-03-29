@@ -1,13 +1,14 @@
 
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe } from 'lucide-react';
+import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe, Wand2 } from 'lucide-react';
 import { setLanguage } from '@/i18n';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeafletModal';
 import { ExportModal } from '@/components/editor/modals/ExportModal';
+import { PromptCrafterModal } from '@/components/editor/modals/PromptCrafterModal';
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,7 @@ export function Header() {
 
   const generateModalOpen = useEditorStore((s) => s.generateModalOpen);
   const exportModalOpen = useEditorStore((s) => s.exportModalOpen);
+  const promptCrafterModalOpen = useEditorStore((s) => s.promptCrafterModalOpen);
 
   const canUndo = useCanvasStore((s) => s.canUndo);
   const canRedo = useCanvasStore((s) => s.canRedo);
@@ -103,6 +105,30 @@ export function Header() {
         >
           <Sparkles size={14} />
           {t('header.aiGenerate')}
+        </button>
+
+        {/* AI Image button */}
+        <button
+          aria-label="AI Image"
+          title="AI Image"
+          className="flex items-center gap-1.5 text-white font-medium"
+          style={{
+            height: '32px',
+            paddingLeft: '12px',
+            paddingRight: '12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            border: 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.1)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1)'; }}
+          onClick={() => { useEditorStore.getState().setPromptCrafterModalOpen(true); }}
+        >
+          <Wand2 size={14} />
+          AI Image
         </button>
       </div>
 
@@ -359,6 +385,11 @@ export function Header() {
       <ExportModal
         open={exportModalOpen}
         onClose={() => useEditorStore.getState().setExportModalOpen(false)}
+      />
+
+      <PromptCrafterModal
+        open={promptCrafterModalOpen}
+        onClose={() => useEditorStore.getState().setPromptCrafterModalOpen(false)}
       />
     </header>
   );

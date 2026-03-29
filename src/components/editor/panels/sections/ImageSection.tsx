@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Wand2 } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { useEditorStore } from '@/stores/editorStore';
 import type { ObjectSnapshot } from '@/hooks/useSelectedObject';
 import type { FabricObject } from 'fabric';
 
@@ -181,6 +182,30 @@ export function ImageSection({ snapshot }: Props) {
           </button>
         )}
       </div>
+
+      {/* AI Generate button */}
+      <button
+        onClick={() => useEditorStore.getState().setPromptCrafterModalOpen(true)}
+        style={{
+          marginTop: '6px',
+          width: '100%',
+          padding: '8px 12px',
+          fontSize: '12px',
+          fontWeight: 500,
+          background: 'transparent',
+          color: '#6366f1',
+          border: '1px solid #2a2a2a',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+        }}
+      >
+        <Wand2 size={14} />
+        {t('image.aiGenerate')}
+      </button>
     </div>
   );
 }
