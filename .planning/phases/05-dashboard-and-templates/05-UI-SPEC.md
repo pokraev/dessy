@@ -57,13 +57,15 @@ All sizes use `Inter, sans-serif`. Two weights only: 400 (regular) and 600 (semi
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 14px | 400 | 1.5 | Card last-edited date, card page count, modal body copy, category tab labels |
-| Label | 12px | 400 | 1.4 | Format badge text, card meta secondary info, template category tag |
+| Label | 12px | 400 | 1.4 | Format badge text, card meta secondary info, template category tag, template card name and category |
 | Heading | 16px | 600 | 1.3 | Project card title, modal section headers, dashboard section label ("Recent Projects") |
 | Display | 28px | 600 | 1.2 | Dashboard hero title ("Dessy"), empty state heading |
 
 Source: Confirmed from `WelcomeScreen.tsx` (28px/700 hero, 14px body — weight normalized to 600 semibold for consistency with rest of app) and `Header.tsx`.
 
 Note: `WelcomeScreen` uses weight 700 for h1. Dashboard display heading uses 600 to stay within the declared 2-weight system. The visual difference is negligible at this size.
+
+Note: Component inventory previously listed 11px and 13px sizes — these are mapped to the declared scale: 11px → 12px (Label role), 13px → 14px (Body role). No exceptions to the 4-size scale.
 
 ---
 
@@ -97,6 +99,16 @@ Accent is NOT used for: card background, modal background, text secondary, disab
 
 ---
 
+## Focal Points
+
+### Filled dashboard state (projects present)
+Primary focal point: "New Leaflet" button in the dashboard header bar (top-right position, accent fill `#6366f1`). This is the single accent-filled element in the header and must remain visually dominant. No other element in the header row may use accent fill or compete with its visual weight.
+
+### Empty state
+Primary focal point: "New Leaflet" CTA button below the empty state heading. Accent fill, centered, immediately below body copy.
+
+---
+
 ## Component Inventory
 
 ### Dashboard (`Dashboard.tsx`)
@@ -116,7 +128,7 @@ Accent is NOT used for: card background, modal background, text secondary, disab
 - Card body: `padding: 12px`
   - Project name: 16px/600, `color: #f5f5f5`, single-line truncation (`white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 28px)`)
   - Meta row: 12px/400, `color: #888`, flex row, `gap: 8px`
-    - Format badge: `background: #2a2a2a`, `border-radius: 4px`, `padding: 2px 6px`, 11px/400, `color: #888`
+    - Format badge: `background: #2a2a2a`, `border-radius: 4px`, `padding: 4px 8px`, 12px/400, `color: #888`
     - Last-edited date: relative time string ("2 min ago")
     - Page count: "3 pages" or "1 page"
   - 3-dot menu (MoreVertical icon): visible only on card hover — `opacity: 0 → 1` via CSS transition, `position: absolute`, `top: 8px`, `right: 8px`, `background: rgba(10,10,10,0.7)`, `border-radius: 6px`, `padding: 4px`
@@ -154,15 +166,15 @@ Accent is NOT used for: card background, modal background, text secondary, disab
 
 ### Template Gallery (`TemplateGallery.tsx`)
 - Category tab row: horizontal scroll, `gap: 8px`, `padding: 16px 24px 0`
-  - Tab pill: `background: #1e1e1e`, `border: 1px solid #2a2a2a`, `border-radius: 20px`, `padding: 6px 14px`, 13px/400
+  - Tab pill: `background: #1e1e1e`, `border: 1px solid #2a2a2a`, `border-radius: 20px`, `padding: 8px 16px`, 14px/400
   - Active tab pill: `background: #6366f1`, `border-color: #6366f1`, `color: #f5f5f5`
   - Inactive tab: `color: #888`
 - Template card grid: `display: grid`, `grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))`, `gap: 12px`, `padding: 16px 24px`
   - Template card: `background: #1e1e1e`, `border: 1px solid #2a2a2a`, `border-radius: 8px`, `overflow: hidden`, cursor pointer
   - Hover: `border-color: #6366f1`
   - Thumbnail: `height: 120px`, rendered from template JSON preview or colored placeholder
-  - Name: 13px/600, `padding: 8px 8px 4px`, `color: #f5f5f5`
-  - Category label: 11px/400, `padding: 0 8px 8px`, `color: #888`
+  - Name: 12px/600, `padding: 8px 8px 4px`, `color: #f5f5f5`
+  - Category label: 12px/400, `padding: 0 8px 8px`, `color: #888`
 
 ### Template Preview Modal (inline over `NewLeafletModal`)
 - Backdrop: `position: fixed`, `inset: 0`, `background: rgba(0,0,0,0.75)`, `z-index: 60`
@@ -170,15 +182,15 @@ Accent is NOT used for: card background, modal background, text secondary, disab
 - Layout: two-column — left: large preview (300px height, `background: #1e1e1e`, `border-radius: 8px`), right: template metadata
 - Right column metadata:
   - Template name: 20px/600, `color: #f5f5f5`
-  - Category: 13px/400, `color: #888`
+  - Category: 14px/400, `color: #888`
   - Format: format badge (same style as project card)
-  - Page count: 13px/400, `color: #888`
+  - Page count: 14px/400, `color: #888`
 - "Use This Template" button: accent fill, full-width, `padding: 12px`, 14px/600, `border-radius: 8px`, `margin-top: 16px`
 - Close (X) button: top-right corner, 16px icon, `color: #888`
 
 ### Rename Inline Input
 - When "Rename" is clicked from 3-dot menu: replace project card title text with an `<input>` element
-- Input style: same dimensions as the title, `background: #1e1e1e`, `border: 1px solid #6366f1`, `border-radius: 4px`, `padding: 2px 6px`, 16px/600, `color: #f5f5f5`
+- Input style: same dimensions as the title, `background: #1e1e1e`, `border: 1px solid #6366f1`, `border-radius: 4px`, `padding: 4px 8px`, 16px/600, `color: #f5f5f5`
 - Confirm on Enter or blur; cancel on Escape (same pattern as `Header.tsx` project name editing)
 
 ---
@@ -210,7 +222,7 @@ Card hover scale: do NOT use `scale` transform on hover — card grid items can 
 - Only one menu open at a time
 
 ### Delete flow
-- Click "Delete" in 3-dot menu → inline confirmation replaces menu: "Delete '[name]'? This cannot be undone." + "Cancel" (ghost) + "Delete" (red fill) buttons
+- Click "Delete" in 3-dot menu → inline confirmation replaces menu: "Delete '[name]'? This cannot be undone." + "Keep Project" (ghost) + "Delete" (red fill) buttons
 - No separate modal for delete — inline in menu per existing header clear-canvas pattern
 - On confirm: call `deleteProject(id)`, call `deleteThumbnail(id)`, refresh project list
 
@@ -248,7 +260,7 @@ All strings must be added to `src/i18n/en.json` and `src/i18n/bg.json` under a `
 | Duplicate menu item | `dashboard.duplicate` | "Duplicate" |
 | Delete confirmation prompt | `dashboard.deleteConfirm` | "Delete \"{{name}}\"? This cannot be undone." |
 | Delete confirm button | `dashboard.deleteConfirmButton` | "Delete" |
-| Cancel button | `dashboard.cancel` | "Cancel" |
+| Cancel button (delete confirmation) | `dashboard.cancel` | "Keep Project" |
 | Modal title — New Leaflet | `dashboard.newLeafletTitle` | "New Leaflet" |
 | Modal tab — Blank | `dashboard.tabBlank` | "Blank" |
 | Modal tab — Templates | `dashboard.tabTemplates` | "Templates" |
