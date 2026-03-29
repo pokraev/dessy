@@ -77,3 +77,16 @@ describe('deleteProject', () => {
     expect(list.find((p) => p.id === 'del-1')).toBeUndefined();
   });
 });
+
+describe('duplicateProject', () => {
+  it.todo('returns new project ID when source exists');
+  it.todo('returns null when source does not exist');
+  it.todo('new project has "Copy of" prefix in name');
+  it.todo('new project has fresh createdAt and updatedAt');
+});
+
+describe('updateProjectName', () => {
+  it.todo('returns true and updates name when project exists');
+  it.todo('returns false when project does not exist');
+  it.todo('updates updatedAt timestamp');
+});
