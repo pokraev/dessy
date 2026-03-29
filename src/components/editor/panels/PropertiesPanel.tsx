@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { useSelectedObject } from '@/hooks/useSelectedObject';
+import { PositionSection } from './sections/PositionSection';
+import { FillSection } from './sections/FillSection';
+import { StrokeSection } from './sections/StrokeSection';
+import { ShadowSection } from './sections/ShadowSection';
+import { FitModeSection } from './sections/FitModeSection';
+import { PageSection } from './sections/PageSection';
 
 interface SectionHeaderProps {
   title: string;
@@ -10,7 +16,7 @@ interface SectionHeaderProps {
   onToggle: () => void;
 }
 
-function SectionHeader({ title, isOpen, onToggle }: SectionHeaderProps) {
+export function SectionHeader({ title, isOpen, onToggle }: SectionHeaderProps) {
   return (
     <button
       className="flex items-center justify-between w-full px-4 transition-colors hover:bg-surface-raised"
@@ -26,7 +32,7 @@ function SectionHeader({ title, isOpen, onToggle }: SectionHeaderProps) {
         className="text-text-secondary uppercase tracking-wider"
         style={{
           fontSize: '11px',
-          fontWeight: 500,
+          fontWeight: 600,
           letterSpacing: '0.08em',
         }}
       >
@@ -45,45 +51,76 @@ function SectionHeader({ title, isOpen, onToggle }: SectionHeaderProps) {
 }
 
 export function PropertiesPanel() {
-  const [propertiesOpen, setPropertiesOpen] = useState(true);
   const selectedObjectIds = useCanvasStore((s) => s.selectedObjectIds);
-  const hasSelection = selectedObjectIds.length > 0;
+  const snapshot = useSelectedObject();
+  const selectionCount = selectedObjectIds.length;
 
   return (
     <div
       className="bg-surface flex flex-col h-full"
-      style={{ width: '320px', overflow: 'auto' }}
+      style={{ width: '320px', overflowY: 'auto' }}
     >
-      {!hasSelection ? (
-        /* Empty state */
-        <div
-          className="flex items-center justify-center flex-1 px-4 text-center"
-        >
-          <p
-            className="text-text-secondary"
-            style={{ fontSize: '12px' }}
+      {/* Nothing selected */}
+      {selectionCount === 0 && (
+        <PageSection />
+      )}
+
+      {/* Multi-selection */}
+      {selectionCount > 1 && snapshot && (
+        <div>
+          <div
+            style={{
+              padding: '12px 16px 8px',
+              borderBottom: '1px solid #2a2a2a',
+            }}
           >
-            Select an element to edit its properties
-          </p>
+            <p
+              style={{
+                fontSize: '13px',
+                color: '#f5f5f5',
+                fontFamily: 'Inter, sans-serif',
+                margin: 0,
+              }}
+            >
+              Multiple selected
+            </p>
+          </div>
+          <PositionSection snapshot={snapshot} />
         </div>
-      ) : (
-        /* Selection placeholder — Phase 2 fills detail */
-        <div className="flex flex-col">
-          <SectionHeader
-            title="Properties"
-            isOpen={propertiesOpen}
-            onToggle={() => setPropertiesOpen((v) => !v)}
-          />
-          {propertiesOpen && (
-            <div className="px-4 py-3">
-              <p
-                className="text-text-secondary"
-                style={{ fontSize: '12px' }}
-              >
-                Properties panel — Phase 2
-              </p>
-            </div>
-          )}
+      )}
+
+      {/* Single selection: text */}
+      {selectionCount === 1 && snapshot?.type === 'text' && (
+        <div>
+          <PositionSection snapshot={snapshot} />
+          {/* Typography section — Plan 04 */}
+          <FillSection snapshot={snapshot} />
+        </div>
+      )}
+
+      {/* Single selection: shape */}
+      {selectionCount === 1 && snapshot?.type === 'shape' && (
+        <div>
+          <PositionSection snapshot={snapshot} />
+          <FillSection snapshot={snapshot} />
+          <StrokeSection snapshot={snapshot} />
+          <ShadowSection snapshot={snapshot} />
+        </div>
+      )}
+
+      {/* Single selection: image */}
+      {selectionCount === 1 && snapshot?.type === 'image' && (
+        <div>
+          <PositionSection snapshot={snapshot} />
+          <FitModeSection snapshot={snapshot} />
+        </div>
+      )}
+
+      {/* Single selection: colorBlock */}
+      {selectionCount === 1 && snapshot?.type === 'colorBlock' && (
+        <div>
+          <PositionSection snapshot={snapshot} />
+          <FillSection snapshot={snapshot} />
         </div>
       )}
     </div>
