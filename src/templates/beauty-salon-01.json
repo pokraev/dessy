@@ -1,0 +1,299 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 281, "height": 595,
+      "fill": "#fff1f2",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 281, "height": 140,
+      "fill": "#be185d",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 135,
+      "width": 281, "height": 8,
+      "fill": "#d4af37",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 28,
+      "width": 241, "height": 50,
+      "text": "BELLE BEAUTÉ",
+      "fontSize": 28,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 82,
+      "width": 241, "height": 28,
+      "text": "Hair • Beauty • Wellness",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#fbcfe8",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 164,
+      "width": 241, "height": 28,
+      "text": "OUR SERVICES",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 20, "top": 196,
+      "width": 241, "height": 1,
+      "fill": "#f9a8d4",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 206,
+      "width": 170, "height": 22,
+      "text": "Haircut & Blow Dry",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 206,
+      "width": 61, "height": 22,
+      "text": "$65",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 232,
+      "width": 241, "height": 22,
+      "text": "Colour & Highlights",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 232,
+      "width": 61, "height": 22,
+      "text": "$120",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 258,
+      "width": 241, "height": 22,
+      "text": "Balayage",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 258,
+      "width": 61, "height": 22,
+      "text": "$180",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 20, "top": 288,
+      "width": 241, "height": 1,
+      "fill": "#f9a8d4",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 298,
+      "width": 241, "height": 22,
+      "text": "Classic Manicure",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 298,
+      "width": 61, "height": 22,
+      "text": "$40",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 324,
+      "width": 241, "height": 22,
+      "text": "Gel Manicure",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 324,
+      "width": 61, "height": 22,
+      "text": "$55",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 350,
+      "width": 241, "height": 22,
+      "text": "Pedicure",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 350,
+      "width": 61, "height": 22,
+      "text": "$50",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 20, "top": 382,
+      "width": 241, "height": 1,
+      "fill": "#f9a8d4",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 392,
+      "width": 241, "height": 22,
+      "text": "Facial Treatment",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#1a1a1a",
+      "fontFamily": "Georgia, serif",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 200, "top": 392,
+      "width": 61, "height": 22,
+      "text": "$90",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "right",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 434,
+      "width": 281, "height": 72,
+      "fill": "#fce7f3",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 444,
+      "width": 241, "height": 52,
+      "text": "10% OFF your first visit\nUse code: BELLE10",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#be185d",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 516,
+      "width": 281, "height": 79,
+      "fill": "#be185d",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 20, "top": 526,
+      "width": 241, "height": 60,
+      "text": "Book: (555) 456-7890\n88 Rose Lane, Beauty Quarter",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}

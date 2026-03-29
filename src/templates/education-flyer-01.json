@@ -1,0 +1,279 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 842,
+      "fill": "#f0f9ff",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 160,
+      "fill": "#0369a1",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 156,
+      "width": 595, "height": 8,
+      "fill": "#06b6d4",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 28,
+      "width": 515, "height": 56,
+      "text": "WESTFIELD ACADEMY",
+      "fontSize": 36,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 90,
+      "width": 515, "height": 36,
+      "text": "Now Enrolling - Academic Year 2026",
+      "fontSize": 16,
+      "fontWeight": "normal",
+      "fill": "#bae6fd",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 188,
+      "width": 515, "height": 52,
+      "text": "Where Excellence Meets Opportunity",
+      "fontSize": 26,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 254,
+      "width": 515, "height": 56,
+      "text": "Offering world-class education for students aged 5-18. Our programs combine academic rigour with creative thinking and real-world skills.",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "fill": "#374151",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 330,
+      "width": 515, "height": 1,
+      "fill": "#bae6fd",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 346,
+      "width": 515, "height": 28,
+      "text": "PROGRAMMES OFFERED",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 386,
+      "width": 155, "height": 80,
+      "fill": "#e0f2fe",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 48, "top": 398,
+      "width": 139, "height": 24,
+      "text": "Primary",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 48, "top": 424,
+      "width": 139, "height": 30,
+      "text": "Ages 5-11",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 220, "top": 386,
+      "width": 155, "height": 80,
+      "fill": "#e0f2fe",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 228, "top": 398,
+      "width": 139, "height": 24,
+      "text": "Secondary",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 228, "top": 424,
+      "width": 139, "height": 30,
+      "text": "Ages 11-16",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 400, "top": 386,
+      "width": 155, "height": 80,
+      "fill": "#e0f2fe",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 408, "top": 398,
+      "width": 139, "height": 24,
+      "text": "Sixth Form",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 408, "top": 424,
+      "width": 139, "height": 30,
+      "text": "Ages 16-18",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 490,
+      "width": 515, "height": 1,
+      "fill": "#bae6fd",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 506,
+      "width": 515, "height": 28,
+      "text": "ENROLMENT DATES",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#0369a1",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 538,
+      "width": 515, "height": 80,
+      "text": "Open Days: April 15 and May 20, 2026\nApplications Open: June 1, 2026\nEnrolment Deadline: July 31, 2026\nFirst Day of Term: September 3, 2026",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#374151",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 175, "top": 634,
+      "width": 245, "height": 52,
+      "fill": "#0369a1",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 175, "top": 646,
+      "width": 245, "height": 30,
+      "text": "APPLY NOW",
+      "fontSize": 18,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 730,
+      "width": 595, "height": 112,
+      "fill": "#0369a1",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 750,
+      "width": 515, "height": 72,
+      "text": "admissions@westfieldacademy.edu\n(555) 567-8901  www.westfieldacademy.edu\n25 School Lane, Northside",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#bae6fd",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}

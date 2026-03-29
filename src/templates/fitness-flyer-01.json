@@ -1,0 +1,255 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 420, "height": 595,
+      "fill": "#0a0a0a",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 420, "height": 200,
+      "fill": "#166534",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 195,
+      "width": 420, "height": 8,
+      "fill": "#22c55e",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 28,
+      "width": 372, "height": 44,
+      "text": "POWER GYM",
+      "fontSize": 40,
+      "fontWeight": "bold",
+      "fill": "#22c55e",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 78,
+      "width": 372, "height": 30,
+      "text": "TRAIN HARDER. GO FURTHER.",
+      "fontSize": 14,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 116,
+      "width": 372, "height": 60,
+      "text": "FREE\nFIRST MONTH",
+      "fontSize": 32,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 222,
+      "width": 372, "height": 30,
+      "text": "CLASSES THIS WEEK",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#22c55e",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 24, "top": 256,
+      "width": 180, "height": 56,
+      "fill": "#14532d",
+      "rx": 6, "ry": 6,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 32, "top": 262,
+      "width": 164, "height": 22,
+      "text": "CrossFit",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 32, "top": 284,
+      "width": 164, "height": 20,
+      "text": "Mon, Wed, Fri  6 AM",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#86efac",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 216, "top": 256,
+      "width": 180, "height": 56,
+      "fill": "#14532d",
+      "rx": 6, "ry": 6,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 224, "top": 262,
+      "width": 164, "height": 22,
+      "text": "Yoga Flow",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 224, "top": 284,
+      "width": 164, "height": 20,
+      "text": "Tue, Thu  7:30 AM",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#86efac",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 24, "top": 324,
+      "width": 180, "height": 56,
+      "fill": "#14532d",
+      "rx": 6, "ry": 6,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 32, "top": 330,
+      "width": 164, "height": 22,
+      "text": "HIIT",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 32, "top": 352,
+      "width": 164, "height": 20,
+      "text": "Daily  5:30 PM",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#86efac",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 216, "top": 324,
+      "width": 180, "height": 56,
+      "fill": "#14532d",
+      "rx": 6, "ry": 6,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 224, "top": 330,
+      "width": 164, "height": 22,
+      "text": "Spin Class",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 224, "top": 352,
+      "width": 164, "height": 20,
+      "text": "Mon, Sat  6:30 AM",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#86efac",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 24, "top": 406,
+      "width": 372, "height": 52,
+      "fill": "#22c55e",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 418,
+      "width": 372, "height": 30,
+      "text": "JOIN TODAY — NO JOINING FEE",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#0a0a0a",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 482,
+      "width": 372, "height": 60,
+      "text": "45 Fitness Blvd, Westside\n(555) 321-7890  •  powergym.com",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 24, "top": 552,
+      "width": 372, "height": 28,
+      "text": "Open 5 AM – 10 PM, 7 days a week",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "fill": "#4b5563",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}

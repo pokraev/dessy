@@ -1,0 +1,250 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 842,
+      "fill": "#0f0c29",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 320,
+      "fill": "#302b63",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 300,
+      "width": 595, "height": 20,
+      "fill": "#8b5cf6",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 36,
+      "width": 515, "height": 56,
+      "text": "SATURDAY, JUNE 14",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#a78bfa",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 96,
+      "width": 515, "height": 160,
+      "text": "SUMMER\nFEST 2026",
+      "fontSize": 72,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 254,
+      "width": 515, "height": 36,
+      "text": "Live Music • Food & Drinks • Art Installations",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "fill": "#c4b5fd",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 60, "top": 358,
+      "width": 140, "height": 80,
+      "fill": "#1e1b4b",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 68, "top": 368,
+      "width": 124, "height": 26,
+      "text": "DOORS OPEN",
+      "fontSize": 10,
+      "fontWeight": "bold",
+      "fill": "#a78bfa",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 68, "top": 396,
+      "width": 124, "height": 32,
+      "text": "7:00 PM",
+      "fontSize": 22,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 228, "top": 358,
+      "width": 140, "height": 80,
+      "fill": "#1e1b4b",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 236, "top": 368,
+      "width": 124, "height": 26,
+      "text": "SHOW STARTS",
+      "fontSize": 10,
+      "fontWeight": "bold",
+      "fill": "#a78bfa",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 236, "top": 396,
+      "width": 124, "height": 32,
+      "text": "8:30 PM",
+      "fontSize": 22,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 395, "top": 358,
+      "width": 140, "height": 80,
+      "fill": "#1e1b4b",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 403, "top": 368,
+      "width": 124, "height": 26,
+      "text": "ENDS AT",
+      "fontSize": 10,
+      "fontWeight": "bold",
+      "fill": "#a78bfa",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 403, "top": 396,
+      "width": 124, "height": 32,
+      "text": "11:59 PM",
+      "fontSize": 22,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 476,
+      "width": 515, "height": 36,
+      "text": "FEATURED ARTISTS",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#8b5cf6",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 516,
+      "width": 515, "height": 60,
+      "text": "The Night Wave  •  Solar Echo  •  Midnight Bloom",
+      "fontSize": 18,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 600,
+      "width": 515, "height": 1,
+      "fill": "#302b63",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 618,
+      "width": 515, "height": 36,
+      "text": "Riverside Park Amphitheater, City Center",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 175, "top": 676,
+      "width": 245, "height": 52,
+      "fill": "#8b5cf6",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 175, "top": 688,
+      "width": 245, "height": 30,
+      "text": "GET TICKETS",
+      "fontSize": 18,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 756,
+      "width": 515, "height": 36,
+      "text": "tickets.summerfest2026.com • From $25",
+      "fontSize": 13,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}

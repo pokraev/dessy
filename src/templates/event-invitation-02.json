@@ -1,0 +1,194 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 420, "height": 595,
+      "fill": "#0d0d0d",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 30, "top": 30,
+      "width": 360, "height": 535,
+      "fill": "rgba(0,0,0,0)",
+      "stroke": "#d4af37",
+      "strokeWidth": 1,
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Rect",
+      "left": 36, "top": 36,
+      "width": 348, "height": 523,
+      "fill": "rgba(0,0,0,0)",
+      "stroke": "#d4af37",
+      "strokeWidth": 0.5,
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 70,
+      "width": 320, "height": 28,
+      "text": "YOU ARE CORDIALLY INVITED",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#d4af37",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 120, "top": 100,
+      "width": 180, "height": 1,
+      "fill": "#d4af37",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 120,
+      "width": 320, "height": 80,
+      "text": "The Annual\nGala Evening",
+      "fontSize": 40,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 208,
+      "width": 320, "height": 28,
+      "text": "2026",
+      "fontSize": 24,
+      "fontWeight": "normal",
+      "fill": "#d4af37",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 120, "top": 246,
+      "width": 180, "height": 1,
+      "fill": "#d4af37",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 270,
+      "width": 320, "height": 28,
+      "text": "Saturday, 21st November 2026",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "fill": "#e5e7eb",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 302,
+      "width": 320, "height": 24,
+      "text": "Reception 7:00 PM  |  Dinner 8:00 PM",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 334,
+      "width": 320, "height": 28,
+      "text": "The Grand Ballroom",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#d4af37",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 362,
+      "width": 320, "height": 24,
+      "text": "Royal Hotel, 1 Palace Square",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 120, "top": 408,
+      "width": 180, "height": 1,
+      "fill": "#d4af37",
+      "selectable": true,
+      "evented": true,
+      "customType": "shape"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 422,
+      "width": 320, "height": 24,
+      "text": "Black Tie  |  Seats Limited",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 80, "top": 462,
+      "width": 260, "height": 48,
+      "fill": "#d4af37",
+      "rx": 4, "ry": 4,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 80, "top": 474,
+      "width": 260, "height": 26,
+      "text": "RSVP BY 1 NOVEMBER",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#0d0d0d",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 50, "top": 530,
+      "width": 320, "height": 24,
+      "text": "gala@royalevent.com  |  (555) 678-9012",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Georgia, serif",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}

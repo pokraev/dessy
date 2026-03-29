@@ -1,0 +1,243 @@
+{
+  "version": "7.0.0",
+  "objects": [
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 842,
+      "fill": "#FFFFFF",
+      "selectable": false,
+      "evented": false,
+      "_isDocBackground": true,
+      "customType": "background"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 0,
+      "width": 595, "height": 842,
+      "fill": "#1a2744",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 580,
+      "width": 595, "height": 262,
+      "fill": "#111827",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 0, "top": 576,
+      "width": 595, "height": 6,
+      "fill": "#3b82f6",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 56,
+      "width": 80, "height": 8,
+      "fill": "#3b82f6",
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 80,
+      "width": 515, "height": 50,
+      "text": "NEXUS",
+      "fontSize": 52,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 134,
+      "width": 300, "height": 28,
+      "text": "CONSULTING GROUP",
+      "fontSize": 16,
+      "fontWeight": "normal",
+      "fill": "#93c5fd",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 230,
+      "width": 515, "height": 100,
+      "text": "Transforming\nBusiness Strategy\nfor the Digital Age",
+      "fontSize": 36,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 356,
+      "width": 440, "height": 80,
+      "text": "We help organisations navigate complex challenges and unlock sustainable growth through expert consulting, innovative solutions, and data-driven insights.",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 462,
+      "width": 180, "height": 52,
+      "fill": "#3b82f6",
+      "rx": 6, "ry": 6,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 474,
+      "width": 180, "height": 30,
+      "text": "Get Started",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 604,
+      "width": 515, "height": 30,
+      "text": "OUR SERVICES",
+      "fontSize": 13,
+      "fontWeight": "bold",
+      "fill": "#3b82f6",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 40, "top": 648,
+      "width": 150, "height": 100,
+      "fill": "#1e2d4f",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 48, "top": 668,
+      "width": 134, "height": 24,
+      "text": "Strategy",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 48, "top": 694,
+      "width": 134, "height": 44,
+      "text": "Long-term growth roadmaps",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 210, "top": 648,
+      "width": 150, "height": 100,
+      "fill": "#1e2d4f",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 218, "top": 668,
+      "width": 134, "height": 24,
+      "text": "Technology",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 218, "top": 694,
+      "width": 134, "height": 44,
+      "text": "Digital transformation",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Rect",
+      "left": 380, "top": 648,
+      "width": 175, "height": 100,
+      "fill": "#1e2d4f",
+      "rx": 8, "ry": 8,
+      "selectable": true,
+      "evented": true,
+      "customType": "colorBlock"
+    },
+    {
+      "type": "Textbox",
+      "left": 388, "top": 668,
+      "width": 159, "height": 24,
+      "text": "Analytics",
+      "fontSize": 16,
+      "fontWeight": "bold",
+      "fill": "#FFFFFF",
+      "fontFamily": "Arial",
+      "textAlign": "left",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 388, "top": 694,
+      "width": 159, "height": 44,
+      "text": "Data-driven insights",
+      "fontSize": 11,
+      "fontWeight": "normal",
+      "fill": "#9ca3af",
+      "fontFamily": "Arial",
+      "customType": "textFrame"
+    },
+    {
+      "type": "Textbox",
+      "left": 40, "top": 778,
+      "width": 515, "height": 40,
+      "text": "info@nexusconsulting.com  •  +1 (555) 234-5678  •  www.nexusconsulting.com",
+      "fontSize": 12,
+      "fontWeight": "normal",
+      "fill": "#6b7280",
+      "fontFamily": "Arial",
+      "textAlign": "center",
+      "customType": "textFrame"
+    }
+  ]
+}
