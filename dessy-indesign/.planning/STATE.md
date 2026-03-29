@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-29T11:47:34.082Z"
-last_activity: 2026-03-29 — Roadmap created, phases derived from requirements
+status: unknown
+stopped_at: Completed 01-scaffold/01-01-PLAN.md
+last_updated: "2026-03-29T12:13:12.422Z"
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Reliably fill tagged InDesign templates with Excel data through a clear mapping UI
-**Current focus:** Phase 1 — Scaffold
+**Current focus:** Phase 01 — scaffold
 
 ## Current Position
 
-Phase: 1 of 5 (Scaffold)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-03-29 — Roadmap created, phases derived from requirements
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 01 (scaffold) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -52,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01 P01 | 20 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -63,6 +58,9 @@ Recent decisions affecting current work:
 - [Scaffold]: Use bolt-uxp (Vite) boilerplate; SheetJS standalone bundle (not npm package — fails in UXP with charCodeAt error)
 - [Scaffold]: Always `require('indesign')` per file; use `.item(n)` not bracket notation; InDesign 18.4+ breaking changes apply
 - [Fill Engine]: All DOM mutations wrapped in `app.doScript()` with `UndoModes.ENTIRE_SCRIPT`; all async work must complete before entering doScript callback
+- [Phase 01]: vite-uxp-plugin uses named export { uxp }, not default — must import { uxp } from vite-uxp-plugin
+- [Phase 01]: uxp.config.ts must export UXP_Config shape with manifest embedded (not plugins array)
+- [Phase 01]: bolt-uxp CLI requires TTY; scaffold created manually from RESEARCH.md patterns
 
 ### Pending Todos
 
@@ -75,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T11:47:34.049Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-scaffold/01-CONTEXT.md
+Last session: 2026-03-29T12:13:12.393Z
+Stopped at: Completed 01-scaffold/01-01-PLAN.md
+Resume file: None
