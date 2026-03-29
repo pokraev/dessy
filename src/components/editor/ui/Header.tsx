@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe, Wand2 } from 'lucide-react';
 import { setLanguage } from '@/i18n';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { useAppStore } from '@/stores/appStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { GenerateLeafletModal } from '@/components/editor/modals/GenerateLeafletModal';
@@ -33,6 +34,15 @@ export function Header() {
 
   const projectName = currentProject?.meta.name ?? 'Untitled Leaflet';
 
+  async function handleLogoClick() {
+    // Auto-save before leaving editor
+    const triggerSave = useCanvasStore.getState().triggerSave;
+    if (triggerSave) {
+      triggerSave();
+    }
+    useAppStore.getState().goToDashboard();
+  }
+
   function handleNameClick() {
     setNameInput(projectName);
     setIsEditingName(true);
@@ -60,8 +70,25 @@ export function Header() {
       className="flex items-center justify-between px-4 bg-surface border-b border-border"
       style={{ height: '48px', minHeight: '48px' }}
     >
-      {/* Left: Project name + AI Generate */}
+      {/* Left: Dessy logo + Project name + AI Generate */}
       <div className="flex items-center gap-3 min-w-0">
+        {/* Dessy logo — click to auto-save and return to dashboard */}
+        <span
+          onClick={handleLogoClick}
+          title={t('header.backToDashboard')}
+          style={{
+            fontSize: '15px',
+            fontWeight: 700,
+            color: '#6366f1',
+            cursor: 'pointer',
+            letterSpacing: '-0.3px',
+            flexShrink: 0,
+            userSelect: 'none',
+          }}
+        >
+          Dessy
+        </span>
+        <div style={{ width: '1px', height: '16px', background: '#2a2a2a', flexShrink: 0 }} />
         {isEditingName ? (
           <input
             ref={inputRef}

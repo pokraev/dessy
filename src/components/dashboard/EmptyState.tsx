@@ -2,20 +2,51 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TEMPLATES } from '@/lib/templates/templates-index';
+import { useAppStore } from '@/stores/appStore';
+import { saveProject } from '@/lib/storage/projectStorage';
 
 interface Props {
   onNewLeaflet: () => void;
 }
 
-const TEMPLATE_PLACEHOLDERS = [
-  { label: 'A4 Single', color: '#6366f1' },
-  { label: 'Bifold', color: '#818cf8' },
-  { label: 'Trifold', color: '#4f46e5' },
-];
+// Category to color mapping for template suggestion thumbnails
+const CATEGORY_COLORS: Record<string, string> = {
+  Sale: '#ef4444',
+  Event: '#8b5cf6',
+  Restaurant: '#f59e0b',
+  'Real Estate': '#10b981',
+  Corporate: '#6366f1',
+  Fitness: '#f97316',
+  Beauty: '#ec4899',
+  Education: '#06b6d4',
+};
 
 export function EmptyState({ onNewLeaflet }: Props) {
   const { t } = useTranslation();
   const [ctaHovered, setCtaHovered] = useState(false);
+
+  const suggestedTemplates = TEMPLATES.slice(0, 3);
+
+  function handleTemplateClick(template: typeof TEMPLATES[number]) {
+    const newId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const meta = {
+      id: newId,
+      name: template.name,
+      format: template.format,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const canvasJSON = JSON.parse(JSON.stringify(template.canvasJSON));
+    const pages = Array.from({ length: template.pageCount }, () => ({
+      id: crypto.randomUUID(),
+      elements: [],
+      background: '#FFFFFF',
+    }));
+    saveProject(newId, { meta, canvasJSON, pageData: { pages, currentPageIndex: 0 } });
+    useAppStore.getState().openProject(newId);
+  }
 
   return (
     <div
@@ -97,7 +128,7 @@ export function EmptyState({ onNewLeaflet }: Props) {
         {t('dashboard.emptyCtaLabel')}
       </button>
 
-      {/* Template suggestion strip */}
+      {/* Template suggestion strip — first 3 real templates */}
       <div
         style={{
           marginTop: '32px',
@@ -106,9 +137,10 @@ export function EmptyState({ onNewLeaflet }: Props) {
           gap: '12px',
         }}
       >
-        {TEMPLATE_PLACEHOLDERS.map((tpl) => (
+        {suggestedTemplates.map((template) => (
           <div
-            key={tpl.label}
+            key={template.id}
+            onClick={() => handleTemplateClick(template)}
             style={{
               width: '140px',
               background: '#141414',
@@ -116,26 +148,44 @@ export function EmptyState({ onNewLeaflet }: Props) {
               borderRadius: '8px',
               overflow: 'hidden',
               cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor = '#6366f1';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a2a';
             }}
           >
             {/* Colored preview rectangle */}
             <div
               style={{
                 height: '80px',
-                background: tpl.color,
-                opacity: 0.6,
+                background: CATEGORY_COLORS[template.category] ?? '#6366f1',
+                opacity: 0.7,
               }}
             />
-            {/* Label */}
+            {/* Template name */}
             <div
               style={{
-                padding: '8px 10px',
                 fontSize: '12px',
-                fontWeight: 500,
-                color: '#888',
+                fontWeight: 600,
+                color: '#f5f5f5',
+                padding: '8px 8px 4px',
               }}
             >
-              {tpl.label}
+              {template.name}
+            </div>
+            {/* Category label */}
+            <div
+              style={{
+                fontSize: '12px',
+                fontWeight: 400,
+                color: '#888',
+                padding: '0 8px 8px',
+              }}
+            >
+              {template.category}
             </div>
           </div>
         ))}

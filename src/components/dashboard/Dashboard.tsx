@@ -8,8 +8,7 @@ import { listProjects } from '@/lib/storage/projectStorage';
 import type { ProjectMeta } from '@/types/project';
 import { ProjectGrid } from './ProjectGrid';
 import { EmptyState } from './EmptyState';
-// TODO: import NewLeafletModal from Plan 03 when available
-// import { NewLeafletModal } from '@/components/dashboard/NewLeafletModal';
+import { NewLeafletModal } from './NewLeafletModal';
 
 function getSortedProjects(): ProjectMeta[] {
   return listProjects().sort(
@@ -138,35 +137,8 @@ export function Dashboard() {
         )}
       </main>
 
-      {/* TODO: NewLeafletModal — wire up in Plan 03 */}
       {showNewLeafletModal && (
-        // Placeholder until NewLeafletModal is built in Plan 03
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.7)',
-            zIndex: 50,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onClick={() => setShowNewLeafletModal(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#1e1e1e',
-              border: '1px solid #2a2a2a',
-              borderRadius: '12px',
-              padding: '32px',
-              color: '#888',
-              fontSize: '14px',
-            }}
-          >
-            New Leaflet modal — coming in Plan 03
-          </div>
-        </div>
+        <NewLeafletModal onClose={() => setShowNewLeafletModal(false)} />
       )}
     </div>
   );
