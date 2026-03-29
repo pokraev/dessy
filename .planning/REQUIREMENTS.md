@@ -48,11 +48,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Left Panel
 
-- [ ] **LPNL-01**: User can select tools via icon buttons (Select, Text, Rectangle, Circle, Line, Image, Hand)
-- [ ] **LPNL-02**: User can see layer list with draggable reorder
-- [ ] **LPNL-03**: User can toggle layer visibility (eye icon) and lock (lock icon)
-- [ ] **LPNL-04**: User can click a layer to select it on canvas, double-click to rename
-- [ ] **LPNL-05**: User can see page thumbnails and click to navigate
+- [x] **LPNL-01**: User can select tools via icon buttons (Select, Text, Rectangle, Circle, Line, Image, Hand)
+- [x] **LPNL-02**: User can see layer list with draggable reorder
+- [x] **LPNL-03**: User can toggle layer visibility (eye icon) and lock (lock icon)
+- [x] **LPNL-04**: User can click a layer to select it on canvas, double-click to rename
+- [x] **LPNL-05**: User can see page thumbnails and click to navigate
 
 ### Right Panel — Properties
 
@@ -202,11 +202,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAGE-02 | Phase 2 | Pending |
 | PAGE-03 | Phase 2 | Pending |
 | PAGE-04 | Phase 2 | Pending |
-| LPNL-01 | Phase 2 | Pending |
-| LPNL-02 | Phase 2 | Pending |
-| LPNL-03 | Phase 2 | Pending |
-| LPNL-04 | Phase 2 | Pending |
-| LPNL-05 | Phase 2 | Pending |
+| LPNL-01 | Phase 2 | Complete |
+| LPNL-02 | Phase 2 | Complete |
+| LPNL-03 | Phase 2 | Complete |
+| LPNL-04 | Phase 2 | Complete |
+| LPNL-05 | Phase 2 | Complete |
 | PROP-01 | Phase 2 | Pending |
 | PROP-02 | Phase 2 | Pending |
 | PROP-03 | Phase 2 | Pending |

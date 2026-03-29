@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-editor-surface plan 01
-last_updated: "2026-03-29T06:19:01.165Z"
+stopped_at: Completed 02-editor-surface plan 02
+last_updated: "2026-03-29T06:32:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 18
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 02 (editor-surface) — EXECUTING
-Plan: 1 of 7
+Plan: 2 of 7
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Plan: 1 of 7
 | Phase 01.1-import P03 | 8 | 2 tasks | 4 files |
 | Phase 01.1-import P04 | 2 | 1 tasks | 1 files |
 | Phase 02-editor-surface P01 | 321 | 2 tasks | 13 files |
+| Phase 02-editor-surface P02 | 18 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Recent decisions affecting current work:
 - [Post-01.1]: Both AI providers use 120s timeout (was 60s)
 - [Post-01.1]: System prompt updated: strict canvas bounds, notebook line detection, "Img" label → image placeholder
 - [Phase 02-editor-surface]: use-eye-dropper uses default import; Fabric.js 7 uses moveObjectTo() not moveTo(); brandSwatches/typographyPresets added to 3 Project init sites
+- [02-02]: PagesPanel thumbnails captured lazily (on mount + page switch) at 15% multiplier — not eagerly for all pages
+- [02-02]: sessionStorage keys fully re-written on reorder (not swap-pairs) to prevent key collision
+- [02-02]: @dnd-kit/utilities added (CSS.Transform.toString) — legacy-peer-deps required for fabric-guideline-plugin conflict
 
 ### Pending Todos
 
@@ -107,6 +111,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T06:19:01.136Z
-Stopped at: Completed 02-editor-surface plan 01
+Last session: 2026-03-29T06:32:00.000Z
+Stopped at: Completed 02-editor-surface plan 02
 Resume file: None
