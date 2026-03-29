@@ -37,6 +37,7 @@ Declared values (must be multiples of 4):
 |-------|-------|-------|
 | xs | 4px | Icon gaps, badge padding, inline label gaps |
 | sm | 8px | Compact button padding, gap between card meta items |
+| sm-plus | 12px | Card internal padding, grid gaps, menu item padding |
 | md | 16px | Card internal padding, modal section spacing, header padding |
 | lg | 24px | Card grid gap, modal padding, section breaks |
 | xl | 32px | Dashboard content area vertical padding |
@@ -148,13 +149,13 @@ Primary focal point: "New Leaflet" CTA button below the empty state heading. Acc
 - Illustration: SVG graphic using `#6366f1` + `#2a2a2a` tones — abstract stacked rectangles suggesting leaflet pages (Claude's discretion per CONTEXT.md)
 - Heading: 28px/600, `color: #f5f5f5`, "Create your first leaflet"
 - Body: 14px/400, `color: #888`, `max-width: 320px`, centered, line-height 1.5
-- CTA button: accent fill, 14px/600, `padding: 10px 24px`, `border-radius: 8px`, "New Leaflet"
+- CTA button: accent fill, 14px/600, `padding: 8px 24px`, `border-radius: 8px`, "New Leaflet"
 - Template suggestions strip below CTA: 3 template cards (smallest variant, 140px wide) with name + category label
 
 ### New Leaflet Modal (`NewLeafletModal.tsx`)
 - Backdrop: `position: fixed`, `inset: 0`, `background: rgba(0,0,0,0.6)`, `z-index: 50`
 - Modal panel: `background: #141414`, `border: 1px solid #2a2a2a`, `border-radius: 12px`, `width: 480px`, `max-height: 80vh`, `overflow-y: auto`
-- Header row: `padding: 20px 24px 16px`, modal title 16px/600, close button (X, 16px, `color: #888`)
+- Header row: `padding: 24px 24px 16px`, modal title 16px/600, close button (X, 16px, `color: #888`)
 - Two tabs — "Blank" and "Templates": tab bar `border-bottom: 1px solid #2a2a2a`, active tab `border-bottom: 2px solid #6366f1`, 14px/600
 - Blank tab — Format cards grid: `display: grid`, `grid-template-columns: repeat(3, 1fr)`, `gap: 12px`, `padding: 16px 24px`
   - Format card: `background: #1e1e1e`, `border: 1px solid #2a2a2a`, `border-radius: 8px`, `padding: 16px 8px`, centered column
@@ -181,7 +182,7 @@ Primary focal point: "New Leaflet" CTA button below the empty state heading. Acc
 - Panel: `background: #141414`, `border: 1px solid #2a2a2a`, `border-radius: 12px`, `width: 640px`, `padding: 24px`
 - Layout: two-column — left: large preview (300px height, `background: #1e1e1e`, `border-radius: 8px`), right: template metadata
 - Right column metadata:
-  - Template name: 20px/600, `color: #f5f5f5`
+  - Template name: 16px/600, `color: #f5f5f5`
   - Category: 14px/400, `color: #888`
   - Format: format badge (same style as project card)
   - Page count: 14px/400, `color: #888`
