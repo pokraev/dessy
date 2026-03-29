@@ -28,6 +28,7 @@ export interface ObjectSnapshot {
   lineHeight?: number;
   charSpacing?: number;
   textAlign?: string;
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
   // image-only
   fitMode?: string;
   // swatch linking
@@ -48,6 +49,8 @@ type FabricObjectWithCustom = FabricObject & {
   lineHeight?: number;
   charSpacing?: number;
   textAlign?: string;
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  text?: string;
   // rect properties
   rx?: number;
   ry?: number;
@@ -100,6 +103,7 @@ function extractSnapshot(obj: FabricObjectWithCustom): ObjectSnapshot {
     snapshot.lineHeight = obj.lineHeight;
     snapshot.charSpacing = obj.charSpacing;
     snapshot.textAlign = obj.textAlign;
+    snapshot.textTransform = (obj.textTransform as ObjectSnapshot['textTransform']) ?? 'none';
   }
 
   if (type === 'image') {
