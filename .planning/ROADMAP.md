@@ -126,5 +126,5 @@ Plans:
 | 01.1. AI Leaflet Generation | 4/4 | Complete   | 2026-03-27 |
 | 2. Editor Surface | 7/7 | Complete   | 2026-03-29 |
 | 3. Export | 0/4 | Not started | - |
-| 4. AI PromptCrafter | 0/2 | Not started | - |
+| 4. AI PromptCrafter | 1/2 | In Progress|  |
 | 5. Dashboard and Templates | 0/TBD | Not started | - |

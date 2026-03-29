@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-editor-surface plan 07 — Phase 2 complete
-last_updated: "2026-03-29T12:00:00Z"
+stopped_at: Completed 04-ai-promptcrafter plan 01
+last_updated: "2026-03-29T20:48:20.754Z"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
-  total_plans: 18
-  completed_plans: 17
+  total_plans: 24
+  completed_plans: 20
 ---
 
 # Project State
@@ -19,13 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Speed — full leaflet from zero to print-ready in minutes, with AI handling on-brand image generation
-**Current focus:** Phase 03 — AI and Export
+**Current focus:** Phase 04 — ai-promptcrafter
 
 ## Current Position
 
-Phase: 03 (export) — IN PROGRESS
-Current Plan: 1 of 4
-Next: 03-02 (CorelDRAW export)
+Phase: 04 (ai-promptcrafter) — EXECUTING
+Plan: 1 of 2
 
 ## Performance Metrics
 
@@ -59,6 +58,7 @@ Next: 03-02 (CorelDRAW export)
 | Phase 02-editor-surface P05 | 12 | 2 tasks | 3 files |
 | Phase 02-editor-surface P04 | 15 | 2 tasks | 5 files |
 | Phase 02-editor-surface P03 | 22 | 2 tasks | 7 files |
+| Phase 04-ai-promptcrafter P01 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -110,6 +110,8 @@ Recent decisions affecting current work:
 - [02-06]: propagateSwatchChange/propagatePresetChange update live canvas first, then mutate sessionStorage JSON for all other pages
 - [02-06]: StyleSection initializes DEFAULT_PRESETS into brandStore only on first change (lazy init — avoids overwriting loaded project presets)
 - [02-06]: Swatch name update uses useBrandStore.setState directly (no dedicated name-update store action exists)
+- [Phase 04-ai-promptcrafter]: Log-ratio (not linear) comparison for snapAspectRatio — perceptually uniform distance across wide and portrait ranges
+- [Phase 04-ai-promptcrafter]: generateThumbnail falls back to original dataUrl when OffscreenCanvas unavailable (test/SSR env)
 
 ### Pending Todos
 
@@ -124,6 +126,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:14:00Z
-Stopped at: Completed 03-export plan 01
+Last session: 2026-03-29T20:48:12.907Z
+Stopped at: Completed 04-ai-promptcrafter plan 01
 Resume file: None
