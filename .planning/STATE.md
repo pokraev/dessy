@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-03-28T19:12:50.327Z"
+stopped_at: Completed 02-editor-surface plan 01
+last_updated: "2026-03-29T06:19:01.165Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 18
+  completed_plans: 12
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Speed — full leaflet from zero to print-ready in minutes, with AI handling on-brand image generation
-**Current focus:** Post-phase 01.1 polish, ready for Phase 2
+**Current focus:** Phase 02 — editor-surface
 
 ## Current Position
 
-Phase: 01.1 (import) — COMPLETE (verified, human testing done)
-Next: Phase 2 (Editor Surface)
+Phase: 02 (editor-surface) — EXECUTING
+Plan: 1 of 7
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Next: Phase 2 (Editor Surface)
 | Phase 01.1-import P02 | 4 | 2 tasks | 10 files |
 | Phase 01.1-import P03 | 8 | 2 tasks | 4 files |
 | Phase 01.1-import P04 | 2 | 1 tasks | 1 files |
+| Phase 02-editor-surface P01 | 321 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,7 @@ Recent decisions affecting current work:
 - [Post-01.1]: canvasRef stored in canvasStore for direct canvas access from toolbar actions
 - [Post-01.1]: Both AI providers use 120s timeout (was 60s)
 - [Post-01.1]: System prompt updated: strict canvas bounds, notebook line detection, "Img" label → image placeholder
+- [Phase 02-editor-surface]: use-eye-dropper uses default import; Fabric.js 7 uses moveObjectTo() not moveTo(); brandSwatches/typographyPresets added to 3 Project init sites
 
 ### Pending Todos
 
@@ -105,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T19:12:50.295Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-editor-surface/02-UI-SPEC.md
+Last session: 2026-03-29T06:19:01.136Z
+Stopped at: Completed 02-editor-surface plan 01
+Resume file: None

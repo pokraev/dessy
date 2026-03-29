@@ -92,10 +92,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Color System
 
-- [ ] **COLR-01**: User can pick colors using react-colorful with HEX, RGB, and HSL input
-- [ ] **COLR-02**: User can use eyedropper tool to pick color from canvas
-- [ ] **COLR-03**: User can choose from 20+ predefined curated palettes
-- [ ] **COLR-04**: User can see recently used colors
+- [x] **COLR-01**: User can pick colors using react-colorful with HEX, RGB, and HSL input
+- [x] **COLR-02**: User can use eyedropper tool to pick color from canvas
+- [x] **COLR-03**: User can choose from 20+ predefined curated palettes
+- [x] **COLR-04**: User can see recently used colors
 - [ ] **COLR-05**: User can define global swatches that update everywhere when changed
 
 ### Export
@@ -219,10 +219,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STYL-02 | Phase 2 | Pending |
 | STYL-03 | Phase 2 | Pending |
 | STYL-04 | Phase 2 | Pending |
-| COLR-01 | Phase 2 | Pending |
-| COLR-02 | Phase 2 | Pending |
-| COLR-03 | Phase 2 | Pending |
-| COLR-04 | Phase 2 | Pending |
+| COLR-01 | Phase 2 | Complete |
+| COLR-02 | Phase 2 | Complete |
+| COLR-03 | Phase 2 | Complete |
+| COLR-04 | Phase 2 | Complete |
 | COLR-05 | Phase 2 | Pending |
 | AIPC-01 | Phase 3 | Pending |
 | AIPC-02 | Phase 3 | Pending |

@@ -63,7 +63,7 @@ Plans:
   3. User can select any element and edit its position, size, rotation, opacity, fill, border, shadow, and corner radius in the right properties panel with mm-based precision
   4. User can select a text frame and apply a Google Font, set weight/size/line-height/letter-spacing/color/alignment, and apply typography presets (Headline, Subhead, Body, Caption, CTA)
   5. User can define up to 10 brand color swatches, pick colors with HEX/RGB/HSL input and eyedropper, choose from predefined palettes, and apply global swatches that update everywhere when changed
-**Plans:** 7 plans
+**Plans:** 1/7 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Foundation: install deps, extend types/stores, hooks (useSelectedObject, useCanvasLayers), shared components (NumberInput, ColorPicker), color utilities
@@ -102,6 +102,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Canvas Foundation | 6/6 | Complete   | 2026-03-27 |
 | 01.1. AI Leaflet Generation | 4/4 | Complete   | 2026-03-27 |
-| 2. Editor Surface | 0/7 | In progress | - |
+| 2. Editor Surface | 1/7 | In Progress|  |
 | 3. AI and Export | 0/TBD | Not started | - |
 | 4. Dashboard, Templates, and InDesign Export | 0/TBD | Not started | - |
