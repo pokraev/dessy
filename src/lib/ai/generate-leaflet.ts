@@ -29,7 +29,8 @@ async function callGemini(
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
-  imageBase64?: string
+  imageBase64?: string,
+  maxOutputTokens = 16384
 ): Promise<string> {
   const model = 'gemini-2.5-flash';
   const controller = new AbortController();
@@ -53,7 +54,8 @@ async function callGemini(
         contents: [{ parts }],
         generationConfig: {
           responseMimeType: 'application/json',
-          maxOutputTokens: 8192,
+          maxOutputTokens,
+          thinkingConfig: { thinkingBudget: 2048 },
         },
       }),
       signal: controller.signal,
@@ -65,9 +67,24 @@ async function callGemini(
     }
 
     const data = (await response.json()) as {
-      candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+      candidates: Array<{
+        finishReason?: string;
+        content: {
+          parts: Array<{ text?: string; thought?: boolean }>;
+        };
+      }>;
     };
-    return data.candidates[0]?.content?.parts[0]?.text ?? '';
+
+    const candidate = data.candidates[0];
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      throw new Error('TRUNCATED');
+    }
+
+    // Gemini 2.5 models include thinking parts (thought: true) before the actual response.
+    // Find the last non-thought part which contains the JSON output.
+    const responseParts = candidate?.content?.parts ?? [];
+    const responsePart = [...responseParts].reverse().find((p) => !p.thought) ?? responseParts[responseParts.length - 1];
+    return responsePart?.text ?? '';
   } finally {
     clearTimeout(timeout);
   }
@@ -119,12 +136,17 @@ export async function generateLeaflet(
   const systemPrompt = buildSystemPrompt(request.foldType, formatDimensions, brandContext);
   const userPrompt = buildUserPrompt(request);
 
-  // Call Gemini
+  // Call Gemini — retry with more tokens if truncated
   let rawResponse: string;
-  if (request.mode === 'prompt') {
-    rawResponse = await callGemini(apiKey, systemPrompt, userPrompt);
-  } else {
-    rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, request.imageBase64!);
+  const image = request.mode !== 'prompt' ? request.imageBase64! : undefined;
+  try {
+    rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, image);
+  } catch (err) {
+    if (err instanceof Error && err.message === 'TRUNCATED') {
+      rawResponse = await callGemini(apiKey, systemPrompt, userPrompt, image, 32768);
+    } else {
+      throw err;
+    }
   }
 
   // Parse JSON — with one retry on failure
@@ -134,9 +156,7 @@ export async function generateLeaflet(
   } catch {
     const retryPrompt =
       'Your previous response was not valid JSON. Please respond with ONLY the JSON object, no markdown or explanation.';
-    const retryResponse = request.mode === 'prompt'
-      ? await callGemini(apiKey, systemPrompt, retryPrompt)
-      : await callGemini(apiKey, systemPrompt, retryPrompt, request.imageBase64!);
+    const retryResponse = await callGemini(apiKey, systemPrompt, retryPrompt, image);
     parsed = JSON.parse(retryResponse);
   }
 
