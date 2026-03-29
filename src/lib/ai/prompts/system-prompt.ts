@@ -248,7 +248,16 @@ ${brandSection}
 
 ## Mode-Specific Instructions
 
-**Photo mode:** Analyze the provided image. Extract its layout DNA: identify content zones (headline area, body area, image zone, footer), dominant colors, and typography style. Recreate the layout structure using Fabric.js elements, but replace all content with professional placeholder text ("Headline Here", "Body text goes here", "Call to Action"). Translate image colors into the element fills.
+**Photo mode:** Create a STRUCTURAL DRAFT inspired by the image — NOT a pixel-perfect copy. Your goal is to capture the layout structure, not reproduce every visual detail.
+
+Steps:
+1. Identify the major content zones: header, body sections, image areas, footer
+2. For each zone, create simple elements: colored background rectangles, text boxes with short placeholder text, image placeholders
+3. Use the dominant colors from the image for backgrounds and accents
+4. Keep text SHORT — use labels like "Headline", "Subheading", "Body text here", "Contact info". Do NOT try to reproduce exact text from the image character by character.
+5. Where the image has photos or illustrations, place a single image placeholder (customType="image") — not a complex recreation
+6. Aim for 8-15 elements total. Fewer, well-positioned elements are better than many tiny ones
+7. Focus on getting the POSITIONS and PROPORTIONS right — the user will edit the content later
 
 **Sketch mode:** Interpret drawn boxes as image placeholders or content zones. Scribbles/wavy lines = text areas. Blobs/filled areas = image placeholders or color blocks. Respect the spatial layout of the sketch but produce a polished, professional result. IMPORTANT: Ignore notebook/ruled paper lines, grid lines, and any other background paper patterns — these are artifacts of the drawing surface, NOT part of the layout design. Focus only on the intentional drawn elements. If a box contains text like "Img", "Image", "Photo", "Pic", or a cross/X pattern, treat it as an image placeholder (customType="image" with imageId=null and fitMode="fill") — the user will replace it with an actual image later.
 
@@ -452,7 +461,7 @@ export function buildUserPrompt(request: GenerationRequest): string {
       return `Design a professional leaflet based on the following description:\n\n${request.prompt ?? 'A general purpose leaflet'}`;
 
     case 'photo':
-      return `Analyze this image and recreate its layout structure as a professional leaflet design. Extract the layout zones, color palette, and visual style from the image. Use placeholder text ("Headline Here", "Body text goes here", "Call to Action") instead of any real text from the image.`;
+      return `Create a simple structural draft inspired by this image. Identify the main content zones (header, sections, images, footer) and their approximate positions. Use colored rectangles for backgrounds, short placeholder text ("Headline", "Body text", "CTA"), and image placeholders where photos appear. Keep it simple — 8 to 15 elements max. Do NOT copy text from the image verbatim. Focus on layout structure, not visual reproduction.`;
 
     case 'sketch':
       return `Interpret this sketch as a leaflet layout blueprint. Treat rectangular boxes as content zones (image placeholders or text areas), scribbles as text regions, and filled areas as color blocks. Produce a polished, professional leaflet design that respects the spatial layout shown in the sketch. IMPORTANT: The sketch may be drawn on ruled/lined notebook paper or grid paper — completely ignore all horizontal lines, vertical lines, or grid patterns that are part of the paper itself. Only interpret the hand-drawn marks as layout elements. Boxes labeled "Img", "Image", "Photo", or containing an X/cross must be image placeholders (customType="image", imageId=null, fitMode="fill").`;
