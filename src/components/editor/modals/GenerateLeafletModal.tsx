@@ -63,6 +63,15 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
     else if (storedProvider === 'gemini' && !storedGemini) setShowKeyInput(true);
   }, []);
 
+  // Reset generation state when modal opens so user sees the initial screen
+  useEffect(() => {
+    if (open) {
+      setResponse(null);
+      setError(null);
+      setIsGenerating(false);
+    }
+  }, [open]);
+
   const activeKey = provider === 'claude' ? claudeKey : geminiKey;
 
   function handleSaveGeminiKey() {

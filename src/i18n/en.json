@@ -1,4 +1,15 @@
 {
+  "welcome": {
+    "subtitle": "Create professional leaflets in minutes — no design experience needed",
+    "manual": "Manual",
+    "manualDesc": "Start from scratch with the full editor",
+    "aiPrompt": "AI Prompt",
+    "aiPromptDesc": "Describe what you want and AI generates a draft",
+    "uploadPhoto": "From Photo",
+    "uploadPhotoDesc": "Upload an existing leaflet as a starting point",
+    "uploadSketch": "From Sketch",
+    "uploadSketchDesc": "Draw a sketch and turn it into a design"
+  },
   "app": {
     "loadingCanvas": "Loading canvas...",
     "untitledLeaflet": "Untitled Leaflet"

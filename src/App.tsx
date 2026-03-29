@@ -38,11 +38,12 @@ export default function App() {
   const [projectId, setProjectId] = useState('default');
   const [formatId, setFormatId] = useState<LeafletFormatId>('A4');
   const [ready, setReady] = useState(false);
-
   useEffect(() => {
+
     const params = new URLSearchParams(window.location.search);
-    const id = params.get('id') ?? 'default';
+    const id = params.get('id') ?? `project-${Date.now()}`;
     const format = (params.get('format') ?? 'A4') as LeafletFormatId;
+
     setProjectId(id);
     setFormatId(format);
 
