@@ -10,7 +10,7 @@ Four phases take Leaflet Factory from an empty Next.js repo to a fully functiona
 - [x] **Phase 01.1: AI Leaflet Generation** - AI-powered leaflet generation from text prompt, photo, or sketch (INSERTED) (completed 2026-03-27)
 - [x] **Phase 2: Editor Surface** - All panels (layers, properties, typography, style), multi-page support, color system (completed 2026-03-29)
 - [ ] **Phase 3: Export** - PNG/JPEG raster, InDesign ExtendScript, CorelDraw SVG + VBA macro
-- [ ] **Phase 4: AI PromptCrafter** - Prompt enrichment, AI image generation, image history
+- [x] **Phase 4: AI PromptCrafter** - Prompt enrichment, AI image generation, image history (completed 2026-03-29)
 - [ ] **Phase 5: Dashboard and Templates** - Project management dashboard, starter template gallery
 
 ## Phase Details
@@ -126,5 +126,5 @@ Plans:
 | 01.1. AI Leaflet Generation | 4/4 | Complete   | 2026-03-27 |
 | 2. Editor Surface | 7/7 | Complete   | 2026-03-29 |
 | 3. Export | 0/4 | Not started | - |
-| 4. AI PromptCrafter | 1/2 | In Progress|  |
+| 4. AI PromptCrafter | 2/2 | Complete   | 2026-03-29 |
 | 5. Dashboard and Templates | 0/TBD | Not started | - |

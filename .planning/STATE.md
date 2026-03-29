@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-ai-promptcrafter plan 01
-last_updated: "2026-03-29T20:48:20.754Z"
+stopped_at: "Checkpoint: 04-ai-promptcrafter plan 02 awaiting human verification"
+last_updated: "2026-03-29T20:55:16.408Z"
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 24
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State
@@ -59,6 +59,7 @@ Plan: 1 of 2
 | Phase 02-editor-surface P04 | 15 | 2 tasks | 5 files |
 | Phase 02-editor-surface P03 | 22 | 2 tasks | 7 files |
 | Phase 04-ai-promptcrafter P01 | 4 | 2 tasks | 7 files |
+| Phase 04-ai-promptcrafter P02 | 5 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,7 @@ Recent decisions affecting current work:
 - [02-06]: Swatch name update uses useBrandStore.setState directly (no dedicated name-update store action exists)
 - [Phase 04-ai-promptcrafter]: Log-ratio (not linear) comparison for snapAspectRatio — perceptually uniform distance across wide and portrait ranges
 - [Phase 04-ai-promptcrafter]: generateThumbnail falls back to original dataUrl when OffscreenCanvas unavailable (test/SSR env)
+- [Phase 04-ai-promptcrafter]: PromptCrafterModal step machine: useEffect on step='generating' drives callGeminiImage; HistoryStrip extracted as shared sub-component
 
 ### Pending Todos
 
@@ -126,6 +128,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:48:12.907Z
-Stopped at: Completed 04-ai-promptcrafter plan 01
+Last session: 2026-03-29T20:55:07.098Z
+Stopped at: Checkpoint: 04-ai-promptcrafter plan 02 awaiting human verification
 Resume file: None

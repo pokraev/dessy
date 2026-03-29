@@ -77,7 +77,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### AI — PromptCrafter
 
-- [ ] **AIPC-01**: User can type a basic image description in a text area
+- [x] **AIPC-01**: User can type a basic image description in a text area
 - [x] **AIPC-02**: User can click "Enrich" to get 3 prompt variations (Editorial, Lifestyle, Bold) via Gemini
 - [x] **AIPC-03**: Prompt enrichment uses leaflet context, frame dimensions, frame position, and brand colors
 - [x] **AIPC-04**: User can customize prompt via mood, lighting, composition, style, and background controls
@@ -86,8 +86,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### AI — Image Generation
 
 - [x] **AIMG-01**: User can generate an image from the enriched prompt via Gemini
-- [ ] **AIMG-02**: User can see loading state during generation and preview the result
-- [ ] **AIMG-03**: User can "Use This" to place image into selected canvas frame, or "Regenerate" / "Edit Prompt"
+- [x] **AIMG-02**: User can see loading state during generation and preview the result
+- [x] **AIMG-03**: User can "Use This" to place image into selected canvas frame, or "Regenerate" / "Edit Prompt"
 - [x] **AIMG-04**: User can see history of all generated images and click to reuse any
 
 ### Color System
@@ -226,14 +226,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COLR-03 | Phase 2 | Complete |
 | COLR-04 | Phase 2 | Complete |
 | COLR-05 | Phase 2 | Complete |
-| AIPC-01 | Phase 3 | Pending |
+| AIPC-01 | Phase 3 | Complete |
 | AIPC-02 | Phase 3 | Complete |
 | AIPC-03 | Phase 3 | Complete |
 | AIPC-04 | Phase 3 | Complete |
 | AIPC-05 | Phase 3 | Complete |
 | AIMG-01 | Phase 3 | Complete |
-| AIMG-02 | Phase 3 | Pending |
-| AIMG-03 | Phase 3 | Pending |
+| AIMG-02 | Phase 3 | Complete |
+| AIMG-03 | Phase 3 | Complete |
 | AIMG-04 | Phase 3 | Complete |
 | EXPO-01 | Phase 3 | Pending |
 | EXPO-02 | Phase 4 | Pending |
