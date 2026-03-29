@@ -63,10 +63,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Right Panel — Typography
 
-- [ ] **TYPO-01**: User can select font family from searchable dropdown with Google Fonts
-- [ ] **TYPO-02**: User can set font weight, size (pt), line height, letter spacing, and color
-- [ ] **TYPO-03**: User can set text alignment (left, center, right, justify) and transform (uppercase, lowercase, capitalize)
-- [ ] **TYPO-04**: User can apply typography presets (Headline, Subhead, Body, Caption, CTA)
+- [x] **TYPO-01**: User can select font family from searchable dropdown with Google Fonts
+- [x] **TYPO-02**: User can set font weight, size (pt), line height, letter spacing, and color
+- [x] **TYPO-03**: User can set text alignment (left, center, right, justify) and transform (uppercase, lowercase, capitalize)
+- [x] **TYPO-04**: User can apply typography presets (Headline, Subhead, Body, Caption, CTA)
 
 ### Right Panel — Style
 
@@ -211,10 +211,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROP-02 | Phase 2 | Pending |
 | PROP-03 | Phase 2 | Pending |
 | PROP-04 | Phase 2 | Pending |
-| TYPO-01 | Phase 2 | Pending |
-| TYPO-02 | Phase 2 | Pending |
-| TYPO-03 | Phase 2 | Pending |
-| TYPO-04 | Phase 2 | Pending |
+| TYPO-01 | Phase 2 | Complete |
+| TYPO-02 | Phase 2 | Complete |
+| TYPO-03 | Phase 2 | Complete |
+| TYPO-04 | Phase 2 | Complete |
 | STYL-01 | Phase 2 | Pending |
 | STYL-02 | Phase 2 | Pending |
 | STYL-03 | Phase 2 | Pending |
