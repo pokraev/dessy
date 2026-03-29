@@ -1,0 +1,23 @@
+{
+  "id": "com.dessy.indesign",
+  "name": "Dessy",
+  "version": "1.0.0",
+  "manifestVersion": 5,
+  "main": "index.html",
+  "host": [
+    {
+      "app": "ID",
+      "minVersion": "18.5.0"
+    }
+  ],
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "dessy-panel",
+      "label": { "default": "Dessy" }
+    }
+  ],
+  "requiredPermissions": {
+    "localFileSystem": "request"
+  }
+}
