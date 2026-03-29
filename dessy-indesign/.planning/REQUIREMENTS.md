@@ -68,31 +68,31 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EXCEL-01 | — | Pending |
-| EXCEL-02 | — | Pending |
-| EXCEL-03 | — | Pending |
-| SCAN-01 | — | Pending |
-| SCAN-02 | — | Pending |
-| SCAN-03 | — | Pending |
-| SCAN-04 | — | Pending |
-| MAP-01 | — | Pending |
-| MAP-02 | — | Pending |
-| MAP-03 | — | Pending |
-| MAP-04 | — | Pending |
-| FILL-01 | — | Pending |
-| FILL-02 | — | Pending |
-| FILL-03 | — | Pending |
-| FILL-04 | — | Pending |
-| PREV-01 | — | Pending |
-| ERR-01 | — | Pending |
-| ERR-02 | — | Pending |
-| ERR-03 | — | Pending |
+| EXCEL-01 | Phase 2 | Pending |
+| EXCEL-02 | Phase 2 | Pending |
+| EXCEL-03 | Phase 2 | Pending |
+| SCAN-01 | Phase 2 | Pending |
+| SCAN-02 | Phase 2 | Pending |
+| SCAN-03 | Phase 2 | Pending |
+| SCAN-04 | Phase 2 | Pending |
+| MAP-01 | Phase 3 | Pending |
+| MAP-02 | Phase 3 | Pending |
+| MAP-03 | Phase 3 | Pending |
+| MAP-04 | Phase 3 | Pending |
+| FILL-01 | Phase 4 | Pending |
+| FILL-02 | Phase 4 | Pending |
+| FILL-03 | Phase 4 | Pending |
+| FILL-04 | Phase 4 | Pending |
+| PREV-01 | Phase 4 | Pending |
+| ERR-01 | Phase 5 | Pending |
+| ERR-02 | Phase 5 | Pending |
+| ERR-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after initial definition*
+*Last updated: 2026-03-29 after roadmap creation*
