@@ -31,6 +31,7 @@ export async function enrichPrompt(
         generationConfig: {
           responseMimeType: 'application/json',
           maxOutputTokens: 1024,
+          thinkingConfig: { thinkingBudget: 0 },
         },
       }),
       signal: controller.signal,
@@ -38,7 +39,10 @@ export async function enrichPrompt(
 
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(`Gemini API error ${response.status}: ${errorBody}`);
+      if (response.status === 429) {
+        throw new Error('API rate limit reached. Please wait a moment and try again.');
+      }
+      throw new Error(`Prompt enrichment failed (${response.status}). Please try again.`);
     }
 
     const data = (await response.json()) as {
@@ -48,13 +52,18 @@ export async function enrichPrompt(
     };
 
     const parts = data.candidates[0]?.content?.parts ?? [];
-    const textPart = [...parts].reverse().find((p) => !p.thought) ?? parts[parts.length - 1];
+    const textPart = [...parts].reverse().find((p) => !p.thought && p.text) ?? parts[parts.length - 1];
     const rawText = textPart?.text ?? '';
 
     try {
       const parsed = JSON.parse(rawText) as PromptVariations;
       return parsed;
     } catch {
+      // Try to extract JSON from the response if it's wrapped in markdown or other text
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]) as PromptVariations;
+      }
       throw new Error('Failed to parse enrichment response');
     }
   } finally {
@@ -78,9 +87,8 @@ export async function callGeminiImage(
     const generationConfig: Record<string, unknown> = {
       responseModalities: ['IMAGE'],
     };
-
     if (aspectRatio) {
-      generationConfig.aspectRatio = aspectRatio;
+      generationConfig.imageConfig = { aspectRatio };
     }
 
     const response = await fetch(getEndpoint('gemini-2.5-flash-image', apiKey), {
@@ -95,12 +103,22 @@ export async function callGeminiImage(
 
     if (!response.ok) {
       const errorBody = await response.text();
-      if (response.status === 403) {
-        throw new Error(
-          `Gemini image generation access denied (403): ${errorBody}. Please check your API key has image generation access and billing is enabled.`
-        );
+      if (response.status === 429) {
+        let retrySec = '';
+        try {
+          const err = JSON.parse(errorBody);
+          const retryInfo = err.error?.details?.find((d: Record<string, unknown>) =>
+            (d['@type'] as string)?.includes('RetryInfo'));
+          if (retryInfo?.retryDelay) {
+            retrySec = ` Try again in ${retryInfo.retryDelay}.`;
+          }
+        } catch { /* ignore parse errors */ }
+        throw new Error(`API rate limit reached.${retrySec} Your free-tier quota is exhausted — enable billing at https://ai.google.dev for higher limits.`);
       }
-      throw new Error(`Gemini image API error ${response.status}: ${errorBody}`);
+      if (response.status === 403) {
+        throw new Error('Image generation access denied. Please check your API key has image generation access and billing is enabled.');
+      }
+      throw new Error(`Image generation failed (${response.status}). Please try again.`);
     }
 
     const data = (await response.json()) as {
