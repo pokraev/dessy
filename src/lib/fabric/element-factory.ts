@@ -12,6 +12,8 @@ export const CUSTOM_PROPS = [
   'id',
   'shapeKind',
   'fitMode',
+  'swatchId',
+  'presetId',
 ] as const;
 
 interface BaseOpts {

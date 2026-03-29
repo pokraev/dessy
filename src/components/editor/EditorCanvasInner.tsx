@@ -123,6 +123,8 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
         pages: [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
         currentPageIndex: 0,
         brandColors: [],
+        brandSwatches: [],
+        typographyPresets: [],
       });
       // Clear any generated page data from sessionStorage
       for (let i = sessionStorage.length - 1; i >= 0; i--) {
@@ -224,6 +226,8 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
           pages: useProjectStore.getState().currentProject?.pages ?? [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
           currentPageIndex: 0,
           brandColors: [],
+          brandSwatches: [],
+          typographyPresets: [],
         });
         setHasElements(canvasInstance.getObjects().length > 0);
         toast.success('Project loaded');

@@ -41,6 +41,8 @@ export function loadGeneratedLeaflet(
     pages: projectPages,
     currentPageIndex: 0,
     brandColors: useProjectStore.getState().currentProject?.brandColors ?? [],
+    brandSwatches: useProjectStore.getState().currentProject?.brandSwatches ?? [],
+    typographyPresets: useProjectStore.getState().currentProject?.typographyPresets ?? [],
   });
 
   // Load first page canvasJSON onto the active canvas

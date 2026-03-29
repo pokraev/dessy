@@ -29,6 +29,8 @@ export default function EditorPage() {
         pages: (saved.pageData as { pages: never[]; currentPageIndex: number }).pages ?? [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
         currentPageIndex: (saved.pageData as { pages: never[]; currentPageIndex: number }).currentPageIndex ?? 0,
         brandColors: [],
+        brandSwatches: [],
+        typographyPresets: [],
       });
       sessionStorage.setItem(`dessy-canvas-restore-${id}`, JSON.stringify(saved.canvasJSON));
     } else if (!useProjectStore.getState().currentProject) {
@@ -43,6 +45,8 @@ export default function EditorPage() {
         pages: [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
         currentPageIndex: 0,
         brandColors: [],
+        brandSwatches: [],
+        typographyPresets: [],
       });
     }
     setReady(true);
