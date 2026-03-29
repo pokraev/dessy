@@ -41,10 +41,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Page
 
-- [ ] **PAGE-01**: User can add, remove, and reorder pages in a project
-- [ ] **PAGE-02**: User can navigate between pages via thumbnail strip at bottom/left
-- [ ] **PAGE-03**: User can duplicate a page
-- [ ] **PAGE-04**: Bifold/trifold formats automatically create the correct number of pages
+- [x] **PAGE-01**: User can add, remove, and reorder pages in a project
+- [x] **PAGE-02**: User can navigate between pages via thumbnail strip at bottom/left
+- [x] **PAGE-03**: User can duplicate a page
+- [x] **PAGE-04**: Bifold/trifold formats automatically create the correct number of pages
 
 ### Left Panel
 
@@ -198,10 +198,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AIGEN-06 | Phase 01.1 | Complete |
 | AIGEN-07 | Phase 01.1 | Complete |
 | AIGEN-08 | Phase 01.1 | Complete |
-| PAGE-01 | Phase 2 | Pending |
-| PAGE-02 | Phase 2 | Pending |
-| PAGE-03 | Phase 2 | Pending |
-| PAGE-04 | Phase 2 | Pending |
+| PAGE-01 | Phase 2 | Complete |
+| PAGE-02 | Phase 2 | Complete |
+| PAGE-03 | Phase 2 | Complete |
+| PAGE-04 | Phase 2 | Complete |
 | LPNL-01 | Phase 2 | Complete |
 | LPNL-02 | Phase 2 | Complete |
 | LPNL-03 | Phase 2 | Complete |

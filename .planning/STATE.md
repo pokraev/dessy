@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-editor-surface plan 02
-last_updated: "2026-03-29T06:32:00.000Z"
+stopped_at: Completed 02-editor-surface plan 05
+last_updated: "2026-03-29T07:12:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 02 (editor-surface) — EXECUTING
-Plan: 2 of 7
+Plan: 5 of 7
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Plan: 2 of 7
 | Phase 01.1-import P04 | 2 | 1 tasks | 1 files |
 | Phase 02-editor-surface P01 | 321 | 2 tasks | 13 files |
 | Phase 02-editor-surface P02 | 18 | 2 tasks | 5 files |
+| Phase 02-editor-surface P05 | 12 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,10 @@ Recent decisions affecting current work:
 - [02-02]: PagesPanel thumbnails captured lazily (on mount + page switch) at 15% multiplier — not eagerly for all pages
 - [02-02]: sessionStorage keys fully re-written on reorder (not swap-pairs) to prevent key collision
 - [02-02]: @dnd-kit/utilities added (CSS.Transform.toString) — legacy-peer-deps required for fabric-guideline-plugin conflict
+- [02-05]: Pure page CRUD functions in src/lib/pages/page-crud.ts — no React/hooks; store actions are thin wrappers
+- [02-05]: deletePage throws "Cannot delete the last page" at pure function level — guards all callers
+- [02-05]: ensureFormatPageCount returns project unchanged for custom/unknown formats (FORMATS lookup guard)
+- [02-05]: Thumbnail index shifting kept in PagesPanel component (UI concern, not store/pure fn concern)
 
 ### Pending Todos
 
