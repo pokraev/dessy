@@ -1,6 +1,4 @@
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useEffect, useRef } from 'react';
 import type { Canvas } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
@@ -77,7 +75,9 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
     if (!canvas) return;
     // Capture non-null alias so TypeScript is satisfied inside closures
     const c = canvas;
+    const isMountedRef = { current: true };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function onMouseWheel(opt: any) {
       const e = opt.e as WheelEvent;
       e.preventDefault();
@@ -102,7 +102,13 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
       // which causes drift. We need the pointer position relative to the canvas element.
       const canvasEl = c.getElement();
       const rect = canvasEl.getBoundingClientRect();
-      const { Point } = await import('fabric');
+      let Point;
+      try {
+        ({ Point } = await import('fabric'));
+      } catch {
+        return;
+      }
+      if (!isMountedRef.current) return;
       const point = new Point(e.clientX - rect.left, e.clientY - rect.top);
       c.zoomToPoint(point, zoom);
 
@@ -110,6 +116,7 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
       useCanvasStore.getState().setViewportTransform([...c.viewportTransform] as number[]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function onMouseDown(opt: any) {
       const { activeTool } = useCanvasStore.getState();
       const isHandTool = activeTool === 'hand';
@@ -123,13 +130,20 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function onMouseMove(opt: any) {
       if (!isDraggingRef.current || !lastPosRef.current) return;
 
       const dx = (opt.e as MouseEvent).clientX - lastPosRef.current.x;
       const dy = (opt.e as MouseEvent).clientY - lastPosRef.current.y;
 
-      const { Point } = await import('fabric');
+      let Point;
+      try {
+        ({ Point } = await import('fabric'));
+      } catch {
+        return;
+      }
+      if (!isMountedRef.current) return;
       c.relativePan(new Point(dx, dy));
       lastPosRef.current = { x: (opt.e as MouseEvent).clientX, y: (opt.e as MouseEvent).clientY };
 
@@ -154,6 +168,7 @@ export function useCanvasZoomPan(canvas: Canvas | null) {
     c.on('mouse:up', onMouseUp);
 
     return () => {
+      isMountedRef.current = false;
       c.off('mouse:wheel', onMouseWheel);
       c.off('mouse:down', onMouseDown);
       c.off('mouse:move', onMouseMove);

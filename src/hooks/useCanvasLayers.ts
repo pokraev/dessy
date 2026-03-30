@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { Canvas, FabricObject } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
 import type { FabricObjectWithCustom } from '@/types/fabric-custom';
@@ -139,6 +139,7 @@ interface UseCanvasLayersReturn {
 export function useCanvasLayers(): UseCanvasLayersReturn {
   const [layers, setLayers] = useState<LayerItem[]>([]);
   const [groupTree, setGroupTree] = useState<GroupTreeNode[]>([]);
+  const attachedCanvasRef = useRef<Canvas | null>(null);
 
   const syncLayers = useCallback(() => {
     const canvas = useCanvasStore.getState().canvasRef;
@@ -183,15 +184,19 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
   }, [syncLayers]);
 
   function attachCanvasListeners(canvas: Canvas) {
+    if (attachedCanvasRef.current === canvas) return;
+    if (attachedCanvasRef.current) detachCanvasListeners(attachedCanvasRef.current);
     canvas.on('object:added', syncLayers);
     canvas.on('object:removed', syncLayers);
     canvas.on('object:modified', syncLayers);
+    attachedCanvasRef.current = canvas;
   }
 
   function detachCanvasListeners(canvas: Canvas) {
     canvas.off('object:added', syncLayers);
     canvas.off('object:removed', syncLayers);
     canvas.off('object:modified', syncLayers);
+    if (attachedCanvasRef.current === canvas) attachedCanvasRef.current = null;
   }
 
   const moveLayer = useCallback((fromIndex: number, toIndex: number) => {
