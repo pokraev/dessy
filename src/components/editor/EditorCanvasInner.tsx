@@ -1,5 +1,5 @@
 
-import { useRef, useState, useCallback, useEffect, type RefCallback } from 'react';
+import { useState, useCallback, useEffect, type RefCallback } from 'react';
 import i18n from '@/i18n';
 import { useFabricCanvas } from '@/hooks/useFabricCanvas';
 import { useElementCreation } from '@/hooks/useElementCreation';
@@ -7,18 +7,13 @@ import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useProjectIO } from '@/hooks/useProjectIO';
 import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
-import { saveProject } from '@/lib/storage/projectStorage';
-import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
-import { loadGeneratedLeaflet } from '@/lib/ai/canvas-loader';
-import type { GenerationResponse } from '@/types/generation';
 import { useProjectStore } from '@/stores/projectStore';
 import { useCanvasStore } from '@/stores/canvasStore';
-import { useBrandStore } from '@/stores/brandStore';
 import GuidesOverlay from '@/components/editor/GuidesOverlay';
 import { ContextMenu } from '@/components/editor/panels/ContextMenu';
 import { KeyboardShortcutsModal } from '@/components/editor/ui/KeyboardShortcutsModal';
-import toast from 'react-hot-toast';
 
 interface EditorCanvasInnerProps {
   projectId: string;
@@ -61,6 +56,11 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
   // Wire auto-save — runs every 30s when canvas is dirty
   useAutoSave(canvasInstance, projectId);
 
+  // Wire project IO — save, export, import, restore, load-generated
+  const { importFileRef, handleImportFile } = useProjectIO(
+    canvasInstance, projectId, formatId, setHasElements,
+  );
+
   // Mark project dirty on any canvas change; track first element for hint
   useEffect(() => {
     const canvas = canvasInstance;
@@ -78,52 +78,10 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
     };
   }, [canvasInstance]);
 
-  // Register triggerSave and triggerExport callbacks in canvasStore so Header can call them
+  // Register triggerClearCanvas and triggerSwitchPage callbacks in canvasStore
   useEffect(() => {
     const canvas = canvasInstance;
     if (!canvas) return;
-
-    const triggerSave = () => {
-      const { currentProject } = useProjectStore.getState();
-      if (!currentProject) return;
-      const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
-      const brandState = useBrandStore.getState();
-      const result = saveProject(projectId, {
-        meta: currentProject.meta,
-        canvasJSON,
-        pageData: { pages: currentProject.pages, currentPageIndex: currentProject.currentPageIndex },
-        brandData: {
-          brandColors: brandState.brandColors,
-          typographyPresets: brandState.typographyPresets,
-          recentColors: brandState.recentColors,
-        },
-      });
-      if (result.success) {
-        useProjectStore.getState().setLastSaved(new Date());
-        toast.success(i18n.t('canvas.projectSaved'));
-      } else if (result.error === 'quota') {
-        toast.error(i18n.t('canvas.storageFull'));
-      }
-    };
-
-    const triggerExport = () => {
-      const { currentProject } = useProjectStore.getState();
-      if (!currentProject) return;
-      exportProjectJSON(canvas, currentProject.meta);
-      toast.success(i18n.t('canvas.projectExported'));
-    };
-
-    const triggerImport = () => {
-      importFileRef.current?.click();
-    };
-
-    useCanvasStore.getState().setPersistFns(triggerSave, triggerExport, triggerImport);
-    useCanvasStore.getState().setCanvasRef(canvas);
-
-    const triggerLoadGenerated = (response: GenerationResponse) => {
-      loadGeneratedLeaflet(response, canvas, projectId);
-    };
-    useCanvasStore.getState().setLoadGeneratedFn(triggerLoadGenerated);
 
     const triggerClearCanvas = () => {
       // Remove all objects from canvas
@@ -195,66 +153,13 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
     useCanvasStore.getState().setSwitchPageFn(triggerSwitchPage);
 
     return () => {
-      useCanvasStore.getState().setPersistFns(() => {}, () => {}, () => {});
-      useCanvasStore.getState().setCanvasRef(null);
-      useCanvasStore.getState().setLoadGeneratedFn(null);
       useCanvasStore.getState().setClearCanvasFn(null);
       useCanvasStore.getState().setSwitchPageFn(null);
     };
   }, [canvasInstance, projectId]);
 
-  // Restore canvas from sessionStorage on first canvas mount (set by EditorPage on load)
-  useEffect(() => {
-    const canvas = canvasInstance;
-    if (!canvas) return;
-
-    const stored = sessionStorage.getItem(`dessy-canvas-restore-${projectId}`);
-    if (!stored) return;
-
-    sessionStorage.removeItem(`dessy-canvas-restore-${projectId}`);
-    try {
-      const canvasJSON = JSON.parse(stored);
-      canvas.loadFromJSON(canvasJSON).then(() => {
-        canvas.renderAll();
-        setHasElements(canvas.getObjects().length > 0);
-      }).catch(() => { /* corrupt canvas data — keep default */ });
-    } catch {
-      // Ignore corrupt restore data
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasInstance]);
-
   // Suppress unused warning for canvasRef — used by future canvas-dependent features
   void canvasRef;
-
-  // Hidden file input ref for JSON import
-  const importFileRef = useRef<HTMLInputElement | null>(null);
-
-  // Handle JSON import from file
-  const handleImportFile = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || !canvasInstance) return;
-      // Reset input so same file can be re-selected
-      e.target.value = '';
-      try {
-        const meta = await importProjectJSON(canvasInstance, file);
-        useProjectStore.getState().setCurrentProject({
-          meta,
-          pages: useProjectStore.getState().currentProject?.pages ?? [{ id: crypto.randomUUID(), elements: [], background: '#FFFFFF' }],
-          currentPageIndex: 0,
-          brandColors: [],
-          brandSwatches: [],
-          typographyPresets: [],
-        });
-        setHasElements(canvasInstance.getObjects().length > 0);
-        toast.success(i18n.t('canvas.projectLoaded'));
-      } catch {
-        toast.error(i18n.t('canvas.projectLoadError'));
-      }
-    },
-    [canvasInstance]
-  );
 
   // Prevent default browser context menu on the canvas area
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

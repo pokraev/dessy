@@ -16,7 +16,6 @@ import { ensureFormatPageCount } from '@/lib/pages/page-crud';
 import { useAppStore } from '@/stores/appStore';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import type { LeafletFormatId } from '@/types/project';
-import { captureThumbnail } from '@/lib/thumbnails/capture';
 
 import EditorCanvasInner from '@/components/editor/EditorCanvasInner';
 
@@ -82,31 +81,6 @@ function EditorRoot({ projectId }: { projectId: string }) {
     }
 
     setReady(true);
-
-    // Subscribe to triggerSave being set by EditorCanvasInner and wrap it with thumbnail capture
-    const unsubscribe = useCanvasStore.subscribe((state, prevState) => {
-      if (state.triggerSave !== prevState.triggerSave && state.triggerSave) {
-        const originalTriggerSave = state.triggerSave;
-        // Unsubscribe BEFORE setState to prevent infinite recursion
-        unsubscribe();
-        useCanvasStore.setState({
-          triggerSave: () => {
-            originalTriggerSave();
-            const canvasRef = useCanvasStore.getState().canvasRef;
-            const proj = useProjectStore.getState().currentProject;
-            if (canvasRef && proj) {
-              captureThumbnail(canvasRef, projectId, proj.meta.format).catch(() => {
-                // Thumbnail capture failure should not break manual save
-              });
-            }
-          },
-        });
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
