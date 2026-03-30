@@ -380,5 +380,26 @@
     "errorDeleteProject": "Проектът не може да бъде изтрит. Опитайте отново.",
     "successDuplicate": "Проектът е дублиран.",
     "copyOf": "Копие на"
+  },
+  "templates": {
+    "catAll": "Всички",
+    "catSale": "Разпродажба",
+    "catEvent": "Събитие",
+    "catRestaurant": "Ресторант",
+    "catRealEstate": "Имоти",
+    "catCorporate": "Корпоративни",
+    "catFitness": "Фитнес",
+    "catBeauty": "Красота",
+    "catEducation": "Образование",
+    "sale-flyer-01": "Флаер за разпродажба",
+    "sale-banner-02": "Банер за разпродажба",
+    "event-poster-01": "Плакат за събитие",
+    "restaurant-menu-01": "Меню за ресторант",
+    "real-estate-flyer-01": "Обява за имот",
+    "corporate-brochure-01": "Корпоративна брошура",
+    "fitness-flyer-01": "Фитнес промоция",
+    "beauty-salon-01": "Салон за красота",
+    "education-flyer-01": "Прием в училище",
+    "event-invitation-02": "Покана за гала"
   }
 }

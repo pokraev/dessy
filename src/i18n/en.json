@@ -380,5 +380,26 @@
     "errorDeleteProject": "Could not delete project. Try again.",
     "successDuplicate": "Project duplicated.",
     "copyOf": "Copy of"
+  },
+  "templates": {
+    "catAll": "All",
+    "catSale": "Sale",
+    "catEvent": "Event",
+    "catRestaurant": "Restaurant",
+    "catRealEstate": "Real Estate",
+    "catCorporate": "Corporate",
+    "catFitness": "Fitness",
+    "catBeauty": "Beauty",
+    "catEducation": "Education",
+    "sale-flyer-01": "Sale Flyer",
+    "sale-banner-02": "Sale Banner",
+    "event-poster-01": "Event Poster",
+    "restaurant-menu-01": "Restaurant Menu",
+    "real-estate-flyer-01": "Property Listing",
+    "corporate-brochure-01": "Corporate Brochure",
+    "fitness-flyer-01": "Gym Promo",
+    "beauty-salon-01": "Beauty Services",
+    "education-flyer-01": "School Enrollment",
+    "event-invitation-02": "Gala Invitation"
   }
 }

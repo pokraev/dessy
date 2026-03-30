@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { TEMPLATES } from '@/lib/templates/templates-index';
 import { useAppStore } from '@/stores/appStore';
 import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
+import { useTemplateThumbnails } from '@/hooks/useTemplateThumbnails';
 
 interface Props {
   onNewLeaflet: () => void;
@@ -13,6 +14,7 @@ export function EmptyState({ onNewLeaflet }: Props) {
   const { t } = useTranslation();
 
   const suggestedTemplates = TEMPLATES.slice(0, 3);
+  const thumbnails = useTemplateThumbnails(suggestedTemplates);
 
   function handleTemplateClick(template: typeof TEMPLATES[number]) {
     const newId = createProjectFromTemplate(template);
@@ -68,18 +70,24 @@ export function EmptyState({ onNewLeaflet }: Props) {
             onClick={() => handleTemplateClick(template)}
             className="w-[140px] bg-surface border border-border rounded-lg overflow-hidden cursor-pointer transition-colors duration-150 hover:border-accent"
           >
-            {/* Colored preview rectangle */}
+            {/* Template preview */}
             <div
-              className="h-20 opacity-70"
+              className="h-20 flex items-center justify-center overflow-hidden"
               style={{ background: CATEGORY_COLORS[template.category] ?? '#6366f1' }}
-            />
+            >
+              {thumbnails[template.id] ? (
+                <img src={thumbnails[template.id]} alt={template.name} className="w-full h-full object-contain p-1.5" />
+              ) : (
+                <span className="text-[10px] text-white/50">{template.format}</span>
+              )}
+            </div>
             {/* Template name */}
             <div className="text-xs font-semibold text-text-primary px-2 pt-2 pb-1">
-              {template.name}
+              {t(`templates.${template.id}`, template.name)}
             </div>
             {/* Category label */}
             <div className="text-xs font-normal text-text-secondary px-2 pb-2">
-              {template.category}
+              {t(`templates.cat${template.category.replace(/\s+/g, '')}`, template.category)}
             </div>
           </div>
         ))}

@@ -8,6 +8,7 @@ import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates/templates-index'
 import type { TemplateEntry, TemplateCategory } from '@/lib/templates/templates-index';
 import { useAppStore } from '@/stores/appStore';
 import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
+import { useTemplateThumbnails } from '@/hooks/useTemplateThumbnails';
 
 interface TemplateGalleryProps {
   onClose: () => void;
@@ -21,6 +22,8 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
   const filtered = activeCategory === 'All'
     ? TEMPLATES
     : TEMPLATES.filter((tmpl) => tmpl.category === activeCategory);
+
+  const thumbnails = useTemplateThumbnails(TEMPLATES);
 
   function handleUseTemplate() {
     if (!selectedTemplate) return;
@@ -44,7 +47,7 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
                 : 'bg-surface-raised text-text-secondary border-border hover:text-text-primary',
             ].join(' ')}
           >
-            {cat}
+            {t(`templates.cat${cat.replace(/\s+/g, '')}`, cat)}
           </button>
         ))}
       </div>
@@ -59,18 +62,20 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
           >
             {/* Thumbnail */}
             <div
-              className="h-[120px] flex items-center justify-center"
+              className="h-[120px] flex items-center justify-center overflow-hidden"
               style={{ background: CATEGORY_COLORS[tmpl.category] ?? '#4b5563' }}
             >
-              <span className="text-[11px] text-white/60 font-sans">
-                {tmpl.format}
-              </span>
+              {thumbnails[tmpl.id] ? (
+                <img src={thumbnails[tmpl.id]} alt={tmpl.name} className="w-full h-full object-contain p-2" />
+              ) : (
+                <span className="text-[11px] text-white/60 font-sans">{tmpl.format}</span>
+              )}
             </div>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-text-primary font-sans">
-              {tmpl.name}
+              {t(`templates.${tmpl.id}`, tmpl.name)}
             </div>
             <div className="px-2 pb-2 text-xs font-normal text-text-secondary font-sans">
-              {tmpl.category}
+              {t(`templates.cat${tmpl.category.replace(/\s+/g, '')}`, tmpl.category)}
             </div>
           </button>
         ))}
@@ -102,21 +107,23 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
             <div className="grid grid-cols-2 gap-6">
               {/* Preview area */}
               <div
-                className="h-[300px] rounded-lg flex items-center justify-center"
+                className="h-[300px] rounded-lg flex items-center justify-center overflow-hidden"
                 style={{ background: CATEGORY_COLORS[selectedTemplate.category] ?? '#4b5563' }}
               >
-                <span className="text-[13px] text-white/50 font-sans">
-                  {selectedTemplate.format}
-                </span>
+                {thumbnails[selectedTemplate.id] ? (
+                  <img src={thumbnails[selectedTemplate.id]} alt={selectedTemplate.name} className="w-full h-full object-contain p-3" />
+                ) : (
+                  <span className="text-[13px] text-white/50 font-sans">{selectedTemplate.format}</span>
+                )}
               </div>
 
               {/* Metadata */}
               <div className="flex flex-col justify-start">
                 <div className="text-base font-semibold text-text-primary font-sans mb-2">
-                  {selectedTemplate.name}
+                  {t(`templates.${selectedTemplate.id}`, selectedTemplate.name)}
                 </div>
                 <div className="text-sm text-text-secondary font-sans mb-3">
-                  {selectedTemplate.category}
+                  {t(`templates.cat${selectedTemplate.category.replace(/\s+/g, '')}`, selectedTemplate.category)}
                 </div>
                 <div className="inline-block bg-surface-raised border border-border rounded px-2 py-1 text-xs text-[#9ca3af] font-sans mb-2 w-fit">
                   {selectedTemplate.format}
