@@ -111,41 +111,13 @@ function EditorRoot({ projectId }: { projectId: string }) {
   return (
     <>
     {busyMessage && (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          zIndex: 999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'all',
-        }}
-      >
-        <div style={{
-          background: '#1e1e1e',
-          border: '1px solid #2a2a2a',
-          borderRadius: '12px',
-          padding: '24px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
-        }}>
-          <div style={{
-            width: '20px',
-            height: '20px',
-            border: '2px solid #6366f1',
-            borderTopColor: 'transparent',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }} />
-          <span style={{ color: '#f5f5f5', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}>
+      <div className="fixed inset-0 bg-black/70 z-[999] flex items-center justify-center pointer-events-auto">
+        <div className="bg-surface-raised border border-border rounded-xl px-8 py-6 flex items-center gap-3 shadow-2xl">
+          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          <span className="text-text-primary text-sm font-sans">
             {busyMessage}
           </span>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )}
     <EditorLayout
