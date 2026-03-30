@@ -35,3 +35,10 @@ yarn-error.log*
 # screenshots and test data
 /screenshots/
 /test-data/
+
+# Next.js (legacy, migrated to Vite)
+/_next/
+/.next/
+/out/
+404.html
+editor.html
