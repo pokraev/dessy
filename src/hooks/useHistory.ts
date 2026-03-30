@@ -29,9 +29,9 @@ export function createHistory() {
   let currentState: string | null = null;
   let isProcessing = false;
 
-  /** Serialize canvas to a JSON string with embedded image data (toJSON, not toDatalessJSON).
-   *  toDatalessJSON keeps image src as blob/data URLs which can become stale.
-   *  toJSON embeds base64 data, making snapshots self-contained for undo/redo. */
+  /** Serialize canvas to a JSON string using toObject with CUSTOM_PROPS.
+   *  toObject captures all registered custom properties alongside standard Fabric.js data,
+   *  making snapshots self-contained for undo/redo. */
   function serialize(canvas: Canvas): string {
     return JSON.stringify(
       canvas.toObject(CUSTOM_PROPS as unknown as string[])

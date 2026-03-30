@@ -228,8 +228,13 @@ async function callClaude(apiKey: string, userPrompt: string): Promise<Extracted
     const errText = await res.text();
     throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 200)}`);
   }
-  const data = await res.json();
-  const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? '{}';
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Failed to parse Claude API response');
+  }
+  const text = (data.content as Array<{ type: string; text?: string }> | undefined)?.find((b) => b.type === 'text')?.text ?? '{}';
   return safeParseJSON(text);
 }
 
@@ -254,7 +259,12 @@ async function callOpenAI(apiKey: string, userPrompt: string): Promise<Extracted
     const errText = await res.text();
     throw new Error(`OpenAI API error ${res.status}: ${errText.slice(0, 200)}`);
   }
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content ?? '{}';
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Failed to parse OpenAI API response');
+  }
+  const text = (data.choices as Array<{ message?: { content?: string } }> | undefined)?.[0]?.message?.content ?? '{}';
   return safeParseJSON(text);
 }

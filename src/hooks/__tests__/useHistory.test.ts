@@ -1,5 +1,5 @@
 /**
- * Tests for useHistory — undo/redo with toDatalessJSON snapshots
+ * Tests for useHistory — undo/redo with toObject snapshots
  * TDD: These tests are written before the implementation.
  */
 
@@ -12,7 +12,7 @@ function makeMockCanvas() {
 
   const canvas = {
     _renderCount: 0,
-    toDatalessJSON: jest.fn(() => ({ objects: [] })),
+    toObject: jest.fn(() => ({ objects: [] })),
     loadFromJSON: jest.fn(async (_json: unknown) => {
       // no-op by default
     }),
@@ -61,13 +61,13 @@ describe('useHistory', () => {
     const canvas = makeMockCanvas();
 
     // Capture 3 distinct states
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 1 } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 1 } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 2 } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 2 } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 3 } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 3 } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
     // Undo should restore to state 2
@@ -89,10 +89,10 @@ describe('useHistory', () => {
     const { captureState, undo, redo } = createHistory();
     const canvas = makeMockCanvas();
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
     // Undo to state A
@@ -116,7 +116,7 @@ describe('useHistory', () => {
 
     // Capture 52 states (only 50 fit in the undo stack)
     for (let i = 0; i < 52; i++) {
-      canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], stateIndex: i } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+      canvas.toObject.mockReturnValueOnce({ objects: [], stateIndex: i } as unknown as ReturnType<typeof canvas.toObject>);
       captureState(canvas as unknown as import('fabric').Canvas);
     }
 
@@ -138,17 +138,17 @@ describe('useHistory', () => {
     const { captureState, undo, redo } = createHistory();
     const canvas = makeMockCanvas();
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
     // Undo to A
     await undo(canvas as unknown as import('fabric').Canvas);
 
     // Capture new state C — this should clear redo stack
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'C' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'C' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
     // Redo stack is empty — show toast
@@ -166,13 +166,13 @@ describe('useHistory', () => {
     // Bind history
     bindHistory(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'A' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    canvas.toDatalessJSON.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toDatalessJSON>);
+    canvas.toObject.mockReturnValueOnce({ objects: [], state: 'B' } as unknown as ReturnType<typeof canvas.toObject>);
     captureState(canvas as unknown as import('fabric').Canvas);
 
-    const callsBefore = canvas.toDatalessJSON.mock.calls.length;
+    const callsBefore = canvas.toObject.mock.calls.length;
 
     // During undo, object:added fires (simulating Fabric.js behavior during loadFromJSON)
     canvas.loadFromJSON.mockImplementationOnce(async () => {
@@ -182,7 +182,7 @@ describe('useHistory', () => {
 
     await undo(canvas as unknown as import('fabric').Canvas);
 
-    // toDatalessJSON should NOT have been called during restore
-    expect(canvas.toDatalessJSON.mock.calls.length).toBe(callsBefore);
+    // toObject should NOT have been called during restore
+    expect(canvas.toObject.mock.calls.length).toBe(callsBefore);
   });
 });
