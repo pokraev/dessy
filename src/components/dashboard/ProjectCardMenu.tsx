@@ -45,7 +45,7 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
   }
 
   function handleDuplicate() {
-    const result = duplicateProject(project.id);
+    const result = duplicateProject(project.id, t('dashboard.copyOf'));
     if (result === null) return;
     onRefresh();
     onClose();

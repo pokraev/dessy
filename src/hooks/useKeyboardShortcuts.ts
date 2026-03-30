@@ -7,6 +7,7 @@ import { useEditorStore } from '@/stores/editorStore';
 interface HistoryFns {
   undo: (canvas: Canvas) => Promise<void>;
   redo: (canvas: Canvas) => Promise<void>;
+  captureState?: (canvas: Canvas) => void;
 }
 
 /**
@@ -132,6 +133,7 @@ export function useKeyboardShortcuts(
               left: (pasted.left ?? 0) + 10,
               top: (pasted.top ?? 0) + 10,
             });
+            history.captureState?.(canvas);
             canvas.add(pasted);
             canvas.setActiveObject(pasted);
             canvas.requestRenderAll();

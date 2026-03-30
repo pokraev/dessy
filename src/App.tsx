@@ -112,6 +112,26 @@ function EditorRoot({ projectId }: { projectId: string }) {
 
   const busyMessage = useCanvasStore((s) => s.busyMessage);
 
+  useEffect(() => {
+    if (!busyMessage) return;
+
+    const timer = setTimeout(() => {
+      useCanvasStore.setState({ busyMessage: null });
+    }, 30_000);
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        useCanvasStore.setState({ busyMessage: null });
+      }
+    }
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [busyMessage]);
+
   if (!ready) return null;
 
   return (

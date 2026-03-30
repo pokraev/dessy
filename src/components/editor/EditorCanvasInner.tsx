@@ -46,6 +46,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
   useKeyboardShortcuts(canvasInstance, {
     undo: (canvas) => historyRef.current.undo(canvas),
     redo: (canvas) => historyRef.current.redo(canvas),
+    captureState: (canvas) => historyRef.current.captureState(canvas),
   });
 
   // Wire auto-save — runs every 30s when canvas is dirty

@@ -364,6 +364,7 @@
     "noThumbnail": "",
     "errorLoadProject": "Could not open project. The data may be corrupted.",
     "errorDeleteProject": "Could not delete project. Try again.",
-    "successDuplicate": "Project duplicated."
+    "successDuplicate": "Project duplicated.",
+    "copyOf": "Copy of"
   }
 }

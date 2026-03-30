@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Canvas } from 'fabric';
 import toast from 'react-hot-toast';
 import i18n from '@/i18n';
@@ -10,13 +10,19 @@ import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 import { captureThumbnail } from '@/lib/thumbnails/capture';
 
 export function useAutoSave(canvas: Canvas | null, projectId: string) {
+  const isSavingRef = useRef(false);
+
   useEffect(() => {
     if (!canvas) return;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
+      if (isSavingRef.current) return;
+
       const { currentProject, isDirty } = useProjectStore.getState();
       if (!currentProject || !isDirty) return;
 
+      isSavingRef.current = true;
+      try {
       const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
       const brandState = useBrandStore.getState();
       const result = saveProject(projectId, {
@@ -38,6 +44,9 @@ export function useAutoSave(canvas: Canvas | null, projectId: string) {
         captureThumbnail(canvas, projectId, currentProject.meta.format).catch(() => {});
       } else if (result.error === 'quota') {
         toast.error(i18n.t('canvas.storageFull'));
+      }
+      } finally {
+        isSavingRef.current = false;
       }
     }, 30_000);
 
