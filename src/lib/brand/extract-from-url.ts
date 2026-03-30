@@ -178,9 +178,9 @@ function safeParseJSON(text: string): ExtractedBrandData {
 }
 
 async function callGemini(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
-  // Use gemini-2.0-flash (non-thinking model) for reliable JSON output
+  // Use gemini-2.5-flash for reliable JSON output
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

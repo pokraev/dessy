@@ -60,6 +60,11 @@ export async function applyBrandToCanvas(canvas: Canvas, brand: SavedBrand): Pro
         preset = ctaPreset;
       }
 
+      // Fallback: use any available preset if none matched
+      if (!preset && brand.typographyPresets.length > 0) {
+        preset = brand.typographyPresets[0];
+      }
+
       if (preset) {
         obj.set({
           fontFamily: preset.fontFamily,

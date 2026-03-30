@@ -236,7 +236,10 @@
     "loadIntoEditor": "Load into Editor",
     "tryAgain": "Try Again",
     "regenerate": "Regenerate",
-    "maxObjects": "Max elements:"
+    "maxObjects": "Max elements:",
+    "tabPrompt": "Prompt",
+    "tabPhoto": "Photo",
+    "tabSketch": "Sketch"
   },
   "foldType": {
     "single": "Single Page",
@@ -336,6 +339,17 @@
   "lang": {
     "bg": "Български",
     "en": "English"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "activeProvider": "Active AI Provider",
+    "apiKeys": "API Keys",
+    "configured": "Configured",
+    "notSet": "Not set",
+    "save": "Save",
+    "clear": "Clear",
+    "getKey": "Get key"
   },
   "dashboard": {
     "newLeaflet": "New Leaflet",
