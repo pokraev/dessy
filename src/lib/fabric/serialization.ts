@@ -1,6 +1,7 @@
 import type { Canvas } from 'fabric';
 import type { ProjectMeta } from '@/types/project';
 import { CUSTOM_PROPS } from './element-factory';
+import { loadCanvasJSON } from './load-canvas-json';
 
 const FILE_VERSION = '1.0';
 
@@ -29,7 +30,7 @@ export async function importProjectJSON(
   if (!data.version || !data.canvas || !data.meta) {
     throw new Error('Invalid Dessy project file');
   }
-  await canvas.loadFromJSON(data.canvas);
+  await loadCanvasJSON(canvas, data.canvas);
   canvas.renderAll();
   return data.meta;
 }

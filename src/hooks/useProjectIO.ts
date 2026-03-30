@@ -4,6 +4,7 @@ import type { Canvas } from 'fabric';
 import toast from 'react-hot-toast';
 import i18n from '@/i18n';
 import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
+import { loadCanvasJSON } from '@/lib/fabric/load-canvas-json';
 import { saveProject } from '@/lib/storage/projectStorage';
 import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
 import { loadGeneratedLeaflet } from '@/lib/ai/canvas-loader';
@@ -104,7 +105,7 @@ export function useProjectIO(
     try {
       const canvasJSON = JSON.parse(stored);
       // toJSON embeds image data as base64 — no stale blob URLs
-      canvas.loadFromJSON(canvasJSON).then(() => {
+      loadCanvasJSON(canvas, canvasJSON).then(() => {
         canvas.renderAll();
         onHasElements?.(canvas.getObjects().length > 0);
       }).catch((err) => { console.error('[RESTORE] loadFromJSON failed:', err); });

@@ -1,6 +1,7 @@
 import type { Canvas, FabricObject } from 'fabric';
 import type { GenerationResponse } from '@/types/generation';
 import type { Page } from '@/types/project';
+import { loadCanvasJSON } from '@/lib/fabric/load-canvas-json';
 import { useProjectStore } from '@/stores/projectStore';
 import { captureThumbnail } from '@/lib/thumbnails/capture';
 
@@ -50,17 +51,7 @@ export function loadGeneratedLeaflet(
 
   // Load first page canvasJSON onto the active canvas
   const firstPageJSON = pages[0].canvasJSON;
-  const rawObjects = (firstPageJSON.objects ?? []) as Record<string, unknown>[];
-  canvas.loadFromJSON(firstPageJSON).then(async () => {
-    // Re-apply custom properties that loadFromJSON drops
-    const loaded = canvas.getObjects();
-    for (let i = 0; i < loaded.length && i < rawObjects.length; i++) {
-      const raw = rawObjects[i];
-      const obj = loaded[i] as FabricObject & Record<string, unknown>;
-      for (const key of ['customType', 'imageId', 'locked', 'name', 'id', 'shapeKind', 'fitMode', 'swatchId', 'presetId', '_isDocBackground']) {
-        if (key in raw) obj[key] = raw[key];
-      }
-    }
+  loadCanvasJSON(canvas, firstPageJSON).then(async () => {
     // Replace image placeholder rects with actual Image objects showing the placeholder SVG
     await replaceImagePlaceholders(canvas);
     canvas.renderAll();

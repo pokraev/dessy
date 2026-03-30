@@ -53,7 +53,11 @@ async function enrichPromptOpenAI(
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content ?? '{}';
   const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-  return JSON.parse(fenceMatch ? fenceMatch[1] : text) as PromptVariations;
+  try {
+    return JSON.parse(fenceMatch ? fenceMatch[1] : text) as PromptVariations;
+  } catch {
+    throw new Error('Failed to parse OpenAI enrichment response');
+  }
 }
 
 async function enrichPromptGemini(
@@ -413,6 +417,7 @@ export async function placeImageIntoFrame(
   canvas.setActiveObject(img as unknown as import('fabric').FabricObject);
   canvas.requestRenderAll();
 
-  // Persist to IndexedDB (fire-and-forget — imageId already passed in)
-  await storeImage(blob);
+  // Persist to IndexedDB and use the returned ID
+  const storedImageId = await storeImage(blob);
+  (img as unknown as Record<string, unknown>).imageId = storedImageId;
 }

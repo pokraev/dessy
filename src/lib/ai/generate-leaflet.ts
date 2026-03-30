@@ -345,7 +345,11 @@ export async function generateLeaflet(
     const retryPrompt =
       'Your previous response was not valid JSON. Please respond with ONLY the JSON object, no markdown or explanation.';
     rawResponse = await callProvider(provider, apiKey, systemPrompt, retryPrompt, image);
-    parsed = JSON.parse(rawResponse);
+    try {
+      parsed = JSON.parse(rawResponse);
+    } catch {
+      throw new Error('AI returned invalid JSON after retry. Please try again.');
+    }
   }
 
   // Normalize and repair

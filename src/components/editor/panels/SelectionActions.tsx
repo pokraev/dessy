@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 import type { FabricObject } from 'fabric';
 
 export function getSelectedObjects() {
@@ -56,7 +57,8 @@ export async function duplicateSelection() {
   const canvas = useCanvasStore.getState().canvasRef;
   if (!canvas) return;
   for (const obj of getSelectedObjects()) {
-    const cloned = await obj.clone() as FabricObject;
+    const cloned = await obj.clone([...CUSTOM_PROPS]) as FabricObject;
+    (cloned as any).id = crypto.randomUUID();
     cloned.set({ left: (cloned.left ?? 0) + 10, top: (cloned.top ?? 0) + 10 });
     canvas.add(cloned);
   }
@@ -96,7 +98,7 @@ export async function ungroupSelection() {
   const canvas = useCanvasStore.getState().canvasRef;
   if (!canvas) return;
   const active = canvas.getActiveObject();
-  if (!active || active.type !== 'Group') return;
+  if (!active || active.type !== 'group') return;
   useCanvasStore.getState().captureUndoState?.();
   const { Group: FabricGroup } = await import('fabric');
   const group = active as InstanceType<typeof FabricGroup>;
@@ -172,7 +174,7 @@ export function SelectionActions() {
     const canvas = s.canvasRef;
     if (!canvas) return false;
     const obj = canvas.getActiveObject();
-    return obj?.type === 'Group';
+    return obj?.type === 'group';
   });
 
   const { t } = useTranslation();

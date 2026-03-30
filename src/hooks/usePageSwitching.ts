@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import type { Canvas } from 'fabric';
 import i18n from '@/i18n';
 import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
+import { loadCanvasJSON } from '@/lib/fabric/load-canvas-json';
 import { useProjectStore } from '@/stores/projectStore';
 import { useCanvasStore } from '@/stores/canvasStore';
 
@@ -65,7 +66,7 @@ export function usePageSwitching(
       if (stored) {
         try {
           const json = JSON.parse(stored);
-          canvas.loadFromJSON(json).then(() => {
+          loadCanvasJSON(canvas, json).then(() => {
             canvas.renderAll();
           }).catch(() => {
             canvas.clear();

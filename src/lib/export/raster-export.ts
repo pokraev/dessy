@@ -36,7 +36,8 @@ export async function renderPageToBlob(
 
   try {
     // Load page JSON into the temp canvas
-    await tempCanvas.loadFromJSON(pageData.canvasJSON);
+    const { loadCanvasJSON } = await import('@/lib/fabric/load-canvas-json');
+    await loadCanvasJSON(tempCanvas, pageData.canvasJSON);
 
     // Strip before:render listeners to avoid AligningGuidelines crash.
     // The plugin hooks into before:render and tries to access an overlay context
