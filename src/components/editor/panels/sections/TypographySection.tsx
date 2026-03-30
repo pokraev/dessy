@@ -114,7 +114,10 @@ export function TypographySection({ snapshot }: TypographySectionProps) {
   const presets = typographyPresets.length > 0 ? typographyPresets : DEFAULT_PRESETS;
 
   const currentFontFamily = snapshot.fontFamily ?? 'Inter';
-  const currentFontWeight = Number(snapshot.fontWeight ?? 400);
+  const rawWeight = snapshot.fontWeight ?? 400;
+  const currentFontWeight = typeof rawWeight === 'string' && isNaN(Number(rawWeight))
+    ? (rawWeight === 'bold' ? 700 : 400)
+    : Number(rawWeight);
   const currentFontSize = snapshot.fontSize ?? 16;
   const currentLineHeight = snapshot.lineHeight ?? 1.2;
   const currentCharSpacing = snapshot.charSpacing ?? 0;

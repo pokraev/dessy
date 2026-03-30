@@ -1,8 +1,9 @@
 const GEMINI_KEY = 'dessy-gemini-api-key';
 const CLAUDE_KEY = 'dessy-claude-api-key';
+const OPENAI_KEY = 'dessy-openai-api-key';
 const PROVIDER_KEY = 'dessy-ai-provider';
 
-export type AIProvider = 'gemini' | 'claude';
+export type AIProvider = 'gemini' | 'claude' | 'openai';
 
 export function getApiKey(): string | null {
   if (typeof window === 'undefined') return null;
@@ -37,4 +38,17 @@ export function clearApiKey(): void {
 
 export function clearClaudeApiKey(): void {
   localStorage.removeItem(CLAUDE_KEY);
+}
+
+export function getOpenAIApiKey(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(OPENAI_KEY);
+}
+
+export function setOpenAIApiKey(key: string): void {
+  localStorage.setItem(OPENAI_KEY, key);
+}
+
+export function clearOpenAIApiKey(): void {
+  localStorage.removeItem(OPENAI_KEY);
 }

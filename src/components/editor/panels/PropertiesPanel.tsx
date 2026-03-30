@@ -1,7 +1,8 @@
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Wand2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCanvasStore } from '@/stores/canvasStore';
+import { useEditorStore } from '@/stores/editorStore';
 import { useSelectedObject } from '@/hooks/useSelectedObject';
 import { PositionSection } from './sections/PositionSection';
 import { FillSection } from './sections/FillSection';
@@ -13,6 +14,42 @@ import { StyleSection } from './sections/StyleSection';
 import { TypographySection } from './sections/TypographySection';
 import { TextContentSection } from './sections/TextContentSection';
 import { ImageSection } from './sections/ImageSection';
+
+function CornerRadiusSection({ rx }: { rx: number }) {
+  const { t } = useTranslation();
+  const handleChange = (value: number) => {
+    const canvas = useCanvasStore.getState().canvasRef;
+    const obj = canvas?.getActiveObject();
+    if (!obj || !canvas) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (obj as any).set({ rx: value, ry: value });
+    obj.setCoords();
+    canvas.renderAll();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.fire('object:modified', { target: obj } as any);
+  };
+
+  return (
+    <div className="border-b border-border px-4 py-2.5">
+      <div className="flex items-center gap-3">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary shrink-0">
+          {t('properties.cornerRadius', 'Radius')}
+        </label>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={Math.round(rx)}
+          onChange={(e) => handleChange(Number(e.target.value))}
+          className="flex-1 h-1 accent-accent cursor-pointer"
+        />
+        <span className="text-[12px] text-text-secondary tabular-nums w-8 text-right">
+          {Math.round(rx)}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface SectionHeaderProps {
   title: string;
@@ -122,6 +159,7 @@ export function PropertiesPanel() {
       {selectionCount === 1 && snapshot?.type === 'shape' && (
         <div>
           <PositionSection snapshot={snapshot} />
+          {!isNaN(snapshot.rx) && <CornerRadiusSection rx={snapshot.rx} />}
           <FillSection snapshot={snapshot} />
           <StrokeSection snapshot={snapshot} />
           <ShadowSection snapshot={snapshot} />
@@ -131,6 +169,16 @@ export function PropertiesPanel() {
       {/* Single selection: image */}
       {selectionCount === 1 && snapshot?.type === 'image' && (
         <div>
+          <div className="p-3 border-b border-border">
+            <button
+              className="w-full h-8 flex items-center justify-center gap-1.5 text-white text-[13px] font-medium rounded-lg border-none cursor-pointer shrink-0 hover:brightness-110"
+              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              onClick={() => useEditorStore.getState().setPromptCrafterModalOpen(true)}
+            >
+              <Wand2 size={14} />
+              AI Image
+            </button>
+          </div>
           <ImageSection snapshot={snapshot} />
           <PositionSection snapshot={snapshot} />
           <FitModeSection snapshot={snapshot} />
@@ -141,6 +189,7 @@ export function PropertiesPanel() {
       {selectionCount === 1 && snapshot?.type === 'colorBlock' && (
         <div>
           <PositionSection snapshot={snapshot} />
+          {!isNaN(snapshot.rx) && <CornerRadiusSection rx={snapshot.rx} />}
           <FillSection snapshot={snapshot} />
         </div>
       )}

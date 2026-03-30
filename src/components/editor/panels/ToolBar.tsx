@@ -353,7 +353,7 @@ export function ToolBar() {
   });
   const isGroup = useCanvasStore((s) => {
     const c = s.canvasRef;
-    return c?.getActiveObject()?.type === 'Group';
+    return c?.getActiveObject()?.type === 'group';
   });
 
   function handleSelect(id: ToolId) {

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import type { Canvas, FabricObject, Group } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useEditorStore } from '@/stores/editorStore';
+import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 
 interface HistoryFns {
   undo: (canvas: Canvas) => Promise<void>;
@@ -118,7 +119,7 @@ export function useKeyboardShortcuts(
           e.preventDefault();
           const obj = canvas.getActiveObject();
           if (obj) {
-            const cloned = await obj.clone();
+            const cloned = await obj.clone([...CUSTOM_PROPS]);
             clipboardRef.current = cloned as FabricObject;
           }
           return;
@@ -128,7 +129,9 @@ export function useKeyboardShortcuts(
         if (key === 'v') {
           e.preventDefault();
           if (clipboardRef.current) {
-            const pasted = await clipboardRef.current.clone() as FabricObject;
+            const pasted = await clipboardRef.current.clone([...CUSTOM_PROPS]) as FabricObject;
+            // Give pasted object a new unique ID
+            (pasted as FabricObject & { id?: string }).id = crypto.randomUUID();
             pasted.set({
               left: (pasted.left ?? 0) + 10,
               top: (pasted.top ?? 0) + 10,
@@ -136,6 +139,22 @@ export function useKeyboardShortcuts(
             history.captureState?.(canvas);
             canvas.add(pasted);
             canvas.setActiveObject(pasted);
+            canvas.requestRenderAll();
+          }
+          return;
+        }
+
+        // Select All (Ctrl+A)
+        if (key === 'a') {
+          e.preventDefault();
+          const { ActiveSelection } = await import('fabric');
+          const objects = canvas.getObjects().filter((o) => {
+            const custom = o as FabricObject & { _isDocBackground?: boolean };
+            return !custom._isDocBackground && o.selectable !== false;
+          });
+          if (objects.length > 0) {
+            const selection = new ActiveSelection(objects, { canvas });
+            canvas.setActiveObject(selection);
             canvas.requestRenderAll();
           }
           return;

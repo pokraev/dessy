@@ -31,6 +31,29 @@ export function useElementCreation(canvas: Canvas | null) {
   const startPointRef = useRef<{ x: number; y: number } | null>(null);
   const previewObjRef = useRef<any | null>(null);
 
+  // Lock/unlock all objects when switching between creation and selection tools
+  useEffect(() => {
+    if (!canvas) return;
+    const unsub = useCanvasStore.subscribe((state, prev) => {
+      if (state.activeTool === prev.activeTool) return;
+      const isCreationTool = CREATION_TOOLS.has(state.activeTool);
+      const wasCreationTool = CREATION_TOOLS.has(prev.activeTool);
+      if (isCreationTool === wasCreationTool) return;
+
+      for (const obj of canvas.getObjects()) {
+        if ((obj as any)._isDocBackground) continue;
+        obj.selectable = !isCreationTool;
+        obj.evented = !isCreationTool;
+      }
+      // Only discard selection when entering creation mode, not when returning to select
+      if (isCreationTool) {
+        canvas.discardActiveObject();
+      }
+      canvas.requestRenderAll();
+    });
+    return () => unsub();
+  }, [canvas]);
+
   useEffect(() => {
     if (!canvas) return;
     // Capture non-null alias so TypeScript is satisfied inside closures
@@ -38,11 +61,9 @@ export function useElementCreation(canvas: Canvas | null) {
 
     function onMouseDown(opt: any) {
       const { activeTool } = useCanvasStore.getState();
-
-      // Only handle creation tools; ignore right-click; ignore clicks on existing objects
+      // Only handle creation tools; ignore right-click
       if (!CREATION_TOOLS.has(activeTool)) return;
       if ((opt.e as MouseEvent).button !== 0) return;
-      if (opt.target) return; // clicked on an existing object — let selection handle it
 
       // CRITICAL: use getScenePoint (getPointer was removed in Fabric.js 7)
       const point = c.getScenePoint(opt.e as MouseEvent);
@@ -54,10 +75,10 @@ export function useElementCreation(canvas: Canvas | null) {
 
       // Create a semi-transparent preview object
       let preview: any;
-      if (activeTool === 'text') {
-        preview = createTextFrame({ left: point.x, top: point.y, width: 1, height: 1 });
-      } else if (activeTool === 'image') {
-        preview = createImageFrame({ left: point.x, top: point.y, width: 1, height: 1 });
+      if (activeTool === 'text' || activeTool === 'image') {
+        // Use a dashed outline rect as preview for text/image (empty Textbox is invisible)
+        preview = createShape('rect', { left: point.x, top: point.y, width: 1, height: 1 });
+        preview.set({ fill: 'transparent', stroke: '#6366f1', strokeWidth: 1, strokeDashArray: [4, 4] });
       } else {
         // triangle, rect, circle, line
         preview = createShape(activeTool as 'triangle' | 'rect' | 'circle' | 'line', {

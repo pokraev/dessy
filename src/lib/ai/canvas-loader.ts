@@ -2,6 +2,7 @@ import type { Canvas, FabricObject } from 'fabric';
 import type { GenerationResponse } from '@/types/generation';
 import type { Page } from '@/types/project';
 import { useProjectStore } from '@/stores/projectStore';
+import { captureThumbnail } from '@/lib/thumbnails/capture';
 
 const PLACEHOLDER_SRC = `${import.meta.env.BASE_URL}image-placeholder.svg`;
 
@@ -64,6 +65,10 @@ export function loadGeneratedLeaflet(
     await replaceImagePlaceholders(canvas);
     canvas.renderAll();
     useProjectStore.getState().markDirty();
+    // Capture thumbnail after a short delay to ensure all objects (including async SVG placeholders) are rendered
+    setTimeout(() => {
+      captureThumbnail(canvas, projectId, formatId as import('@/types/project').LeafletFormatId).catch(() => {});
+    }, 500);
     // Notify PagesPanel to recapture thumbnail
     window.dispatchEvent(new Event('dessy-canvas-loaded'));
   });

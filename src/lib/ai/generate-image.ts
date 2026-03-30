@@ -142,6 +142,69 @@ export async function callGeminiImage(
 }
 
 /**
+ * Calls the OpenAI DALL-E 3 image generation API.
+ * Returns a data URL: "data:image/png;base64,{data}".
+ */
+export async function callOpenAIImage(
+  apiKey: string,
+  prompt: string,
+  aspectRatio?: string
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  // Map aspect ratio to DALL-E size
+  let size: '1024x1024' | '1792x1024' | '1024x1792' = '1024x1024';
+  if (aspectRatio) {
+    const [w, h] = aspectRatio.split(':').map(Number);
+    if (w && h) {
+      const ratio = w / h;
+      if (ratio > 1.3) size = '1792x1024';
+      else if (ratio < 0.77) size = '1024x1792';
+    }
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size,
+        response_format: 'b64_json',
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      if (response.status === 429) {
+        throw new Error('OpenAI rate limit reached. Please try again in a moment.');
+      }
+      throw new Error(`OpenAI image generation failed (${response.status}): ${errorBody}`);
+    }
+
+    const data = (await response.json()) as {
+      data: Array<{ b64_json: string }>;
+    };
+
+    const base64Data = data.data[0]?.b64_json;
+    if (!base64Data) {
+      throw new Error('No image in OpenAI response');
+    }
+
+    return `data:image/png;base64,${base64Data}`;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
  * Assembles a final prompt string from a base variation and customization knobs.
  * Joins non-empty knobs: mood -> "${mood} mood", lighting -> "${lighting} lighting",
  * composition -> as-is, style -> "${style} style", background -> "${background} background".

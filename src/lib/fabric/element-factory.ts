@@ -31,7 +31,10 @@ interface BaseOpts {
  * CRITICAL: originX/originY must be 'left'/'top' — Fabric.js 7 changed default to 'center'.
  */
 export function createTextFrame(opts: BaseOpts) {
-  const { left, top, width } = opts;
+  const { left, top, width, height } = opts;
+
+  // Scale font size to ~1/4 of drawn frame height for natural sizing
+  const fontSize = Math.max(8, Math.min(120, Math.round(height / 4)));
 
   const textbox = new Textbox('', {
     left,
@@ -39,7 +42,7 @@ export function createTextFrame(opts: BaseOpts) {
     width,
     originX: 'left',
     originY: 'top',
-    fontSize: 16,
+    fontSize,
     fontFamily: 'Inter',
     fill: '#333333',
   });

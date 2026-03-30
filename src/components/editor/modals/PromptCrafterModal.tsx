@@ -5,10 +5,11 @@ import { X, Loader2 } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { usePromptCrafterStore } from '@/stores/promptCrafterStore';
-import { getApiKey } from '@/lib/storage/apiKeyStorage';
+import { getApiKey, getOpenAIApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
 import {
   enrichPrompt,
   callGeminiImage,
+  callOpenAIImage,
   assemblePrompt,
   snapAspectRatio,
   base64ToBlob,
@@ -143,7 +144,8 @@ export function PromptCrafterModal({ open, onClose }: PromptCrafterModalProps) {
   useEffect(() => {
     if (step !== 'generating') return;
 
-    const apiKey = getApiKey();
+    const provider = getProvider();
+    const apiKey = provider === 'openai' ? getOpenAIApiKey() : getApiKey();
     if (!apiKey || !frameSnapshot) {
       setError(t('promptCrafter.generateError'));
       setStep('customizing');
@@ -154,7 +156,9 @@ export function PromptCrafterModal({ open, onClose }: PromptCrafterModalProps) {
 
     async function doGenerate() {
       try {
-        const dataUrl = await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
+        const dataUrl = provider === 'openai'
+          ? await callOpenAIImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio)
+          : await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
         if (cancelled) return;
 
         const blob = base64ToBlob(dataUrl);

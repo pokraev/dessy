@@ -28,10 +28,12 @@ export function createHistory() {
   let currentState: string | null = null;
   let isProcessing = false;
 
-  /** Serialize canvas to a JSON string using toDatalessJSON with custom props. */
+  /** Serialize canvas to a JSON string with embedded image data (toJSON, not toDatalessJSON).
+   *  toDatalessJSON keeps image src as blob/data URLs which can become stale.
+   *  toJSON embeds base64 data, making snapshots self-contained for undo/redo. */
   function serialize(canvas: Canvas): string {
     return JSON.stringify(
-      canvas.toDatalessJSON(CUSTOM_PROPS as unknown as string[])
+      canvas.toJSON(CUSTOM_PROPS as unknown as string[])
     );
   }
 
@@ -91,7 +93,11 @@ export function createHistory() {
     currentState = restoredSnapshot;
 
     // Restore canvas — MUST await (Fabric.js 7 async)
-    await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    try {
+      await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    } catch {
+      // Image load failure during undo is non-fatal — canvas renders without that image
+    }
     canvas.renderAll();
 
     isProcessing = false;
@@ -119,7 +125,11 @@ export function createHistory() {
     const restoredSnapshot = redoStack.pop()!;
     currentState = restoredSnapshot;
 
-    await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    try {
+      await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    } catch {
+      // Image load failure during redo is non-fatal
+    }
     canvas.renderAll();
 
     isProcessing = false;

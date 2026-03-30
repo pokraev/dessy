@@ -14,7 +14,17 @@ export async function captureThumbnail(
   const format = FORMATS[formatId] ?? FORMATS['A4'];
   const doc = getDocDimensions(format);
 
-  const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]) as { objects?: any[]; [k: string]: unknown };
+
+  // Strip image objects with blob/data URLs that can't be loaded by the temp canvas
+  if (canvasJSON.objects) {
+    canvasJSON.objects = canvasJSON.objects.filter((obj: { type?: string; src?: string }) => {
+      if (obj.type?.toLowerCase() === 'image' && obj.src?.startsWith('blob:')) return false;
+      return true;
+    });
+  }
+
   const pageData = { pageIndex: 0, canvasJSON, pageId: '', background: '#FFFFFF' };
 
   const blob = await renderPageToBlob(pageData, doc.width, doc.height, 'png', 1);

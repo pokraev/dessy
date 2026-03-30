@@ -1,11 +1,51 @@
 
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GeneratedPage } from '@/types/generation';
+import { renderPageToBlob } from '@/lib/export/raster-export';
+import { getDocDimensions } from '@/lib/fabric/canvas-config';
+import { FORMATS } from '@/constants/formats';
+
+function usePageThumbnails(pages: GeneratedPage[], formatId?: string) {
+  const [thumbnails, setThumbnails] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    if (pages.length === 0) return;
+    let cancelled = false;
+    const urls: string[] = [];
+
+    async function generate() {
+      const format = FORMATS[formatId ?? 'A4'] ?? FORMATS['A4'];
+      const doc = getDocDimensions(format);
+      for (let i = 0; i < pages.length; i++) {
+        if (cancelled) break;
+        try {
+          const pageData = { pageIndex: i, canvasJSON: pages[i].canvasJSON, pageId: '', background: '#FFFFFF' };
+          const blob = await renderPageToBlob(pageData, doc.width, doc.height, 'png', 0.3);
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+          if (!cancelled) setThumbnails((prev) => ({ ...prev, [i]: url }));
+        } catch {
+          // Skip failed thumbnails
+        }
+      }
+    }
+
+    generate();
+    return () => {
+      cancelled = true;
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [pages, formatId]);
+
+  return thumbnails;
+}
 
 interface GenerationPreviewProps {
   pages: GeneratedPage[];
   isLoading: boolean;
   error: string | null;
+  formatId?: string;
   onRegenerate: () => void;
   onLoadIntoEditor: () => void;
 }
@@ -14,10 +54,12 @@ export function GenerationPreview({
   pages,
   isLoading,
   error,
+  formatId,
   onRegenerate,
   onLoadIntoEditor,
 }: GenerationPreviewProps) {
   const { t } = useTranslation();
+  const thumbnails = usePageThumbnails(pages, formatId);
 
   if (isLoading) {
     return (
@@ -116,7 +158,11 @@ export function GenerationPreview({
                 justifyContent: 'center',
               }}
             >
-              <span style={{ fontSize: '11px', color: '#888888' }}>Page {idx + 1}</span>
+              {thumbnails[idx] ? (
+                <img src={thumbnails[idx]} alt={page.pageLabel} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                <span style={{ fontSize: '11px', color: '#888888' }}>Page {idx + 1}</span>
+              )}
             </div>
             <div
               style={{

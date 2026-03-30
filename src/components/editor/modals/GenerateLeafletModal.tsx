@@ -11,8 +11,9 @@ import { GenerationPreview } from './GenerationPreview';
 import type { GenerationMode, FoldType, GenerationResponse } from '@/types/generation';
 import type { AIProvider } from '@/lib/storage/apiKeyStorage';
 import {
-  getApiKey, setApiKey,
-  getClaudeApiKey, setClaudeApiKey,
+  getApiKey, setApiKey, clearApiKey,
+  getClaudeApiKey, setClaudeApiKey, clearClaudeApiKey,
+  getOpenAIApiKey, setOpenAIApiKey, clearOpenAIApiKey,
   getProvider, setProvider,
 } from '@/lib/storage/apiKeyStorage';
 import { generateLeaflet } from '@/lib/ai/generate-leaflet';
@@ -49,17 +50,22 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   const [provider, setProviderState] = useState<AIProvider>('gemini');
   const [geminiKey, setGeminiKeyState] = useState<string | null>(null);
   const [claudeKey, setClaudeKeyState] = useState<string | null>(null);
+  const [openaiKey, setOpenAIKeyState] = useState<string | null>(null);
   const [geminiKeyDraft, setGeminiKeyDraft] = useState('');
   const [claudeKeyDraft, setClaudeKeyDraft] = useState('');
+  const [openaiKeyDraft, setOpenAIKeyDraft] = useState('');
 
   useEffect(() => {
     const storedGemini = getApiKey();
     const storedClaude = getClaudeApiKey();
+    const storedOpenAI = getOpenAIApiKey();
     const storedProvider = getProvider();
     setGeminiKeyState(storedGemini);
     setClaudeKeyState(storedClaude);
+    setOpenAIKeyState(storedOpenAI);
     setProviderState(storedProvider);
     if (storedProvider === 'claude' && !storedClaude) setShowKeyInput(true);
+    else if (storedProvider === 'openai' && !storedOpenAI) setShowKeyInput(true);
     else if (storedProvider === 'gemini' && !storedGemini) setShowKeyInput(true);
   }, []);
 
@@ -72,7 +78,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
     }
   }, [open]);
 
-  const activeKey = provider === 'claude' ? claudeKey : geminiKey;
+  const activeKey = provider === 'claude' ? claudeKey : provider === 'openai' ? openaiKey : geminiKey;
 
   function handleSaveGeminiKey() {
     const trimmed = geminiKeyDraft.trim();
@@ -92,10 +98,35 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
     }
   }
 
+  function handleSaveOpenAIKey() {
+    const trimmed = openaiKeyDraft.trim();
+    if (trimmed) {
+      setOpenAIApiKey(trimmed);
+      setOpenAIKeyState(trimmed);
+      setOpenAIKeyDraft('');
+    }
+  }
+
+  function handleClearGeminiKey() {
+    clearApiKey();
+    setGeminiKeyState(null);
+  }
+
+  function handleClearClaudeKey() {
+    clearClaudeApiKey();
+    setClaudeKeyState(null);
+  }
+
+  function handleClearOpenAIKey() {
+    clearOpenAIApiKey();
+    setOpenAIKeyState(null);
+  }
+
   function handleProviderChange(p: AIProvider) {
     setProviderState(p);
     setProvider(p);
     if (p === 'claude' && !claudeKey) setShowKeyInput(true);
+    else if (p === 'openai' && !openaiKey) setShowKeyInput(true);
     else if (p === 'gemini' && !geminiKey) setShowKeyInput(true);
     else setShowKeyInput(false);
   }
@@ -274,7 +305,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                 }}>
                   {/* Provider toggle */}
                   <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                    {(['gemini', 'claude'] as const).map((p) => (
+                    {(['gemini', 'claude', 'openai'] as const).map((p) => (
                       <button
                         key={p}
                         type="button"
@@ -288,10 +319,9 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                           border: `1px solid ${provider === p ? '#6366f1' : '#333'}`,
                           borderRadius: '6px',
                           cursor: 'pointer',
-                          textTransform: 'capitalize',
                         }}
                       >
-                        {p === 'gemini' ? 'Gemini' : 'Claude'}
+                        {p === 'gemini' ? 'Gemini' : p === 'claude' ? 'Claude' : 'OpenAI'}
                       </button>
                     ))}
                   </div>
@@ -334,6 +364,23 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                     >
                       {t('generate.save')}
                     </button>
+                    {geminiKey && (
+                      <button
+                        type="button"
+                        onClick={handleClearGeminiKey}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '13px',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          border: '1px solid #333',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
                   {/* Claude key */}
@@ -374,6 +421,80 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                     >
                       {t('generate.save')}
                     </button>
+                    {claudeKey && (
+                      <button
+                        type="button"
+                        onClick={handleClearClaudeKey}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '13px',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          border: '1px solid #333',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* OpenAI key */}
+                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
+                    OpenAI API Key {openaiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                    <input
+                      type="password"
+                      value={openaiKeyDraft}
+                      onChange={(e) => setOpenAIKeyDraft(e.target.value)}
+                      placeholder={openaiKey ? '••••••••' : 'sk-...'}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveOpenAIKey()}
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        background: '#0a0a0a',
+                        border: '1px solid #333',
+                        borderRadius: '6px',
+                        color: '#f5f5f5',
+                        outline: 'none',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveOpenAIKey}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        background: '#6366f1',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {t('generate.save')}
+                    </button>
+                    {openaiKey && (
+                      <button
+                        type="button"
+                        onClick={handleClearOpenAIKey}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '13px',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          border: '1px solid #333',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
                   <p style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
@@ -385,6 +506,11 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                     Claude:{' '}
                     <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
                       console.anthropic.com
+                    </a>
+                    {' | '}
+                    OpenAI:{' '}
+                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
+                      platform.openai.com/api-keys
                     </a>
                   </p>
 
@@ -443,6 +569,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                   pages={response?.pages ?? []}
                   isLoading={isGenerating}
                   error={error}
+                  formatId={response?.formatId}
                   onRegenerate={handleRegenerate}
                   onLoadIntoEditor={handleLoadIntoEditor}
                 />

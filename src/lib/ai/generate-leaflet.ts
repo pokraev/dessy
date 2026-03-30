@@ -158,6 +158,70 @@ async function callClaude(
   }
 }
 
+// --- OpenAI ---
+
+async function callOpenAI(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  imageBase64?: string,
+  maxTokens = 16384
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const content: any[] = [];
+
+    if (imageBase64) {
+      content.push({
+        type: 'image_url',
+        image_url: { url: imageBase64 },
+      });
+    }
+
+    content.push({ type: 'text', text: userPrompt });
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1',
+        max_tokens: maxTokens,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt + '\n\nIMPORTANT: Respond with ONLY valid JSON. No markdown code fences.' },
+          { role: 'user', content },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`OpenAI API error ${response.status}: ${errorBody}`);
+    }
+
+    const data = (await response.json()) as {
+      choices: Array<{ message: { content: string }; finish_reason?: string }>;
+    };
+
+    if (data.choices[0]?.finish_reason === 'length') {
+      throw new Error('TRUNCATED');
+    }
+
+    const text = data.choices[0]?.message?.content ?? '';
+    const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+    return fenceMatch ? fenceMatch[1] : text;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // --- Shared ---
 
 async function callProvider(
@@ -169,6 +233,17 @@ async function callProvider(
 ): Promise<string> {
   if (provider === 'claude') {
     return callClaude(apiKey, systemPrompt, userPrompt, imageBase64);
+  }
+
+  if (provider === 'openai') {
+    try {
+      return await callOpenAI(apiKey, systemPrompt, userPrompt, imageBase64);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'TRUNCATED') {
+        return callOpenAI(apiKey, systemPrompt, userPrompt, imageBase64, 32768);
+      }
+      throw err;
+    }
   }
 
   // Gemini — retry with more tokens if truncated
