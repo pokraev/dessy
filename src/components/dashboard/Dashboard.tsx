@@ -20,7 +20,6 @@ export function Dashboard() {
   const { t, i18n } = useTranslation();
   const [projects, setProjects] = useState<ProjectMeta[]>(getSortedProjects);
   const [showNewLeafletModal, setShowNewLeafletModal] = useState(false);
-  const [newLeafletBtnHovered, setNewLeafletBtnHovered] = useState(false);
 
   const refreshList = useCallback(() => {
     setProjects(getSortedProjects());
@@ -31,54 +30,19 @@ export function Dashboard() {
   }, []);
 
   return (
-    <div
-      style={{
-        background: '#0a0a0a',
-        minHeight: '100vh',
-        fontFamily: 'Inter, sans-serif',
-      }}
-    >
+    <div className="bg-bg min-h-screen font-sans">
       {/* Header bar */}
-      <header
-        style={{
-          background: '#1e1e1e',
-          borderBottom: '1px solid #2a2a2a',
-          height: '56px',
-          padding: '0 24px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+      <header className="bg-surface-raised border-b border-border h-14 px-6 flex flex-row items-center justify-between">
         {/* Left: wordmark */}
-        <span
-          style={{
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#f5f5f5',
-          }}
-        >
+        <span className="text-base font-semibold text-text-primary">
           Dessy
         </span>
 
         {/* Right: New Leaflet + Language toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="flex items-center gap-2">
           <button
             onClick={handleNewLeaflet}
-            onMouseEnter={() => setNewLeafletBtnHovered(true)}
-            onMouseLeave={() => setNewLeafletBtnHovered(false)}
-            style={{
-              background: newLeafletBtnHovered ? '#818cf8' : '#6366f1',
-              color: '#f5f5f5',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
+            className="bg-accent hover:bg-accent-hover text-text-primary border-none rounded-lg px-4 py-2 text-sm font-semibold cursor-pointer transition-colors duration-150"
           >
             {t('dashboard.newLeaflet')}
           </button>
@@ -87,21 +51,7 @@ export function Dashboard() {
           <button
             onClick={() => setLanguage(i18n.language === 'bg' ? 'en' : 'bg')}
             title={t('lang.' + (i18n.language === 'bg' ? 'en' : 'bg'))}
-            style={{
-              height: '36px',
-              paddingLeft: '8px',
-              paddingRight: '8px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 500,
-              background: 'transparent',
-              border: '1px solid #2a2a2a',
-              cursor: 'pointer',
-              color: '#888',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
+            className="h-9 px-2 rounded-lg text-xs font-medium bg-transparent border border-border cursor-pointer text-text-secondary flex items-center gap-1"
           >
             <Globe size={14} />
             {i18n.language.toUpperCase()}
@@ -110,26 +60,12 @@ export function Dashboard() {
       </header>
 
       {/* Content area */}
-      <main
-        style={{
-          padding: '32px 24px',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}
-      >
+      <main className="py-8 px-6 max-w-[1200px] mx-auto">
         {projects.length === 0 ? (
           <EmptyState onNewLeaflet={handleNewLeaflet} />
         ) : (
           <>
-            <h2
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: '#f5f5f5',
-                marginBottom: '16px',
-                marginTop: 0,
-              }}
-            >
+            <h2 className="text-base font-semibold text-text-primary mb-4 mt-0">
               {t('dashboard.recentProjects')}
             </h2>
             <ProjectGrid projects={projects} onRefresh={refreshList} />
