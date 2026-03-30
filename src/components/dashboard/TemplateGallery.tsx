@@ -30,23 +30,19 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="flex flex-col">
       {/* Category tabs */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '16px 24px 0' }}>
+      <div className="flex flex-wrap gap-2 px-6 pt-4">
         {(['All', ...TEMPLATE_CATEGORIES] as Array<'All' | TemplateCategory>).map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            style={{
-              background: activeCategory === cat ? '#6366f1' : '#1e1e1e',
-              color: activeCategory === cat ? '#f5f5f5' : '#888',
-              border: activeCategory === cat ? 'none' : '1px solid #2a2a2a',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: 400,
-              cursor: 'pointer',
-            }}
+            className={[
+              'rounded-full px-4 py-2 text-sm font-normal cursor-pointer border font-sans transition-colors',
+              activeCategory === cat
+                ? 'bg-accent text-text-primary border-transparent'
+                : 'bg-surface-raised text-text-secondary border-border hover:text-text-primary',
+            ].join(' ')}
           >
             {cat}
           </button>
@@ -54,52 +50,26 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
       </div>
 
       {/* Template card grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-          gap: '12px',
-          padding: '16px 24px',
-        }}
-      >
+      <div className="grid gap-3 px-6 py-4 [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))]">
         {filtered.map((tmpl) => (
           <button
             key={tmpl.id}
             onClick={() => setSelectedTemplate(tmpl)}
-            style={{
-              background: '#1e1e1e',
-              border: '1px solid #2a2a2a',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              textAlign: 'left',
-              padding: 0,
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = '#6366f1';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = '#2a2a2a';
-            }}
+            className="bg-surface-raised border border-border hover:border-accent rounded-lg overflow-hidden cursor-pointer text-left p-0 transition-colors"
           >
             {/* Thumbnail */}
             <div
-              style={{
-                height: '120px',
-                background: CATEGORY_COLORS[tmpl.category] ?? '#4b5563',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="h-[120px] flex items-center justify-center"
+              style={{ background: CATEGORY_COLORS[tmpl.category] ?? '#4b5563' }}
             >
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontFamily: 'Arial' }}>
+              <span className="text-[11px] text-white/60 font-sans">
                 {tmpl.format}
               </span>
             </div>
-            <div style={{ padding: '8px 8px 4px', fontSize: '12px', fontWeight: 600, color: '#f5f5f5', fontFamily: 'Arial' }}>
+            <div className="px-2 pt-2 pb-1 text-xs font-semibold text-text-primary font-sans">
               {tmpl.name}
             </div>
-            <div style={{ padding: '0 8px 8px', fontSize: '12px', fontWeight: 400, color: '#888', fontFamily: 'Arial' }}>
+            <div className="px-2 pb-2 text-xs font-normal text-text-secondary font-sans">
               {tmpl.category}
             </div>
           </button>
@@ -109,112 +79,55 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
       {/* Template Preview Modal */}
       {selectedTemplate && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            zIndex: 60,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="fixed inset-0 bg-black/75 z-[60] flex items-center justify-center"
           onClick={() => setSelectedTemplate(null)}
         >
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={{
-              background: '#141414',
-              border: '1px solid #2a2a2a',
-              borderRadius: '12px',
-              width: '640px',
-              padding: '24px',
-              position: 'relative',
-            }}
+            className="bg-surface border border-border rounded-xl w-[640px] p-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close */}
             <button
               onClick={() => setSelectedTemplate(null)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#888',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="absolute top-4 right-4 bg-transparent border-none cursor-pointer text-text-secondary flex items-center justify-center hover:text-text-primary"
               aria-label="Close preview"
             >
               <X size={16} />
             </button>
 
             {/* Two-column layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div className="grid grid-cols-2 gap-6">
               {/* Preview area */}
               <div
-                style={{
-                  height: '300px',
-                  background: CATEGORY_COLORS[selectedTemplate.category] ?? '#4b5563',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="h-[300px] rounded-lg flex items-center justify-center"
+                style={{ background: CATEGORY_COLORS[selectedTemplate.category] ?? '#4b5563' }}
               >
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial' }}>
+                <span className="text-[13px] text-white/50 font-sans">
                   {selectedTemplate.format}
                 </span>
               </div>
 
               {/* Metadata */}
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-                <div style={{ fontSize: '16px', fontWeight: 600, color: '#f5f5f5', fontFamily: 'Arial', marginBottom: '8px' }}>
+              <div className="flex flex-col justify-start">
+                <div className="text-base font-semibold text-text-primary font-sans mb-2">
                   {selectedTemplate.name}
                 </div>
-                <div style={{ fontSize: '14px', color: '#888', fontFamily: 'Arial', marginBottom: '12px' }}>
+                <div className="text-sm text-text-secondary font-sans mb-3">
                   {selectedTemplate.category}
                 </div>
-                <div
-                  style={{
-                    display: 'inline-block',
-                    background: '#1e1e1e',
-                    border: '1px solid #2a2a2a',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    color: '#9ca3af',
-                    fontFamily: 'Arial',
-                    marginBottom: '8px',
-                    width: 'fit-content',
-                  }}
-                >
+                <div className="inline-block bg-surface-raised border border-border rounded px-2 py-1 text-xs text-[#9ca3af] font-sans mb-2 w-fit">
                   {selectedTemplate.format}
                 </div>
-                <div style={{ fontSize: '14px', color: '#888', fontFamily: 'Arial', marginBottom: '4px' }}>
+                <div className="text-sm text-text-secondary font-sans mb-1">
                   {t('dashboard.templatePages', { count: selectedTemplate.pageCount })}
                 </div>
 
                 <button
                   onClick={handleUseTemplate}
-                  style={{
-                    background: '#6366f1',
-                    color: '#f5f5f5',
-                    width: '100%',
-                    padding: '12px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    marginTop: '16px',
-                    fontFamily: 'Arial',
-                  }}
+                  className="bg-accent text-text-primary w-full py-3 text-sm font-semibold rounded-lg border-none cursor-pointer mt-4 font-sans hover:bg-accent-hover transition-colors"
                 >
                   {t('dashboard.useTemplate')}
                 </button>
