@@ -4,23 +4,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TEMPLATES } from '@/lib/templates/templates-index';
 import { useAppStore } from '@/stores/appStore';
-import { saveProject } from '@/lib/storage/projectStorage';
+import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
 
 interface Props {
   onNewLeaflet: () => void;
 }
-
-// Category to color mapping for template suggestion thumbnails
-const CATEGORY_COLORS: Record<string, string> = {
-  Sale: '#ef4444',
-  Event: '#8b5cf6',
-  Restaurant: '#f59e0b',
-  'Real Estate': '#10b981',
-  Corporate: '#6366f1',
-  Fitness: '#f97316',
-  Beauty: '#ec4899',
-  Education: '#06b6d4',
-};
 
 export function EmptyState({ onNewLeaflet }: Props) {
   const { t } = useTranslation();
@@ -29,22 +17,7 @@ export function EmptyState({ onNewLeaflet }: Props) {
   const suggestedTemplates = TEMPLATES.slice(0, 3);
 
   function handleTemplateClick(template: typeof TEMPLATES[number]) {
-    const newId = crypto.randomUUID();
-    const now = new Date().toISOString();
-    const meta = {
-      id: newId,
-      name: template.name,
-      format: template.format,
-      createdAt: now,
-      updatedAt: now,
-    };
-    const canvasJSON = JSON.parse(JSON.stringify(template.canvasJSON));
-    const pages = Array.from({ length: template.pageCount }, () => ({
-      id: crypto.randomUUID(),
-      elements: [],
-      background: '#FFFFFF',
-    }));
-    saveProject(newId, { meta, canvasJSON, pageData: { pages, currentPageIndex: 0 } });
+    const newId = createProjectFromTemplate(template);
     useAppStore.getState().openProject(newId);
   }
 

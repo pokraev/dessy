@@ -6,21 +6,8 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates/templates-index';
 import type { TemplateEntry, TemplateCategory } from '@/lib/templates/templates-index';
-import { saveProject } from '@/lib/storage/projectStorage';
 import { useAppStore } from '@/stores/appStore';
-import type { ProjectMeta } from '@/types/project';
-
-// Category colors for thumbnail placeholders
-const CATEGORY_COLORS: Record<string, string> = {
-  Sale: '#ef4444',
-  Event: '#8b5cf6',
-  Restaurant: '#f59e0b',
-  'Real Estate': '#3b82f6',
-  Corporate: '#6b7280',
-  Fitness: '#22c55e',
-  Beauty: '#ec4899',
-  Education: '#06b6d4',
-};
+import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
 
 interface TemplateGalleryProps {
   onClose: () => void;
@@ -37,23 +24,7 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
 
   function handleUseTemplate() {
     if (!selectedTemplate) return;
-    const template = selectedTemplate;
-    const newId = crypto.randomUUID();
-    const now = new Date().toISOString();
-    const meta: ProjectMeta = {
-      id: newId,
-      name: template.name,
-      format: template.format,
-      createdAt: now,
-      updatedAt: now,
-    };
-    const canvasJSON = JSON.parse(JSON.stringify(template.canvasJSON));
-    const pages = Array.from({ length: template.pageCount }, () => ({
-      id: crypto.randomUUID(),
-      elements: [],
-      background: '#FFFFFF',
-    }));
-    saveProject(newId, { meta, canvasJSON, pageData: { pages, currentPageIndex: 0 } });
+    const newId = createProjectFromTemplate(selectedTemplate);
     useAppStore.getState().openProject(newId);
     onClose();
   }
