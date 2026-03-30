@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Globe } from 'lucide-react';
 import { extractBrandFromUrl } from '@/lib/brand/extract-from-url';
-import { getApiKey, getClaudeApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
+import { getApiKey, getClaudeApiKey, getOpenAIApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
 import { saveBrand, setActiveBrandId } from '@/lib/storage/brandStorage';
 import { useBrandStore } from '@/stores/brandStore';
 import { useCanvasStore } from '@/stores/canvasStore';
@@ -79,22 +79,15 @@ export function StyleSection() {
   function handleUrlChange(value: string) {
     setWebsiteUrl(value);
     if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current);
-    if (value.trim().length < 2) {
+    const trimmed = value.trim();
+    // If input looks like a URL (contains a dot), skip autocomplete
+    if (trimmed.length < 2 || trimmed.includes('.')) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
-    suggestTimerRef.current = setTimeout(async () => {
-      try {
-        const googleUrl = `https://suggestqueries.google.com/complete/search?client=firefox%26q=${encodeURIComponent(value)}`;
-        const res = await fetch(`https://api.codetabs.com/v1/proxy/?quest=${googleUrl}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const items = (Array.isArray(data[1]) ? data[1] : []) as string[];
-        setSuggestions(items.slice(0, 5));
-        setShowSuggestions(items.length > 0);
-      } catch { /* ignore */ }
-    }, 300);
+    // Autocomplete disabled — CORS proxies are unreliable
+    // Users type the website URL directly
   }
 
   function selectSuggestion(value: string) {
@@ -118,7 +111,7 @@ export function StyleSection() {
   async function handleExtractBrand() {
     if (!websiteUrl.trim()) return;
     const provider = getProvider();
-    const apiKey = provider === 'claude' ? getClaudeApiKey() : getApiKey();
+    const apiKey = provider === 'claude' ? getClaudeApiKey() : provider === 'openai' ? getOpenAIApiKey() : getApiKey();
     if (!apiKey) {
       setExtractError(t('brand.noApiKey'));
       return;

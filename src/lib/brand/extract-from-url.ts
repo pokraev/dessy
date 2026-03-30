@@ -1,4 +1,4 @@
-import type { AIProvider } from '@/lib/storage/apiKeyStorage';
+import { getOpenAIApiKey, type AIProvider } from '@/lib/storage/apiKeyStorage';
 import type { ColorSwatch, TypographyPreset, SavedBrand } from '@/types/brand';
 
 const PROMPT_PREFIX = `You are a brand identity expert. Analyze the website at the given URL and extract its complete brand identity.
@@ -22,8 +22,10 @@ Return ONLY valid JSON:
     { "name": "Caption", "fontFamily": "Font Name", "fontSize": 12, "fontWeight": 400, "lineHeight": 1.4, "letterSpacing": 0, "color": "#666666" },
     { "name": "CTA", "fontFamily": "Font Name", "fontSize": 16, "fontWeight": 700, "lineHeight": 1.2, "letterSpacing": 20, "color": "#ffffff" }
   ],
-  "style": "minimal" | "bold" | "corporate" | "playful" | "elegant"
+  "style": "minimal"
 }
+
+Valid style values: "minimal", "bold", "corporate", "playful", "elegant"
 
 Rules:
 - Extract 3-6 dominant brand colors with descriptive names (Primary, Secondary, Accent, etc.)
@@ -102,12 +104,30 @@ export async function extractBrandFromUrl(
     : `Website URL: ${url}\n\nExtract the complete brand identity based on your knowledge of this website.`;
 
   let raw: ExtractedBrandData;
-  if (provider === 'claude') {
-    raw = await callClaude(apiKey, userPrompt);
-  } else if (provider === 'openai') {
-    raw = await callOpenAI(apiKey, userPrompt);
-  } else {
-    raw = await callGemini(apiKey, userPrompt);
+  try {
+    if (provider === 'claude') {
+      raw = await callClaude(apiKey, userPrompt);
+    } else if (provider === 'openai') {
+      raw = await callOpenAI(apiKey, userPrompt);
+    } else {
+      raw = await callGemini(apiKey, userPrompt);
+    }
+  } catch {
+    // Fallback: try OpenAI if available and wasn't the primary
+    const openaiKey = getOpenAIApiKey();
+    if (provider !== 'openai' && openaiKey) {
+      try {
+        raw = await callOpenAI(openaiKey, userPrompt);
+      } catch {
+        raw = {};
+      }
+    } else {
+      raw = {};
+    }
+  }
+
+  if (!raw.colors?.length && !raw.typography?.length) {
+    throw new Error('Could not extract brand identity. Try a different provider or check the URL.');
   }
 
   // Convert to SavedBrand
@@ -141,24 +161,51 @@ export async function extractBrandFromUrl(
   };
 }
 
+function safeParseJSON(text: string): ExtractedBrandData {
+  // Strip markdown fences
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  const cleaned = fenceMatch ? fenceMatch[1] : text;
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Try to extract valid JSON from a truncated response
+    const jsonMatch = cleaned.match(/\{[\s\S]*}/);
+    if (jsonMatch) {
+      try { return JSON.parse(jsonMatch[0]); } catch { /* fall through */ }
+    }
+    return {};
+  }
+}
+
 async function callGemini(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
+  // Use gemini-2.0-flash (non-thinking model) for reliable JSON output
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: PROMPT_PREFIX }] },
         contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2048 },
+        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 4096 },
       }),
     }
   );
-  if (!res.ok) throw new Error(`Gemini API error: ${res.status}`);
-  const data = await res.json();
-  const parts = data.candidates?.[0]?.content?.parts ?? [];
-  const textPart = [...parts].reverse().find((p: { thought?: boolean }) => !p.thought) ?? parts[parts.length - 1];
-  return JSON.parse(textPart?.text ?? '{}');
+  const rawText = await res.text();
+  if (!res.ok) {
+    throw new Error(`Gemini API error ${res.status}: ${rawText.slice(0, 200)}`);
+  }
+  // Extract the text field from the Gemini response using regex
+  // to avoid JSON.parse on the potentially malformed envelope
+  const textMatch = rawText.match(/"text"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+  if (textMatch) {
+    const innerJson = textMatch[1]
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
+    return safeParseJSON(innerJson);
+  }
+  return {};
 }
 
 async function callClaude(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
@@ -177,11 +224,13 @@ async function callClaude(apiKey: string, userPrompt: string): Promise<Extracted
       messages: [{ role: 'user', content: userPrompt }],
     }),
   });
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 200)}`);
+  }
   const data = await res.json();
   const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? '{}';
-  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-  return JSON.parse(fenceMatch ? fenceMatch[1] : text);
+  return safeParseJSON(text);
 }
 
 async function callOpenAI(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
@@ -201,9 +250,11 @@ async function callOpenAI(apiKey: string, userPrompt: string): Promise<Extracted
       ],
     }),
   });
-  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenAI API error ${res.status}: ${errText.slice(0, 200)}`);
+  }
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content ?? '{}';
-  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-  return JSON.parse(fenceMatch ? fenceMatch[1] : text);
+  return safeParseJSON(text);
 }
