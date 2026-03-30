@@ -15,6 +15,8 @@ export const CUSTOM_PROPS = [
   'fitMode',
   'swatchId',
   'presetId',
+  '_isDocBackground',
+  'layerId',
 ] as const;
 
 interface BaseOpts {
