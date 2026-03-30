@@ -6,7 +6,8 @@ import { useElementCreation } from '@/hooks/useElementCreation';
 import { useCanvasZoomPan } from '@/hooks/useCanvasZoomPan';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { createImageFrame, CUSTOM_PROPS } from '@/lib/fabric/element-factory';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 import { saveProject } from '@/lib/storage/projectStorage';
 import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
 import { loadGeneratedLeaflet } from '@/lib/ai/canvas-loader';
@@ -33,10 +34,18 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
   }, []);
   const [hasElements, setHasElements] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number; _t?: number } | null>(null);
-  const imageUploadRef = useRef<HTMLInputElement>(null);
 
   // Mount Fabric.js canvas — canvasInstance becomes non-null once async init completes
   const { canvasRef, canvasInstance, historyRef } = useFabricCanvas(canvasEl, formatId);
+
+  // Image upload and drag-drop handling
+  const {
+    imageUploadRef,
+    handleDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleImageInputChange,
+  } = useImageUpload(canvasInstance);
 
   // Wire element creation and zoom/pan hooks — these re-run when canvasInstance becomes available
   useElementCreation(canvasInstance);
@@ -67,59 +76,6 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       canvas.off('object:modified', markDirty);
       canvas.off('object:removed', markDirty);
     };
-  }, [canvasInstance]);
-
-  // Double-click on image placeholder — open file picker
-  useEffect(() => {
-    function onImageUpload() {
-      imageUploadRef.current?.click();
-    }
-    window.addEventListener('dessy-image-upload', onImageUpload);
-    return () => window.removeEventListener('dessy-image-upload', onImageUpload);
-  }, []);
-
-  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !canvasInstance) return;
-
-    const obj = canvasInstance.getActiveObject();
-    if (!obj) return;
-
-    useCanvasStore.getState().captureUndoState?.();
-
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
-    const { FabricImage } = await import('fabric');
-    const img = await FabricImage.fromURL(dataUrl);
-    const targetW = (obj.width ?? 100) * (obj.scaleX ?? 1);
-    const targetH = (obj.height ?? 100) * (obj.scaleY ?? 1);
-    img.set({
-      left: obj.left, top: obj.top,
-      originX: 'left', originY: 'top',
-      scaleX: targetW / (img.width || 1),
-      scaleY: targetH / (img.height || 1),
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const custom = obj as any;
-    Object.assign(img, {
-      customType: 'image', name: custom.name || 'Image',
-      id: custom.id || crypto.randomUUID(), locked: false,
-      visible: true, imageId: 'uploaded', fitMode: custom.fitMode || 'fill',
-    });
-    const prev = canvasInstance.renderOnAddRemove;
-    canvasInstance.renderOnAddRemove = false;
-    const idx = canvasInstance.getObjects().indexOf(obj);
-    canvasInstance.insertAt(idx, img as unknown as FabricObject);
-    canvasInstance.remove(obj);
-    canvasInstance.renderOnAddRemove = prev;
-    canvasInstance.setActiveObject(img as unknown as FabricObject);
-    canvasInstance.requestRenderAll();
-    if (imageUploadRef.current) imageUploadRef.current.value = '';
   }, [canvasInstance]);
 
   // Register triggerSave and triggerExport callbacks in canvasStore so Header can call them
@@ -300,74 +256,6 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
     [canvasInstance]
   );
 
-  // Handle image file drops onto the canvas
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const canvas = canvasInstance;
-      if (!canvas) return;
-
-      const files = Array.from(e.dataTransfer.files).filter((f) =>
-        f.type.startsWith('image/')
-      );
-      if (!files.length) return;
-
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-          const dataUrl = ev.target?.result as string;
-          if (!dataUrl) return;
-
-          // Determine drop position relative to canvas
-          const canvasEl = canvas.getElement();
-          const rect = canvasEl.getBoundingClientRect();
-          const dropX = e.clientX - rect.left;
-          const dropY = e.clientY - rect.top;
-
-          // Create image frame placeholder at drop position
-          const frame = createImageFrame({
-            left: dropX - 100,
-            top: dropY - 75,
-            width: 200,
-            height: 150,
-          });
-
-          // Load image into frame using FabricImage.fromURL
-          const { FabricImage } = await import('fabric');
-          FabricImage.fromURL(dataUrl, { crossOrigin: 'anonymous' }).then((img) => {
-            // Scale image to fit within the frame
-            const scaleX = 200 / (img.width ?? 200);
-            const scaleY = 150 / (img.height ?? 150);
-            const scale = Math.min(scaleX, scaleY);
-            img.set({
-              left: dropX - 100,
-              top: dropY - 75,
-              scaleX: scale,
-              scaleY: scale,
-              originX: 'left',
-              originY: 'top',
-            });
-
-            // Replace frame placeholder with actual image
-            canvas.remove(frame as Parameters<typeof canvas.add>[0]);
-            canvas.add(img);
-            canvas.setActiveObject(img);
-            canvas.requestRenderAll();
-          });
-
-          canvas.add(frame as Parameters<typeof canvas.add>[0]);
-          canvas.requestRenderAll();
-        };
-        reader.readAsDataURL(file);
-      });
-    },
-    [canvasInstance]
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  }, []);
-
   // Prevent default browser context menu on the canvas area
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -379,6 +267,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       className="relative w-full h-full overflow-hidden"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onContextMenu={handleContextMenu}
     >
       {/* Hidden file input for image upload — triggered by double-click on image placeholder */}
@@ -387,7 +276,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
         type="file"
         accept="image/*"
         style={{ display: 'none' }}
-        onChange={handleImageUpload}
+        onChange={handleImageInputChange}
       />
       {/* Hidden file input for JSON import — triggered via triggerImport callback */}
       <input
