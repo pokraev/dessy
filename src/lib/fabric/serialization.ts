@@ -26,7 +26,12 @@ export async function importProjectJSON(
   file: File
 ): Promise<ProjectMeta> {
   const text = await file.text();
-  const data = JSON.parse(text);
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('Invalid project file — could not parse JSON');
+  }
   if (!data.version || !data.canvas || !data.meta) {
     throw new Error('Invalid Dessy project file');
   }

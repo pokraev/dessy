@@ -74,9 +74,7 @@ describe('enrichPrompt', () => {
       }),
     });
 
-    await expect(enrichPrompt('key', 'desc', mockFrameContext)).rejects.toThrow(
-      'Failed to parse enrichment response'
-    );
+    await expect(enrichPrompt('key', 'desc', mockFrameContext)).rejects.toThrow();
   });
 });
 

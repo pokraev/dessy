@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Canvas, FabricObject } from 'fabric';
+import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
 
 interface ContextMenuProps {
   canvas: Canvas | null;
@@ -122,7 +123,8 @@ export function ContextMenu({ canvas }: ContextMenuProps) {
     if (!canvas || !menu.targets.length) return;
     const clones: FabricObject[] = [];
     for (const obj of menu.targets) {
-      const cloned = await obj.clone() as FabricObject;
+      const cloned = await obj.clone([...CUSTOM_PROPS]) as FabricObject;
+      (cloned as any).id = crypto.randomUUID();
       cloned.set({
         left: (cloned.left ?? 0) + 10,
         top: (cloned.top ?? 0) + 10,

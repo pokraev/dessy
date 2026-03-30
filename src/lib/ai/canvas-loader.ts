@@ -62,7 +62,7 @@ export function loadGeneratedLeaflet(
     }, 500);
     // Notify PagesPanel to recapture thumbnail
     window.dispatchEvent(new Event('dessy-canvas-loaded'));
-  });
+  }).catch((err) => { console.error('Failed to load generated leaflet:', err); });
 }
 
 async function replaceImagePlaceholders(canvas: Canvas) {

@@ -3,7 +3,7 @@ import type { ShapeKind } from '@/types/elements';
 
 /**
  * Custom properties that must be included when serializing Fabric.js objects.
- * Pass this array to canvas.toDatalessJSON(CUSTOM_PROPS) or obj.toObject(CUSTOM_PROPS).
+ * Pass this array to canvas.toObject(CUSTOM_PROPS) or obj.toObject(CUSTOM_PROPS).
  */
 export const CUSTOM_PROPS = [
   'customType',

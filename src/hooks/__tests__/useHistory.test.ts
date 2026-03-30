@@ -31,6 +31,19 @@ function makeMockCanvas() {
   return canvas;
 }
 
+// ─── Mock i18n to return English strings ─────────────────────────────────────
+
+jest.mock('@/i18n', () => {
+  const t = (key: string) => {
+    const map: Record<string, string> = {
+      'canvas.nothingToUndo': 'Nothing left to undo',
+      'canvas.nothingToRedo': 'Nothing left to redo',
+    };
+    return map[key] ?? key;
+  };
+  return { __esModule: true, default: { t } };
+});
+
 // ─── Mock Zustand canvasStore ────────────────────────────────────────────────
 
 jest.mock('@/stores/canvasStore', () => ({

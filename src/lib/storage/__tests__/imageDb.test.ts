@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 // Mock idb before importing imageDb
 const mockPut = jest.fn();
 const mockGet = jest.fn();
