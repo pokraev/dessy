@@ -31,3 +31,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# screenshots and test data
+/screenshots/
+/test-data/
