@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Canvas, FabricObject } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
+import type { FabricObjectWithCustom } from '@/types/fabric-custom';
 
 export type LayerType = 'text' | 'image' | 'shape' | 'colorBlock';
 
@@ -22,14 +23,6 @@ export interface GroupTreeNode {
   children: GroupTreeNode[];
   childCount: number; // total leaf objects (recursive)
 }
-
-type FabricObjectWithCustom = FabricObject & {
-  id?: string;
-  name?: string;
-  customType?: string;
-  locked?: boolean;
-  layerId?: string;
-};
 
 function mapCustomType(customType: string | undefined): LayerType {
   if (customType === 'text') return 'text';
@@ -52,7 +45,7 @@ function extractLayers(canvas: Canvas): LayerItem[] {
 
   function collectObjects(objects: FabricObject[]) {
     for (const obj of objects) {
-      const custom = obj as FabricObjectWithCustom & { _isDocBackground?: boolean; getObjects?: () => FabricObject[] };
+      const custom = obj as FabricObjectWithCustom & { getObjects?: () => FabricObject[] };
       if (custom._isDocBackground) continue;
       // Include group itself and recurse into children
       if (obj.type === 'group' && custom.getObjects) {
@@ -87,7 +80,7 @@ function extractLayers(canvas: Canvas): LayerItem[] {
 }
 
 function buildGroupTree(canvas: Canvas): GroupTreeNode[] {
-  const objects = canvas.getObjects() as (FabricObjectWithCustom & { _isDocBackground?: boolean; getObjects?: () => FabricObject[] })[];
+  const objects = canvas.getObjects() as (FabricObjectWithCustom & { getObjects?: () => FabricObject[] })[];
 
   function buildNode(obj: FabricObjectWithCustom & { getObjects?: () => FabricObject[] }): GroupTreeNode {
     if (obj.type === 'group' && obj.getObjects) {
