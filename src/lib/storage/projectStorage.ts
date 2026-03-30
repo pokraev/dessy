@@ -52,14 +52,14 @@ export function deleteProject(projectId: string): void {
   localStorage.setItem(PROJECT_LIST_KEY, JSON.stringify(list));
 }
 
-export function duplicateProject(sourceId: string): string | null {
+export function duplicateProject(sourceId: string, copyPrefix = 'Copy of'): string | null {
   const source = loadProject(sourceId);
   if (!source) return null;
   const newId = crypto.randomUUID();
   const newMeta: ProjectMeta = {
     ...source.meta,
     id: newId,
-    name: `Copy of ${source.meta.name}`,
+    name: `${copyPrefix} ${source.meta.name}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

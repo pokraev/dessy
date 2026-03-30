@@ -1,4 +1,4 @@
-import type { AIProvider } from '@/lib/storage/apiKeyStorage';
+import { getOpenAIApiKey, type AIProvider } from '@/lib/storage/apiKeyStorage';
 import type { ColorSwatch, TypographyPreset, SavedBrand } from '@/types/brand';
 
 const PROMPT_PREFIX = `You are a brand identity expert. Analyze the website at the given URL and extract its complete brand identity.
@@ -22,8 +22,10 @@ Return ONLY valid JSON:
     { "name": "Caption", "fontFamily": "Font Name", "fontSize": 12, "fontWeight": 400, "lineHeight": 1.4, "letterSpacing": 0, "color": "#666666" },
     { "name": "CTA", "fontFamily": "Font Name", "fontSize": 16, "fontWeight": 700, "lineHeight": 1.2, "letterSpacing": 20, "color": "#ffffff" }
   ],
-  "style": "minimal" | "bold" | "corporate" | "playful" | "elegant"
+  "style": "minimal"
 }
+
+Valid style values: "minimal", "bold", "corporate", "playful", "elegant"
 
 Rules:
 - Extract 3-6 dominant brand colors with descriptive names (Primary, Secondary, Accent, etc.)
@@ -55,13 +57,25 @@ export async function extractBrandFromUrl(
   apiKey: string,
   provider: AIProvider
 ): Promise<SavedBrand> {
-  // Try fetching HTML — extract font/style-relevant parts
+  // Try fetching HTML via CORS proxy — extract font/style-relevant parts
   let htmlContext = '';
   try {
-    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
-      const fullHtml = await res.text();
+    // Try multiple proxies in case one is rate-limited
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    ];
+    let fullHtml = '';
+    for (const proxyUrl of proxies) {
+      try {
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+        if (res.ok) {
+          fullHtml = await res.text();
+          break;
+        }
+      } catch { /* try next proxy */ }
+    }
+    if (fullHtml) {
       // Extract <head> (contains font links, meta, style tags)
       const headMatch = fullHtml.match(/<head[\s\S]*?<\/head>/i);
       const head = headMatch ? headMatch[0] : '';
@@ -89,9 +103,32 @@ export async function extractBrandFromUrl(
     ? `Website URL: ${url}\n\nHere are the font links, styles, and CSS from the page:\n\n${htmlContext}\n\nExtract the complete brand identity. Pay special attention to the font-family declarations, Google Fonts links, and CSS custom properties for colors and typography.`
     : `Website URL: ${url}\n\nExtract the complete brand identity based on your knowledge of this website.`;
 
-  const raw: ExtractedBrandData = provider === 'claude'
-    ? await callClaude(apiKey, userPrompt)
-    : await callGemini(apiKey, userPrompt);
+  let raw: ExtractedBrandData;
+  try {
+    if (provider === 'claude') {
+      raw = await callClaude(apiKey, userPrompt);
+    } else if (provider === 'openai') {
+      raw = await callOpenAI(apiKey, userPrompt);
+    } else {
+      raw = await callGemini(apiKey, userPrompt);
+    }
+  } catch {
+    // Fallback: try OpenAI if available and wasn't the primary
+    const openaiKey = getOpenAIApiKey();
+    if (provider !== 'openai' && openaiKey) {
+      try {
+        raw = await callOpenAI(openaiKey, userPrompt);
+      } catch {
+        raw = {};
+      }
+    } else {
+      raw = {};
+    }
+  }
+
+  if (!raw.colors?.length && !raw.typography?.length) {
+    throw new Error('Could not extract brand identity. Try a different provider or check the URL.');
+  }
 
   // Convert to SavedBrand
   const now = new Date().toISOString();
@@ -124,7 +161,24 @@ export async function extractBrandFromUrl(
   };
 }
 
+function safeParseJSON(text: string): ExtractedBrandData {
+  // Strip markdown fences
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  const cleaned = fenceMatch ? fenceMatch[1] : text;
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Try to extract valid JSON from a truncated response
+    const jsonMatch = cleaned.match(/\{[\s\S]*}/);
+    if (jsonMatch) {
+      try { return JSON.parse(jsonMatch[0]); } catch { /* fall through */ }
+    }
+    return {};
+  }
+}
+
 async function callGemini(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
+  // Use gemini-2.5-flash for reliable JSON output
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
@@ -133,15 +187,25 @@ async function callGemini(apiKey: string, userPrompt: string): Promise<Extracted
       body: JSON.stringify({
         system_instruction: { parts: [{ text: PROMPT_PREFIX }] },
         contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2048 },
+        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 4096 },
       }),
     }
   );
-  if (!res.ok) throw new Error(`Gemini API error: ${res.status}`);
-  const data = await res.json();
-  const parts = data.candidates?.[0]?.content?.parts ?? [];
-  const textPart = [...parts].reverse().find((p: { thought?: boolean }) => !p.thought) ?? parts[parts.length - 1];
-  return JSON.parse(textPart?.text ?? '{}');
+  const rawText = await res.text();
+  if (!res.ok) {
+    throw new Error(`Gemini API error ${res.status}: ${rawText.slice(0, 200)}`);
+  }
+  // Extract the text field from the Gemini response using regex
+  // to avoid JSON.parse on the potentially malformed envelope
+  const textMatch = rawText.match(/"text"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+  if (textMatch) {
+    const innerJson = textMatch[1]
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
+    return safeParseJSON(innerJson);
+  }
+  return {};
 }
 
 async function callClaude(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
@@ -160,9 +224,47 @@ async function callClaude(apiKey: string, userPrompt: string): Promise<Extracted
       messages: [{ role: 'user', content: userPrompt }],
     }),
   });
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
-  const data = await res.json();
-  const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? '{}';
-  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-  return JSON.parse(fenceMatch ? fenceMatch[1] : text);
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 200)}`);
+  }
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Failed to parse Claude API response');
+  }
+  const text = (data.content as Array<{ type: string; text?: string }> | undefined)?.find((b) => b.type === 'text')?.text ?? '{}';
+  return safeParseJSON(text);
+}
+
+async function callOpenAI(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4.1',
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: PROMPT_PREFIX },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenAI API error ${res.status}: ${errText.slice(0, 200)}`);
+  }
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Failed to parse OpenAI API response');
+  }
+  const text = (data.choices as Array<{ message?: { content?: string } }> | undefined)?.[0]?.message?.content ?? '{}';
+  return safeParseJSON(text);
 }

@@ -45,7 +45,7 @@ export function collectAllPageData(
 
     if (i === currentPageIndex) {
       // Serialize the live canvas
-      canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS] as string[]);
+      canvasJSON = canvas.toObject([...CUSTOM_PROPS] as string[]);
     } else {
       // Read from sessionStorage
       const key = `dessy-generated-page-${projectId}-${i}`;

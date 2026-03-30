@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { exportProjectJSON, importProjectJSON } from '@/lib/fabric/serialization';
 import type { ProjectMeta } from '@/types/project';
 
@@ -35,8 +36,9 @@ Object.defineProperty(URL, 'revokeObjectURL', {
 });
 
 const makeCanvasMock = (canvasData: Record<string, unknown> = { objects: [] }) => ({
-  toDatalessJSON: jest.fn().mockReturnValue(canvasData),
+  toObject: jest.fn().mockReturnValue(canvasData),
   loadFromJSON: jest.fn().mockResolvedValue(undefined),
+  getObjects: jest.fn().mockReturnValue([]),
   renderAll: jest.fn(),
 });
 
@@ -47,7 +49,7 @@ describe('exportProjectJSON', () => {
 
     exportProjectJSON(canvas as never, meta);
 
-    expect(canvas.toDatalessJSON).toHaveBeenCalled();
+    expect(canvas.toObject).toHaveBeenCalled();
     expect(mockClick).toHaveBeenCalled();
     expect(mockAnchor.download).toMatch(/\.dessy\.json$/);
     expect(mockAnchor.download).toContain('my-leaflet');

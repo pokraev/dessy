@@ -39,7 +39,7 @@ interface LayerRowProps {
 }
 
 function TypeIcon({ type }: { type: LayerItem['type'] }) {
-  const props = { size: 16, color: '#888888' };
+  const props = { size: 16, className: 'text-text-secondary' };
   switch (type) {
     case 'text': return <Type {...props} />;
     case 'image': return <Image {...props} />;
@@ -60,7 +60,6 @@ function LayerRow({
   const { t } = useTranslation();
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(layer.name);
-  const [isHovered, setIsHovered] = useState(false);
 
   const {
     attributes,
@@ -71,7 +70,7 @@ function LayerRow({
     isDragging,
   } = useSortable({ id: layer.id });
 
-  const style = {
+  const dndStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
@@ -97,61 +96,31 @@ function LayerRow({
     }
   }
 
-  const bgColor = isSelected
-    ? '#1e1e1e'
-    : isHovered
-    ? 'rgba(30,30,30,0.6)'
-    : 'transparent';
-
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        height: '32px',
-        paddingLeft: '8px',
-        paddingRight: '8px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        background: bgColor,
-        cursor: 'pointer',
-        userSelect: 'none',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      style={dndStyle}
+      className={`h-8 px-2 flex items-center gap-1 cursor-pointer select-none group ${isSelected ? 'bg-surface-raised' : 'hover:bg-surface-raised/60'}`}
       onClick={() => !isRenaming && onSelect(layer.id)}
     >
       {/* Drag handle */}
       <span
         {...attributes}
         {...listeners}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          color: '#555555',
-          opacity: isHovered ? 1 : 0,
-          cursor: 'grab',
-          flexShrink: 0,
-          width: '16px',
-        }}
+        className="flex items-center text-[#555555] opacity-0 group-hover:opacity-100 cursor-grab shrink-0 w-4"
         onClick={(e) => e.stopPropagation()}
       >
         <GripVertical size={16} />
       </span>
 
       {/* Type icon */}
-      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, width: '16px' }}>
+      <span className="flex items-center shrink-0 w-4">
         <TypeIcon type={layer.type} />
       </span>
 
       {/* Name text / rename input */}
       <span
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          minWidth: 0,
-        }}
+        className="flex-1 overflow-hidden min-w-0"
         onDoubleClick={handleDoubleClick}
       >
         {isRenaming ? (
@@ -163,30 +132,10 @@ function LayerRow({
             onKeyDown={handleRenameKeyDown}
             placeholder={t('layers.layerName')}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              fontSize: '13px',
-              fontFamily: 'Inter, sans-serif',
-              color: '#f5f5f5',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: '1px solid #6366f1',
-              outline: 'none',
-              width: '100%',
-              padding: '0',
-            }}
+            className="text-[13px] font-sans text-text-primary bg-transparent border-0 border-b border-accent outline-none w-full p-0"
           />
         ) : (
-          <span
-            style={{
-              fontSize: '13px',
-              fontFamily: 'Inter, sans-serif',
-              color: '#f5f5f5',
-              display: 'block',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <span className="text-[13px] font-sans text-text-primary block overflow-hidden text-ellipsis whitespace-nowrap">
             {layer.name}
           </span>
         )}
@@ -199,25 +148,7 @@ function LayerRow({
           e.stopPropagation();
           onToggleVisibility(layer.id);
         }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '20px',
-          height: '20px',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          color: '#888888',
-          flexShrink: 0,
-          padding: 0,
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = '#f5f5f5';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = '#888888';
-        }}
+        className="flex items-center justify-center w-5 h-5 bg-transparent border-0 cursor-pointer text-text-secondary hover:text-text-primary shrink-0 p-0"
       >
         {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
       </button>
@@ -229,25 +160,7 @@ function LayerRow({
           e.stopPropagation();
           onToggleLock(layer.id);
         }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '20px',
-          height: '20px',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          color: '#888888',
-          flexShrink: 0,
-          padding: 0,
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = '#f5f5f5';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = '#888888';
-        }}
+        className="flex items-center justify-center w-5 h-5 bg-transparent border-0 cursor-pointer text-text-secondary hover:text-text-primary shrink-0 p-0"
       >
         {layer.locked ? <Lock size={14} /> : <Unlock size={14} />}
       </button>
@@ -279,33 +192,11 @@ export function LayersPanel() {
 
   if (layers.length === 0) {
     return (
-      <div
-        style={{
-          padding: '24px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-        }}
-      >
-        <p
-          style={{
-            fontSize: '13px',
-            fontFamily: 'Inter, sans-serif',
-            color: '#f5f5f5',
-            margin: 0,
-            fontWeight: 600,
-          }}
-        >
+      <div className="px-4 py-6 flex flex-col gap-2">
+        <p className="text-[13px] font-sans text-text-primary m-0 font-semibold">
           {t('layers.noLayers')}
         </p>
-        <p
-          style={{
-            fontSize: '11px',
-            fontFamily: 'Inter, sans-serif',
-            color: '#888888',
-            margin: 0,
-          }}
-        >
+        <p className="text-[11px] font-sans text-text-secondary m-0">
           {t('layers.noLayersHint')}
         </p>
       </div>
@@ -351,20 +242,8 @@ export function LayersPanel() {
     return (
       <div>
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            paddingLeft: `${8 + depth * 16}px`,
-            paddingRight: '8px',
-            height: '32px',
-            cursor: 'pointer',
-            background: isSelected ? '#1e1e1e' : 'transparent',
-            fontSize: '13px',
-            color: '#f5f5f5',
-            fontFamily: 'Inter, sans-serif',
-            userSelect: 'none',
-          }}
+          style={{ paddingLeft: `${8 + depth * 16}px` }}
+          className={`flex items-center gap-1 pr-2 h-8 cursor-pointer text-[13px] font-sans text-text-primary select-none ${isSelected ? 'bg-surface-raised' : 'hover:bg-surface-raised/60'}`}
           onClick={() => {
             if (isGroup) {
               setTreeCollapsed((c) => ({ ...c, [node.id]: !c[node.id] }));
@@ -372,61 +251,38 @@ export function LayersPanel() {
               selectLayer(node.id);
             }
           }}
-          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'rgba(30,30,30,0.6)'; }}
-          onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
         >
           {isGroup ? (
             <ChevronRight
               size={12}
-              style={{
-                transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
-                transition: 'transform 0.15s',
-                flexShrink: 0,
-                color: '#666',
-                width: '16px',
-              }}
+              style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.15s' }}
+              className="shrink-0 text-[#666] w-4"
             />
           ) : (
-            <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, width: '16px' }}>
+            <span className="flex items-center shrink-0 w-4">
               <TypeIcon type={node.type as LayerItem['type']} />
             </span>
           )}
-          <span style={{
-            flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            fontWeight: isGroup ? 600 : 400,
-            color: isGroup ? '#aaa' : '#f5f5f5',
-          }}>
+          <span className={`flex-1 overflow-hidden text-ellipsis whitespace-nowrap ${isGroup ? 'font-semibold text-[#aaa]' : 'font-normal text-text-primary'}`}>
             {node.name}
           </span>
           {isGroup && (
-            <span style={{ fontSize: '10px', color: '#555', flexShrink: 0 }}>
+            <span className="text-[10px] text-[#555] shrink-0 mr-1">
               {node.childCount}
             </span>
           )}
-          {!isGroup && layer && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleVisibility(node.id); }}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: '20px', height: '20px', background: 'transparent',
-                  border: 'none', cursor: 'pointer', color: '#888', flexShrink: 0, padding: 0,
-                }}
-              >
-                {layer.visible ? <Eye size={14} /> : <EyeOff size={14} />}
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleLock(node.id); }}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: '20px', height: '20px', background: 'transparent',
-                  border: 'none', cursor: 'pointer', color: '#888', flexShrink: 0, padding: 0,
-                }}
-              >
-                {layer.locked ? <Lock size={14} /> : <Unlock size={14} />}
-              </button>
-            </>
-          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleVisibility(node.id); }}
+            className="flex items-center justify-center w-5 h-5 bg-transparent border-0 cursor-pointer text-text-secondary hover:text-text-primary shrink-0 p-0"
+          >
+            {layer?.visible !== false ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleLock(node.id); }}
+            className="flex items-center justify-center w-5 h-5 bg-transparent border-0 cursor-pointer text-text-secondary hover:text-text-primary shrink-0 p-0"
+          >
+            {layer?.locked ? <Lock size={14} /> : <Unlock size={14} />}
+          </button>
         </div>
         {isGroup && isOpen && node.children.map((child) => (
           <TreeNode key={child.id} node={child} depth={depth + 1} />
@@ -438,29 +294,22 @@ export function LayersPanel() {
   return (
     <div>
       {/* View toggle */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a' }}>
-          {(['type', 'grouping'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              style={{
-                flex: 1, padding: '5px', fontSize: '10px', fontWeight: 600,
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: viewMode === mode ? '#f5f5f5' : '#555',
-                borderBottom: viewMode === mode ? '2px solid #6366f1' : '2px solid transparent',
-                fontFamily: 'Inter, sans-serif',
-              }}
-            >
-              {t(mode === 'type' ? 'layerGroups.byType' : 'layerGroups.byGrouping')}
-            </button>
-          ))}
-        </div>
+      <div className="flex border-b border-border">
+        {(['type', 'grouping'] as const).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={`flex-1 py-[5px] text-[10px] font-semibold uppercase tracking-[0.08em] font-sans bg-transparent border-0 cursor-pointer border-b-2 ${viewMode === mode ? 'text-text-primary border-accent' : 'text-[#555] border-transparent'}`}
+          >
+            {t(mode === 'type' ? 'layerGroups.byType' : 'layerGroups.byGrouping')}
+          </button>
+        ))}
+      </div>
 
       {viewMode === 'type' ? (
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={layers.map((l) => l.id)} strategy={verticalListSortingStrategy}>
-            <div style={{ paddingTop: '4px', paddingBottom: '4px' }}>
+            <div className="py-1">
               {groupOrder.map((groupKey) => {
                 const items = grouped.get(groupKey)!;
                 if (items.length === 0) return null;
@@ -469,20 +318,15 @@ export function LayersPanel() {
                   <div key={groupKey}>
                     <button
                       onClick={() => setCollapsed((c) => ({ ...c, [groupKey]: !c[groupKey] }))}
-                      style={{
-                        width: '100%', padding: '6px 12px', fontSize: '10px',
-                        fontWeight: 600, color: '#666', textTransform: 'uppercase',
-                        letterSpacing: '0.08em', fontFamily: 'Inter, sans-serif',
-                        background: 'transparent', border: 'none', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '4px', textAlign: 'left',
-                      }}
+                      className="w-full px-3 py-[6px] text-[10px] font-semibold text-[#666] uppercase tracking-[0.08em] font-sans bg-transparent border-0 cursor-pointer flex items-center gap-1 text-left"
                     >
                       <ChevronRight
                         size={12}
                         style={{
                           transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-                          transition: 'transform 0.15s', flexShrink: 0,
+                          transition: 'transform 0.15s',
                         }}
+                        className="shrink-0"
                       />
                       {groupLabels[groupKey]} ({items.length})
                     </button>
@@ -504,14 +348,14 @@ export function LayersPanel() {
           </SortableContext>
         </DndContext>
       ) : (
-        <div style={{ paddingTop: '4px', paddingBottom: '4px' }}>
-          {hasGroups ? (
+        <div className="py-1">
+          {groupTree.length > 0 ? (
             groupTree.map((node) => (
               <TreeNode key={node.id} node={node} />
             ))
           ) : (
-            <p style={{ padding: '16px', fontSize: '11px', color: '#555', fontFamily: 'Inter, sans-serif', margin: 0 }}>
-              {t('layerGroups.noGroups')}
+            <p className="p-4 text-[11px] font-sans text-[#555] m-0">
+              {t('layers.noLayers')}
             </p>
           )}
         </div>

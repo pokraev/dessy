@@ -1,6 +1,7 @@
 import type { Canvas } from 'fabric';
 import type { ProjectMeta } from '@/types/project';
 import { CUSTOM_PROPS } from './element-factory';
+import { loadCanvasJSON } from './load-canvas-json';
 
 const FILE_VERSION = '1.0';
 
@@ -9,7 +10,7 @@ export function exportProjectJSON(canvas: Canvas, meta: ProjectMeta): void {
     version: FILE_VERSION,
     exportedAt: new Date().toISOString(),
     meta,
-    canvas: canvas.toDatalessJSON([...CUSTOM_PROPS]),
+    canvas: canvas.toObject([...CUSTOM_PROPS]),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -25,11 +26,16 @@ export async function importProjectJSON(
   file: File
 ): Promise<ProjectMeta> {
   const text = await file.text();
-  const data = JSON.parse(text);
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('Invalid project file — could not parse JSON');
+  }
   if (!data.version || !data.canvas || !data.meta) {
     throw new Error('Invalid Dessy project file');
   }
-  await canvas.loadFromJSON(data.canvas);
+  await loadCanvasJSON(canvas, data.canvas);
   canvas.renderAll();
   return data.meta;
 }

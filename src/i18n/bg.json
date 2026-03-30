@@ -236,7 +236,10 @@
     "loadIntoEditor": "Зареди в редактора",
     "tryAgain": "Опитай отново",
     "regenerate": "Регенерирай",
-    "maxObjects": "Макс. елементи:"
+    "maxObjects": "Макс. елементи:",
+    "tabPrompt": "Промпт",
+    "tabPhoto": "Снимка",
+    "tabSketch": "Скица"
   },
   "foldType": {
     "single": "Единична страница",
@@ -337,6 +340,17 @@
     "bg": "Български",
     "en": "English"
   },
+  "settings": {
+    "title": "Настройки",
+    "language": "Език",
+    "activeProvider": "Активен AI доставчик",
+    "apiKeys": "API ключове",
+    "configured": "Конфигуриран",
+    "notSet": "Не е зададен",
+    "save": "Запази",
+    "clear": "Изтрий",
+    "getKey": "Вземи ключ"
+  },
   "dashboard": {
     "newLeaflet": "Нова листовка",
     "emptyHeading": "Създайте първата си листовка",
@@ -364,6 +378,7 @@
     "noThumbnail": "",
     "errorLoadProject": "Проектът не може да бъде отворен. Данните може да са повредени.",
     "errorDeleteProject": "Проектът не може да бъде изтрит. Опитайте отново.",
-    "successDuplicate": "Проектът е дублиран."
+    "successDuplicate": "Проектът е дублиран.",
+    "copyOf": "Копие на"
   }
 }

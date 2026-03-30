@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { usePromptCrafterStore } from '@/stores/promptCrafterStore';
 import type { ImageHistoryEntry } from '@/types/promptCrafter';
 

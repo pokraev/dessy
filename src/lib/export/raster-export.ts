@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import type { Canvas } from 'fabric';
 import type { Page } from '@/types/project';
+import type { FabricObjectWithCustom } from '@/types/fabric-custom';
 import {
   collectAllPageData,
   DPI_MULTIPLIERS,
@@ -15,7 +16,7 @@ import {
  * Render a single page's JSON onto a temporary off-screen Fabric canvas
  * and return a Blob of the rasterized output.
  */
-async function renderPageToBlob(
+export async function renderPageToBlob(
   pageData: PageExportData,
   docWidth: number,
   docHeight: number,
@@ -35,7 +36,8 @@ async function renderPageToBlob(
 
   try {
     // Load page JSON into the temp canvas
-    await tempCanvas.loadFromJSON(pageData.canvasJSON);
+    const { loadCanvasJSON } = await import('@/lib/fabric/load-canvas-json');
+    await loadCanvasJSON(tempCanvas, pageData.canvasJSON);
 
     // Strip before:render listeners to avoid AligningGuidelines crash.
     // The plugin hooks into before:render and tries to access an overlay context
@@ -48,8 +50,7 @@ async function renderPageToBlob(
     tempCanvas.renderAll();
 
     // Find the document background rect to get exact document bounds
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bgRect = tempCanvas.getObjects().find((o: any) => o._isDocBackground);
+    const bgRect = tempCanvas.getObjects().find((o) => (o as FabricObjectWithCustom)._isDocBackground);
     const left = bgRect?.left ?? 0;
     const top = bgRect?.top ?? 0;
     const width = (bgRect?.width ?? docWidth) * (bgRect?.scaleX ?? 1);

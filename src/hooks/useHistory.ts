@@ -3,12 +3,13 @@ import type { Canvas } from 'fabric';
 import { toast } from 'react-hot-toast';
 import i18n from '@/i18n';
 import { CUSTOM_PROPS } from '@/lib/fabric/element-factory';
+import { loadCanvasJSON } from '@/lib/fabric/load-canvas-json';
 import { useCanvasStore } from '@/stores/canvasStore';
 
 const MAX_STEPS = 50;
 
 /**
- * createHistory — undo/redo with toDatalessJSON snapshots.
+ * createHistory — undo/redo with toObject snapshots.
  *
  * Returns a history object (not a hook) so it can be created once per canvas
  * and used across multiple React components without violating hooks rules.
@@ -19,8 +20,8 @@ const MAX_STEPS = 50;
  * - isProcessing: prevents recursive capture during loadFromJSON restore
  * - maxSteps: 50 (CANV-07)
  *
- * Each stack entry is a serialized JSON string produced by toDatalessJSON.
- * Using toDatalessJSON (not toJSON) keeps image data as references, not base64 blobs.
+ * Each stack entry is a serialized JSON string produced by toObject.
+ * Using toObject with CUSTOM_PROPS ensures all custom properties are preserved in snapshots.
  */
 export function createHistory() {
   const undoStack: string[] = [];
@@ -28,10 +29,12 @@ export function createHistory() {
   let currentState: string | null = null;
   let isProcessing = false;
 
-  /** Serialize canvas to a JSON string using toDatalessJSON with custom props. */
+  /** Serialize canvas to a JSON string using toObject with CUSTOM_PROPS.
+   *  toObject captures all registered custom properties alongside standard Fabric.js data,
+   *  making snapshots self-contained for undo/redo. */
   function serialize(canvas: Canvas): string {
     return JSON.stringify(
-      canvas.toDatalessJSON(CUSTOM_PROPS as unknown as string[])
+      canvas.toObject(CUSTOM_PROPS as unknown as string[])
     );
   }
 
@@ -91,7 +94,11 @@ export function createHistory() {
     currentState = restoredSnapshot;
 
     // Restore canvas — MUST await (Fabric.js 7 async)
-    await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    try {
+      await loadCanvasJSON(canvas, JSON.parse(restoredSnapshot));
+    } catch {
+      // Image load failure during undo is non-fatal — canvas renders without that image
+    }
     canvas.renderAll();
 
     isProcessing = false;
@@ -119,7 +126,11 @@ export function createHistory() {
     const restoredSnapshot = redoStack.pop()!;
     currentState = restoredSnapshot;
 
-    await canvas.loadFromJSON(JSON.parse(restoredSnapshot));
+    try {
+      await loadCanvasJSON(canvas, JSON.parse(restoredSnapshot));
+    } catch {
+      // Image load failure during redo is non-fatal
+    }
     canvas.renderAll();
 
     isProcessing = false;

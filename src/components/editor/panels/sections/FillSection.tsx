@@ -17,6 +17,12 @@ function updateCanvasObject(updates: Record<string, unknown>) {
   const canvas = useCanvasStore.getState().canvasRef;
   const obj = canvas?.getActiveObject();
   if (!obj || !canvas) return;
+  // For text objects in editing mode: exit editing first so fill applies to the whole object
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const textObj = obj as any;
+  if (textObj.isEditing && typeof textObj.exitEditing === 'function') {
+    textObj.exitEditing();
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (obj as any).set(updates);
   obj.setCoords();
@@ -102,7 +108,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
   );
 
   const handleClearFill = useCallback(() => {
-    updateCanvasObject({ fill: '' });
+    updateCanvasObject({ fill: 'transparent' });
   }, []);
 
   const modeButtonStyle = (active: boolean): React.CSSProperties => ({
@@ -161,7 +167,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
           {/* Fill type toggle row */}
           {canGradient && (
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-              <button style={modeButtonStyle(fillMode === 'solid')} onClick={() => setFillMode('solid')}>
+              <button style={modeButtonStyle(fillMode === 'solid')} onClick={() => { setFillMode('solid'); updateCanvasObject({ fill: solidColor }); }}>
                 {t('fill.solid')}
               </button>
               <button style={modeButtonStyle(fillMode === 'gradient')} onClick={() => setFillMode('gradient')}>
@@ -175,7 +181,7 @@ export function FillSection({ snapshot }: FillSectionProps) {
 
           {!canGradient && (
             <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-              <button style={modeButtonStyle(fillMode !== 'none')} onClick={() => setFillMode('solid')}>
+              <button style={modeButtonStyle(fillMode !== 'none')} onClick={() => { setFillMode('solid'); updateCanvasObject({ fill: solidColor }); }}>
                 {t('fill.solid')}
               </button>
               <button style={modeButtonStyle(fillMode === 'none')} onClick={() => { setFillMode('none'); handleClearFill(); }}>

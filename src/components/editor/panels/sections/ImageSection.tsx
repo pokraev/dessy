@@ -70,7 +70,7 @@ export function ImageSection({ snapshot }: Props) {
     if (fileRef.current) fileRef.current.value = '';
   }
 
-  function handleRemoveImage() {
+  async function handleRemoveImage() {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) return;
 
@@ -80,7 +80,7 @@ export function ImageSection({ snapshot }: Props) {
     useCanvasStore.getState().captureUndoState?.();
 
     // Replace with a placeholder rect
-    const { Rect } = require('fabric');
+    const { Rect } = await import('fabric');
     const rect = new Rect({
       left: obj.left,
       top: obj.top,

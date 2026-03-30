@@ -236,7 +236,10 @@
     "loadIntoEditor": "Load into Editor",
     "tryAgain": "Try Again",
     "regenerate": "Regenerate",
-    "maxObjects": "Max elements:"
+    "maxObjects": "Max elements:",
+    "tabPrompt": "Prompt",
+    "tabPhoto": "Photo",
+    "tabSketch": "Sketch"
   },
   "foldType": {
     "single": "Single Page",
@@ -337,6 +340,17 @@
     "bg": "Български",
     "en": "English"
   },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "activeProvider": "Active AI Provider",
+    "apiKeys": "API Keys",
+    "configured": "Configured",
+    "notSet": "Not set",
+    "save": "Save",
+    "clear": "Clear",
+    "getKey": "Get key"
+  },
   "dashboard": {
     "newLeaflet": "New Leaflet",
     "emptyHeading": "Create your first leaflet",
@@ -364,6 +378,7 @@
     "noThumbnail": "",
     "errorLoadProject": "Could not open project. The data may be corrupted.",
     "errorDeleteProject": "Could not delete project. Try again.",
-    "successDuplicate": "Project duplicated."
+    "successDuplicate": "Project duplicated.",
+    "copyOf": "Copy of"
   }
 }

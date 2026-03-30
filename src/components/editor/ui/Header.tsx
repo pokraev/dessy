@@ -1,7 +1,8 @@
 
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe, Wand2 } from 'lucide-react';
+import { Undo2, Redo2, Download, Upload, Save, Sparkles, Trash2, Globe, Settings } from 'lucide-react';
+import { SettingsModal } from '@/components/editor/modals/SettingsModal';
 import { setLanguage } from '@/i18n';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useAppStore } from '@/stores/appStore';
@@ -16,6 +17,7 @@ export function Header() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateModalOpen = useEditorStore((s) => s.generateModalOpen);
@@ -134,29 +136,6 @@ export function Header() {
           {t('header.aiGenerate')}
         </button>
 
-        {/* AI Image button */}
-        <button
-          aria-label="AI Image"
-          title="AI Image"
-          className="flex items-center gap-1.5 text-white font-medium"
-          style={{
-            height: '32px',
-            paddingLeft: '12px',
-            paddingRight: '12px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            border: 'none',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.1)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1)'; }}
-          onClick={() => { useEditorStore.getState().setPromptCrafterModalOpen(true); }}
-        >
-          <Wand2 size={14} />
-          AI Image
-        </button>
       </div>
 
       {/* Center: Undo/Redo */}
@@ -303,6 +282,24 @@ export function Header() {
         <div style={{ width: '1px', height: '20px', background: '#2a2a2a', flexShrink: 0 }} />
 
         <button
+          aria-label={t('settings.title', 'Settings')}
+          className="flex items-center gap-1.5 justify-center transition-colors"
+          style={{
+            height: '32px',
+            paddingLeft: '10px',
+            paddingRight: '10px',
+            borderRadius: '8px',
+            background: 'transparent',
+            border: '1px solid #2a2a2a',
+            cursor: 'pointer',
+            color: '#888',
+          }}
+          onClick={() => setShowSettings(true)}
+        >
+          <Settings size={14} />
+        </button>
+
+        <button
           aria-label={t('header.clearCanvas')}
           className="flex items-center gap-1.5 justify-center transition-colors"
           style={{
@@ -417,6 +414,10 @@ export function Header() {
       <PromptCrafterModal
         open={promptCrafterModalOpen}
         onClose={() => useEditorStore.getState().setPromptCrafterModalOpen(false)}
+      />
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
       />
     </header>
   );

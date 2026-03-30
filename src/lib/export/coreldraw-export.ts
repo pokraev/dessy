@@ -66,7 +66,8 @@ async function renderPageToSVG(
     height: canvasHeight,
   });
 
-  await tempCanvas.loadFromJSON(canvasJSON);
+  const { loadCanvasJSON } = await import('@/lib/fabric/load-canvas-json');
+  await loadCanvasJSON(tempCanvas, canvasJSON);
   tempCanvas.renderAll();
 
   const svgString = tempCanvas.toSVG({

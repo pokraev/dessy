@@ -1,7 +1,8 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { Canvas, FabricObject } from 'fabric';
 import { useCanvasStore } from '@/stores/canvasStore';
+import type { FabricObjectWithCustom } from '@/types/fabric-custom';
 
 export type LayerType = 'text' | 'image' | 'shape' | 'colorBlock';
 
@@ -23,14 +24,6 @@ export interface GroupTreeNode {
   childCount: number; // total leaf objects (recursive)
 }
 
-type FabricObjectWithCustom = FabricObject & {
-  id?: string;
-  name?: string;
-  customType?: string;
-  locked?: boolean;
-  __layerId?: string;
-};
-
 function mapCustomType(customType: string | undefined): LayerType {
   if (customType === 'text') return 'text';
   if (customType === 'image') return 'image';
@@ -41,35 +34,56 @@ function mapCustomType(customType: string | undefined): LayerType {
 function getObjectId(obj: FabricObjectWithCustom): string {
   if (obj.id) return obj.id;
   // Assign a stable layer ID if none exists
-  if (!obj.__layerId) {
-    obj.__layerId = crypto.randomUUID();
+  if (!obj.layerId) {
+    obj.layerId = crypto.randomUUID();
   }
-  return obj.__layerId;
+  return obj.layerId;
 }
 
 function extractLayers(canvas: Canvas): LayerItem[] {
-  const objects = canvas.getObjects() as (FabricObjectWithCustom & { _isDocBackground?: boolean })[];
+  const result: LayerItem[] = [];
+
+  function collectObjects(objects: FabricObject[]) {
+    for (const obj of objects) {
+      const custom = obj as FabricObjectWithCustom & { getObjects?: () => FabricObject[] };
+      if (custom._isDocBackground) continue;
+      // Include group itself and recurse into children
+      if (obj.type === 'group' && custom.getObjects) {
+        result.push({
+          id: getObjectId(custom),
+          name: custom.name ?? 'Group',
+          type: mapCustomType(custom.customType),
+          visible: obj.visible !== false,
+          locked: custom.locked === true,
+          top: obj.top ?? 0,
+          left: obj.left ?? 0,
+        });
+        collectObjects(custom.getObjects());
+      } else {
+        result.push({
+          id: getObjectId(custom),
+          name: custom.name ?? custom.customType ?? 'Layer',
+          type: mapCustomType(custom.customType),
+          visible: obj.visible !== false,
+          locked: custom.locked === true,
+          top: obj.top ?? 0,
+          left: obj.left ?? 0,
+        });
+      }
+    }
+  }
+
+  collectObjects(canvas.getObjects());
   // Reverse so top-most object appears first in the list (Figma convention)
-  // Filter out the document background rect
-  return [...objects]
-    .reverse()
-    .filter((obj) => !obj._isDocBackground)
-    .map((obj) => ({
-      id: getObjectId(obj),
-      name: obj.name ?? obj.customType ?? 'Layer',
-      type: mapCustomType(obj.customType),
-      visible: obj.visible !== false,
-      locked: obj.locked === true,
-      top: obj.top ?? 0,
-      left: obj.left ?? 0,
-    }));
+  result.reverse();
+  return result;
 }
 
 function buildGroupTree(canvas: Canvas): GroupTreeNode[] {
-  const objects = canvas.getObjects() as (FabricObjectWithCustom & { _isDocBackground?: boolean; getObjects?: () => FabricObject[] })[];
+  const objects = canvas.getObjects() as (FabricObjectWithCustom & { getObjects?: () => FabricObject[] })[];
 
   function buildNode(obj: FabricObjectWithCustom & { getObjects?: () => FabricObject[] }): GroupTreeNode {
-    if (obj.type === 'Group' && obj.getObjects) {
+    if (obj.type === 'group' && obj.getObjects) {
       const groupChildren = obj.getObjects();
       const children = groupChildren.map((child) =>
         buildNode(child as FabricObjectWithCustom & { getObjects?: () => FabricObject[] })
@@ -125,6 +139,7 @@ interface UseCanvasLayersReturn {
 export function useCanvasLayers(): UseCanvasLayersReturn {
   const [layers, setLayers] = useState<LayerItem[]>([]);
   const [groupTree, setGroupTree] = useState<GroupTreeNode[]>([]);
+  const attachedCanvasRef = useRef<Canvas | null>(null);
 
   const syncLayers = useCallback(() => {
     const canvas = useCanvasStore.getState().canvasRef;
@@ -169,15 +184,19 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
   }, [syncLayers]);
 
   function attachCanvasListeners(canvas: Canvas) {
+    if (attachedCanvasRef.current === canvas) return;
+    if (attachedCanvasRef.current) detachCanvasListeners(attachedCanvasRef.current);
     canvas.on('object:added', syncLayers);
     canvas.on('object:removed', syncLayers);
     canvas.on('object:modified', syncLayers);
+    attachedCanvasRef.current = canvas;
   }
 
   function detachCanvasListeners(canvas: Canvas) {
     canvas.off('object:added', syncLayers);
     canvas.off('object:removed', syncLayers);
     canvas.off('object:modified', syncLayers);
+    if (attachedCanvasRef.current === canvas) attachedCanvasRef.current = null;
   }
 
   const moveLayer = useCallback((fromIndex: number, toIndex: number) => {
@@ -197,12 +216,27 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
     syncLayers();
   }, [syncLayers]);
 
+  // Find an object by id, recursing into groups
+  const findObjectById = useCallback((canvas: Canvas, id: string): FabricObjectWithCustom | undefined => {
+    function search(objects: FabricObject[]): FabricObjectWithCustom | undefined {
+      for (const o of objects) {
+        const custom = o as FabricObjectWithCustom & { getObjects?: () => FabricObject[] };
+        if (getObjectId(custom) === id) return custom;
+        if (o.type === 'group' && custom.getObjects) {
+          const found = search(custom.getObjects());
+          if (found) return found;
+        }
+      }
+      return undefined;
+    }
+    return search(canvas.getObjects());
+  }, []);
+
   const toggleVisibility = useCallback((id: string) => {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) return;
 
-    const objects = canvas.getObjects() as FabricObjectWithCustom[];
-    const obj = objects.find((o) => getObjectId(o) === id);
+    const obj = findObjectById(canvas, id);
     if (!obj) return;
 
     obj.set({ visible: !obj.visible });
@@ -214,8 +248,7 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) return;
 
-    const objects = canvas.getObjects() as FabricObjectWithCustom[];
-    const obj = objects.find((o) => getObjectId(o) === id);
+    const obj = findObjectById(canvas, id);
     if (!obj) return;
 
     const locked = !obj.locked;
@@ -232,8 +265,7 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) return;
 
-    const objects = canvas.getObjects() as FabricObjectWithCustom[];
-    const obj = objects.find((o) => getObjectId(o) === id);
+    const obj = findObjectById(canvas, id);
     if (!obj) return;
 
     (obj as FabricObjectWithCustom).name = newName.trim() || 'Layer';
@@ -244,8 +276,7 @@ export function useCanvasLayers(): UseCanvasLayersReturn {
     const canvas = useCanvasStore.getState().canvasRef;
     if (!canvas) return;
 
-    const objects = canvas.getObjects() as FabricObjectWithCustom[];
-    const obj = objects.find((o) => getObjectId(o) === id);
+    const obj = findObjectById(canvas, id);
     if (!obj) return;
 
     canvas.setActiveObject(obj);

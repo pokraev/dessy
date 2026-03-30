@@ -1,10 +1,10 @@
 import { describe, it, expect } from '@jest/globals';
 
 describe('thumbnailDb', () => {
-  it.todo('saveThumbnail stores a blob in IndexedDB');
-  it.todo('getThumbnail retrieves a blob URL for existing key');
-  it.todo('getThumbnail returns null for missing key');
-  it.todo('deleteThumbnail removes the entry');
+  it.skip('saveThumbnail stores a blob in IndexedDB — requires IDB mock', () => {});
+  it.skip('getThumbnail retrieves a blob URL for existing key — requires IDB mock', () => {});
+  it.skip('getThumbnail returns null for missing key — requires IDB mock', () => {});
+  it.skip('deleteThumbnail removes the entry — requires IDB mock', () => {});
 
   it('stub passes', () => {
     expect(true).toBe(true);

@@ -2,10 +2,9 @@
  * Element Factory tests — TDD RED phase
  * Tests all 5 element types: text frame, image frame, shape, color block, group
  */
-import { vi } from 'vitest';
 
 // Mock fabric to avoid browser-only APIs in tests
-vi.mock('fabric', () => {
+jest.mock('fabric', () => {
   class MockFabricObj {
     [key: string]: unknown;
     constructor(opts?: Record<string, unknown>) {

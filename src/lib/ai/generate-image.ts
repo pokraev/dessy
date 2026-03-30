@@ -16,6 +16,55 @@ export async function enrichPrompt(
   baseDescription: string,
   frameContext: FrameContext
 ): Promise<PromptVariations> {
+  try {
+    return await enrichPromptGemini(apiKey, baseDescription, frameContext);
+  } catch {
+    // Fallback to OpenAI
+    const { getOpenAIApiKey } = await import('@/lib/storage/apiKeyStorage');
+    const openaiKey = getOpenAIApiKey();
+    if (openaiKey) {
+      return enrichPromptOpenAI(openaiKey, baseDescription, frameContext);
+    }
+    throw new Error('Prompt enrichment failed. Check your API keys in Settings.');
+  }
+}
+
+async function enrichPromptOpenAI(
+  apiKey: string,
+  baseDescription: string,
+  frameContext: FrameContext
+): Promise<PromptVariations> {
+  const systemPrompt = buildEnrichmentSystemPrompt(frameContext);
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'gpt-4.1',
+      max_tokens: 1024,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: baseDescription },
+      ],
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+  if (!response.ok) throw new Error(`OpenAI error ${response.status}`);
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content ?? '{}';
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  try {
+    return JSON.parse(fenceMatch ? fenceMatch[1] : text) as PromptVariations;
+  } catch {
+    throw new Error('Failed to parse OpenAI enrichment response');
+  }
+}
+
+async function enrichPromptGemini(
+  apiKey: string,
+  baseDescription: string,
+  frameContext: FrameContext
+): Promise<PromptVariations> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120_000);
 
@@ -136,6 +185,69 @@ export async function callGeminiImage(
 
     const { mime_type, data: base64Data } = imagePart.inline_data;
     return `data:${mime_type};base64,${base64Data}`;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Calls the OpenAI DALL-E 3 image generation API.
+ * Returns a data URL: "data:image/png;base64,{data}".
+ */
+export async function callOpenAIImage(
+  apiKey: string,
+  prompt: string,
+  aspectRatio?: string
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  // Map aspect ratio to DALL-E size
+  let size: '1024x1024' | '1792x1024' | '1024x1792' = '1024x1024';
+  if (aspectRatio) {
+    const [w, h] = aspectRatio.split(':').map(Number);
+    if (w && h) {
+      const ratio = w / h;
+      if (ratio > 1.3) size = '1792x1024';
+      else if (ratio < 0.77) size = '1024x1792';
+    }
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size,
+        response_format: 'b64_json',
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      if (response.status === 429) {
+        throw new Error('OpenAI rate limit reached. Please try again in a moment.');
+      }
+      throw new Error(`OpenAI image generation failed (${response.status}): ${errorBody}`);
+    }
+
+    const data = (await response.json()) as {
+      data: Array<{ b64_json: string }>;
+    };
+
+    const base64Data = data.data[0]?.b64_json;
+    if (!base64Data) {
+      throw new Error('No image in OpenAI response');
+    }
+
+    return `data:image/png;base64,${base64Data}`;
   } finally {
     clearTimeout(timeout);
   }
@@ -305,6 +417,7 @@ export async function placeImageIntoFrame(
   canvas.setActiveObject(img as unknown as import('fabric').FabricObject);
   canvas.requestRenderAll();
 
-  // Persist to IndexedDB (fire-and-forget — imageId already passed in)
-  await storeImage(blob);
+  // Persist to IndexedDB and use the returned ID
+  const storedImageId = await storeImage(blob);
+  (img as unknown as Record<string, unknown>).imageId = storedImageId;
 }

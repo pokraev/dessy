@@ -21,7 +21,8 @@ export const useBrandStore = create<BrandState>((set) => ({
   setTypographyPresets: (presets) => set({ typographyPresets: presets }),
   addRecentColor: (hex) =>
     set((state) => {
-      const deduped = [hex, ...state.recentColors.filter((c) => c !== hex)];
+      const normalized = hex.toLowerCase();
+      const deduped = [normalized, ...state.recentColors.filter((c) => c.toLowerCase() !== normalized)];
       return { recentColors: deduped.slice(0, 12) };
     }),
   addBrandSwatch: (swatch) =>

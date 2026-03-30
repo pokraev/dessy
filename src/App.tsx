@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { EditorLayout } from '@/components/editor/EditorLayout';
@@ -13,12 +13,11 @@ import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 import { ensureFormatPageCount } from '@/lib/pages/page-crud';
-import { saveThumbnail } from '@/lib/storage/thumbnailDb';
 import { useAppStore } from '@/stores/appStore';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import type { LeafletFormatId } from '@/types/project';
 
-const EditorCanvasInner = lazy(() => import('@/components/editor/EditorCanvasInner'));
+import EditorCanvasInner from '@/components/editor/EditorCanvasInner';
 
 const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-headline', name: 'Headline', fontFamily: 'Inter', fontSize: 32, fontWeight: 700, lineHeight: 1.2, letterSpacing: 0, color: '#000000' },
@@ -28,49 +27,6 @@ const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-cta', name: 'CTA', fontFamily: 'Inter', fontSize: 16, fontWeight: 700, lineHeight: 1.2, letterSpacing: 40, color: '#6366f1' },
 ];
 
-export async function captureThumbnail(projectId: string) {
-  const canvas = useCanvasStore.getState().canvasRef;
-  if (!canvas) return;
-
-  // Find the document background rect for crop bounds
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bgRect = canvas.getObjects().find((o: any) => o._isDocBackground);
-  const left = bgRect?.left ?? 0;
-  const top = bgRect?.top ?? 0;
-  const width = (bgRect?.width ?? 595) * (bgRect?.scaleX ?? 1);
-  const height = (bgRect?.height ?? 842) * (bgRect?.scaleY ?? 1);
-
-  // AligningGuidelines hooks into 'before:render' and tries to access an overlay context
-  // that doesn't exist on the temp canvas created by toDataURL/toCanvasElement.
-  // Temporarily remove the listener to prevent the crash.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const listeners = (canvas as any).__eventListeners?.['before:render'];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (listeners) (canvas as any).__eventListeners['before:render'] = [];
-  let dataUrl: string;
-  try {
-    dataUrl = canvas.toDataURL({
-      left, top, width, height,
-      multiplier: 0.15,
-      format: 'jpeg',
-      quality: 0.6,
-    });
-  } finally {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (listeners) (canvas as any).__eventListeners['before:render'] = listeners;
-  }
-
-  await saveThumbnail(projectId, dataUrl);
-}
-
-function CanvasLoading() {
-  const { t } = useTranslation();
-  return (
-    <div className="w-full h-full bg-bg flex items-center justify-center">
-      <p className="text-text-secondary text-[13px]">{t('app.loadingCanvas')}</p>
-    </div>
-  );
-}
 
 function EditorRoot({ projectId }: { projectId: string }) {
   const [formatId, setFormatId] = useState<LeafletFormatId>('A4');
@@ -125,71 +81,43 @@ function EditorRoot({ projectId }: { projectId: string }) {
     }
 
     setReady(true);
-
-    // Subscribe to triggerSave being set by EditorCanvasInner and wrap it with thumbnail capture
-    const unsubscribe = useCanvasStore.subscribe((state, prevState) => {
-      if (state.triggerSave !== prevState.triggerSave && state.triggerSave) {
-        const originalTriggerSave = state.triggerSave;
-        useCanvasStore.setState({
-          triggerSave: () => {
-            originalTriggerSave();
-            captureThumbnail(projectId).catch(() => {
-              // Thumbnail capture failure should not break manual save
-            });
-          },
-        });
-        unsubscribe();
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   const busyMessage = useCanvasStore((s) => s.busyMessage);
+
+  useEffect(() => {
+    if (!busyMessage) return;
+
+    const timer = setTimeout(() => {
+      useCanvasStore.setState({ busyMessage: null });
+    }, 30_000);
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        useCanvasStore.setState({ busyMessage: null });
+      }
+    }
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [busyMessage]);
 
   if (!ready) return null;
 
   return (
     <>
     {busyMessage && (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          zIndex: 999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'all',
-        }}
-      >
-        <div style={{
-          background: '#1e1e1e',
-          border: '1px solid #2a2a2a',
-          borderRadius: '12px',
-          padding: '24px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
-        }}>
-          <div style={{
-            width: '20px',
-            height: '20px',
-            border: '2px solid #6366f1',
-            borderTopColor: 'transparent',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }} />
-          <span style={{ color: '#f5f5f5', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}>
+      <div className="fixed inset-0 bg-black/70 z-[999] flex items-center justify-center pointer-events-auto">
+        <div className="bg-surface-raised border border-border rounded-xl px-8 py-6 flex items-center gap-3 shadow-2xl">
+          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+          <span className="text-text-primary text-sm font-sans">
             {busyMessage}
           </span>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )}
     <EditorLayout
@@ -197,9 +125,7 @@ function EditorRoot({ projectId }: { projectId: string }) {
       leftPanel={<LeftPanel />}
       canvas={
         <CanvasArea>
-          <Suspense fallback={<CanvasLoading />}>
-            <EditorCanvasInner projectId={projectId} formatId={formatId} />
-          </Suspense>
+          <EditorCanvasInner projectId={projectId} formatId={formatId} />
         </CanvasArea>
       }
       rightPanel={<PropertiesPanel />}

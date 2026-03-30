@@ -1,10 +1,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Globe } from 'lucide-react';
+import { ChevronDown, Globe, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { extractBrandFromUrl } from '@/lib/brand/extract-from-url';
-import { getApiKey, getClaudeApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
-import { saveBrand, setActiveBrandId } from '@/lib/storage/brandStorage';
+import { getApiKey, getClaudeApiKey, getOpenAIApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
+import { saveBrand, setActiveBrandId, getSavedBrands, deleteBrand } from '@/lib/storage/brandStorage';
+import { applyBrandToCanvas } from '@/lib/brand/apply-brand';
 import { useBrandStore } from '@/stores/brandStore';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -75,26 +77,49 @@ export function StyleSection() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestRef = useRef<HTMLDivElement>(null);
+  const [savedBrands, setSavedBrands] = useState(getSavedBrands);
+  const [brandsOpen, setBrandsOpen] = useState(true);
+
+  // Refresh saved brands when they change
+  useEffect(() => {
+    function onBrandsChanged() { setSavedBrands(getSavedBrands()); }
+    window.addEventListener('dessy-brands-changed', onBrandsChanged);
+    return () => window.removeEventListener('dessy-brands-changed', onBrandsChanged);
+  }, []);
+
+  async function handleApplyBrand(brand: ReturnType<typeof getSavedBrands>[number]) {
+    if (!canvasRef) return;
+    useCanvasStore.getState().captureUndoState?.();
+    useCanvasStore.getState().setBusyMessage(t('brand.applying', 'Applying brand...'));
+    try {
+      await applyBrandToCanvas(canvasRef, brand);
+      setActiveBrandId(brand.id);
+      toast.success(t('brand.applied', `Applied "${brand.name}"`));
+    } catch {
+      toast.error(t('brand.applyError', 'Failed to apply brand'));
+    } finally {
+      useCanvasStore.getState().setBusyMessage(null);
+    }
+  }
+
+  function handleDeleteBrand(id: string) {
+    deleteBrand(id);
+    setSavedBrands(getSavedBrands());
+    window.dispatchEvent(new Event('dessy-brands-changed'));
+  }
 
   function handleUrlChange(value: string) {
     setWebsiteUrl(value);
     if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current);
-    if (value.trim().length < 2) {
+    const trimmed = value.trim();
+    // If input looks like a URL (contains a dot), skip autocomplete
+    if (trimmed.length < 2 || trimmed.includes('.')) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
-    suggestTimerRef.current = setTimeout(async () => {
-      try {
-        const googleUrl = `https://suggestqueries.google.com/complete/search?client=firefox%26q=${encodeURIComponent(value)}`;
-        const res = await fetch(`https://api.codetabs.com/v1/proxy/?quest=${googleUrl}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const items = (Array.isArray(data[1]) ? data[1] : []) as string[];
-        setSuggestions(items.slice(0, 5));
-        setShowSuggestions(items.length > 0);
-      } catch { /* ignore */ }
-    }, 300);
+    // Autocomplete disabled — CORS proxies are unreliable
+    // Users type the website URL directly
   }
 
   function selectSuggestion(value: string) {
@@ -118,7 +143,7 @@ export function StyleSection() {
   async function handleExtractBrand() {
     if (!websiteUrl.trim()) return;
     const provider = getProvider();
-    const apiKey = provider === 'claude' ? getClaudeApiKey() : getApiKey();
+    const apiKey = provider === 'claude' ? getClaudeApiKey() : provider === 'openai' ? getOpenAIApiKey() : getApiKey();
     if (!apiKey) {
       setExtractError(t('brand.noApiKey'));
       return;
@@ -395,6 +420,75 @@ export function StyleSection() {
           <p style={{ fontSize: '11px', color: '#ef4444', margin: '4px 0 0' }}>{extractError}</p>
         )}
       </div>
+
+      {/* SAVED BRANDS */}
+      {savedBrands.length > 0 && (
+        <div style={{ borderBottom: '1px solid #2a2a2a' }}>
+          <button
+            onClick={() => setBrandsOpen((v) => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              width: '100%', height: '32px', padding: '0 16px',
+              background: 'transparent', border: 'none', cursor: 'pointer',
+            }}
+          >
+            <span style={{ ...sectionHeaderStyle }}>{t('brand.savedBrands', 'Saved Brands')}</span>
+            <ChevronDown size={16} color="#888"
+              style={{ transform: brandsOpen ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform 150ms' }}
+            />
+          </button>
+          {brandsOpen && (
+            <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {savedBrands.map((brand) => (
+                <div
+                  key={brand.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '6px 8px', borderRadius: '6px',
+                    background: '#1e1e1e', border: '1px solid #2a2a2a',
+                  }}
+                >
+                  {/* Color dots */}
+                  <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
+                    {brand.colors.slice(0, 4).map((c) => (
+                      <div key={c.id} style={{
+                        width: '12px', height: '12px', borderRadius: '50%',
+                        background: c.hex, border: '1px solid rgba(255,255,255,0.1)',
+                      }} />
+                    ))}
+                  </div>
+                  {/* Name */}
+                  <span style={{ flex: 1, fontSize: '12px', color: '#f5f5f5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {brand.name}
+                  </span>
+                  {/* Apply button */}
+                  <button
+                    onClick={() => handleApplyBrand(brand)}
+                    style={{
+                      padding: '3px 8px', fontSize: '10px', fontWeight: 600,
+                      background: '#6366f1', color: '#fff', border: 'none',
+                      borderRadius: '4px', cursor: 'pointer', flexShrink: 0,
+                    }}
+                  >
+                    {t('brand.apply', 'Apply')}
+                  </button>
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDeleteBrand(brand.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '20px', height: '20px', background: 'transparent',
+                      border: 'none', cursor: 'pointer', color: '#555', flexShrink: 0, padding: 0,
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* BRAND COLORS */}
       <div style={{ borderBottom: '1px solid #2a2a2a' }}>

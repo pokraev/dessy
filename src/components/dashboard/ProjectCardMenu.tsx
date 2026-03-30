@@ -45,7 +45,8 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
   }
 
   function handleDuplicate() {
-    duplicateProject(project.id);
+    const result = duplicateProject(project.id, t('dashboard.copyOf'));
+    if (result === null) return;
     onRefresh();
     onClose();
     // Show simple toast via console (real toast system is out of scope for this plan)
@@ -54,23 +55,12 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
 
   function handleDeleteConfirm() {
     deleteProject(project.id);
-    deleteThumbnail(project.id);
+    deleteThumbnail(project.id).catch(() => {});
     onRefresh();
     onClose();
   }
 
-  const menuItemBase: React.CSSProperties = {
-    display: 'block',
-    width: '100%',
-    textAlign: 'left',
-    padding: '8px 12px',
-    fontSize: '14px',
-    fontWeight: 400,
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    background: 'transparent',
-  };
+  const menuItemClassName = 'block w-full text-left px-3 py-2 text-sm rounded cursor-pointer bg-transparent border-none hover:bg-border';
 
   return (
     <motion.div
@@ -78,68 +68,24 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.1 }}
-      style={{
-        position: 'absolute',
-        top: '32px',
-        right: '0',
-        background: '#1e1e1e',
-        border: '1px solid #2a2a2a',
-        borderRadius: '8px',
-        padding: '4px',
-        zIndex: 10,
-        minWidth: '140px',
-      }}
+      className="absolute top-8 right-0 bg-surface-raised border border-border rounded-lg p-1 z-10 min-w-[140px]"
     >
       {showDeleteConfirm ? (
         /* Delete confirmation view */
         <div>
-          <p
-            style={{
-              fontSize: '14px',
-              color: '#f5f5f5',
-              padding: '8px 12px',
-              margin: 0,
-              lineHeight: 1.4,
-            }}
-          >
+          <p className="text-sm text-text-primary px-3 py-2 m-0 leading-snug">
             {t('dashboard.deleteConfirm', { name: project.name })}
           </p>
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              padding: '4px 8px 8px',
-            }}
-          >
+          <div className="flex gap-1.5 px-2 pb-2">
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                fontSize: '12px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                background: 'transparent',
-                border: '1px solid #2a2a2a',
-                borderRadius: '6px',
-                color: '#f5f5f5',
-              }}
+              className="flex-1 py-1.5 px-2 text-xs font-medium cursor-pointer bg-transparent border border-border rounded-md text-text-primary hover:bg-border"
             >
               {t('dashboard.cancel')}
             </button>
             <button
               onClick={handleDeleteConfirm}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                fontSize: '12px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                background: '#ef4444',
-                border: 'none',
-                borderRadius: '6px',
-                color: '#fff',
-              }}
+              className="flex-1 py-1.5 px-2 text-xs font-medium cursor-pointer bg-danger border-none rounded-md text-white hover:opacity-90"
             >
               {t('dashboard.deleteConfirmButton')}
             </button>
@@ -150,25 +96,19 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
         <>
           <button
             onClick={handleRename}
-            style={{ ...menuItemBase, color: '#f5f5f5' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#2a2a2a'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            className={`${menuItemClassName} text-text-primary`}
           >
             {t('dashboard.rename')}
           </button>
           <button
             onClick={handleDuplicate}
-            style={{ ...menuItemBase, color: '#f5f5f5' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#2a2a2a'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            className={`${menuItemClassName} text-text-primary`}
           >
             {t('dashboard.duplicate')}
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            style={{ ...menuItemBase, color: '#ef4444' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            className={`${menuItemClassName} text-danger hover:bg-danger/10`}
           >
             {t('dashboard.delete')}
           </button>

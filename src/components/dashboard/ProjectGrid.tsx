@@ -11,13 +11,7 @@ interface Props {
 
 export function ProjectGrid({ projects, onRefresh }: Props) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: '24px',
-      }}
-    >
+    <div className="grid gap-6 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
       {projects.map((project, index) => (
         <motion.div
           key={project.id}

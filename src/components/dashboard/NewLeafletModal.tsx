@@ -90,30 +90,12 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
     onClose();
   }
 
-  const tabButtonStyle = (active: boolean): React.CSSProperties => ({
-    padding: '8px 16px',
-    fontSize: '14px',
-    fontWeight: 600,
-    border: 'none',
-    background: 'none',
-    cursor: 'pointer',
-    color: active ? '#f5f5f5' : '#888',
-    borderBottom: active ? '2px solid #6366f1' : '2px solid transparent',
-    fontFamily: 'Arial',
-  });
+  const isCustomValid = parseFloat(customWidth) > 0 && parseFloat(customHeight) > 0;
 
   return (
     // Backdrop
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.6)',
-        zIndex: 50,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center"
       onClick={onClose}
     >
       {/* Modal panel */}
@@ -121,37 +103,23 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.15 }}
-        style={{
-          background: '#141414',
-          border: '1px solid #2a2a2a',
-          borderRadius: '12px',
-          width: '480px',
-          maxHeight: '80vh',
-          overflowY: 'auto',
-        }}
+        className="bg-surface border border-border rounded-xl w-[480px] max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal={true}
         aria-labelledby="new-leaflet-title"
       >
         {/* Header */}
-        <div
-          style={{
-            padding: '24px 24px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+        <div className="px-6 pt-6 pb-4 flex items-center justify-between">
           <span
             id="new-leaflet-title"
-            style={{ fontSize: '16px', fontWeight: 600, color: '#f5f5f5', fontFamily: 'Arial' }}
+            className="text-sm font-semibold text-text-primary font-sans"
           >
             {t('dashboard.newLeafletTitle')}
           </span>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
+            className="bg-transparent border-none cursor-pointer text-text-secondary flex items-center hover:text-text-primary"
             aria-label="Close"
           >
             <X size={16} />
@@ -159,11 +127,27 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
         </div>
 
         {/* Tab bar */}
-        <div style={{ borderBottom: '1px solid #2a2a2a', display: 'flex', padding: '0 24px' }}>
-          <button style={tabButtonStyle(activeTab === 'blank')} onClick={() => setActiveTab('blank')}>
+        <div className="border-b border-border flex px-6">
+          <button
+            className={[
+              'px-4 py-2 text-sm font-semibold border-b-2 bg-transparent border-x-0 border-t-0 cursor-pointer font-sans',
+              activeTab === 'blank'
+                ? 'text-text-primary border-accent'
+                : 'text-text-secondary border-transparent',
+            ].join(' ')}
+            onClick={() => setActiveTab('blank')}
+          >
             {t('dashboard.tabBlank')}
           </button>
-          <button style={tabButtonStyle(activeTab === 'templates')} onClick={() => setActiveTab('templates')}>
+          <button
+            className={[
+              'px-4 py-2 text-sm font-semibold border-b-2 bg-transparent border-x-0 border-t-0 cursor-pointer font-sans',
+              activeTab === 'templates'
+                ? 'text-text-primary border-accent'
+                : 'text-text-secondary border-transparent',
+            ].join(' ')}
+            onClick={() => setActiveTab('templates')}
+          >
             {t('dashboard.tabTemplates')}
           </button>
         </div>
@@ -172,14 +156,7 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
         {activeTab === 'blank' && (
           <div>
             {/* Format cards grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                padding: '16px 24px',
-              }}
-            >
+            <div className="grid grid-cols-3 gap-3 px-6 py-4">
               {FORMAT_CARDS.map((card) => (
                 <div
                   key={card.id}
@@ -192,25 +169,12 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
                       handleFormatClick(card);
                     }
                   }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = '#6366f1';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a2a';
-                  }}
-                  style={{
-                    background: '#1e1e1e',
-                    border: '1px solid #2a2a2a',
-                    borderRadius: '8px',
-                    padding: '16px 8px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                  }}
+                  className="bg-surface-raised border border-border hover:border-accent rounded-lg py-4 px-2 text-center cursor-pointer transition-colors"
                 >
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#f5f5f5', fontFamily: 'Arial' }}>
+                  <div className="text-sm font-semibold text-text-primary font-sans">
                     {card.label}
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 400, color: '#888', marginTop: '4px', fontFamily: 'Arial' }}>
+                  <div className="text-xs font-normal text-text-secondary mt-1 font-sans">
                     {card.dimensions}
                   </div>
                 </div>
@@ -219,50 +183,30 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
 
             {/* Custom dimension inputs */}
             {showCustomInputs && (
-              <div style={{ padding: '0 24px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#888', fontFamily: 'Arial', marginBottom: '4px' }}>
+              <div className="px-6 pb-4 flex flex-col gap-3">
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs text-text-secondary font-sans mb-1">
                       {t('dashboard.customWidthLabel')}
                     </label>
                     <input
                       type="number"
                       value={customWidth}
                       onChange={(e) => setCustomWidth(e.target.value)}
-                      style={{
-                        background: '#1e1e1e',
-                        border: '1px solid #2a2a2a',
-                        borderRadius: '4px',
-                        padding: '8px',
-                        color: '#f5f5f5',
-                        fontSize: '14px',
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        fontFamily: 'Arial',
-                      }}
+                      className="bg-surface-raised border border-border rounded px-2 py-2 text-text-primary text-sm w-full box-border font-sans focus:outline-none focus:border-accent"
                       min="1"
                       placeholder="210"
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#888', fontFamily: 'Arial', marginBottom: '4px' }}>
+                  <div className="flex-1">
+                    <label className="block text-xs text-text-secondary font-sans mb-1">
                       {t('dashboard.customHeightLabel')}
                     </label>
                     <input
                       type="number"
                       value={customHeight}
                       onChange={(e) => setCustomHeight(e.target.value)}
-                      style={{
-                        background: '#1e1e1e',
-                        border: '1px solid #2a2a2a',
-                        borderRadius: '4px',
-                        padding: '8px',
-                        color: '#f5f5f5',
-                        fontSize: '14px',
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        fontFamily: 'Arial',
-                      }}
+                      className="bg-surface-raised border border-border rounded px-2 py-2 text-text-primary text-sm w-full box-border font-sans focus:outline-none focus:border-accent"
                       min="1"
                       placeholder="297"
                     />
@@ -270,19 +214,11 @@ export function NewLeafletModal({ onClose }: NewLeafletModalProps) {
                 </div>
                 <button
                   onClick={handleCreateCustom}
-                  disabled={!(parseFloat(customWidth) > 0 && parseFloat(customHeight) > 0)}
-                  style={{
-                    background: '#6366f1',
-                    color: '#f5f5f5',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    fontFamily: 'Arial',
-                    opacity: parseFloat(customWidth) > 0 && parseFloat(customHeight) > 0 ? 1 : 0.4,
-                  }}
+                  disabled={!isCustomValid}
+                  className={[
+                    'bg-accent text-text-primary px-4 py-2 rounded-lg border-none cursor-pointer text-sm font-semibold font-sans hover:bg-accent-hover transition-colors',
+                    !isCustomValid ? 'opacity-40 cursor-not-allowed' : '',
+                  ].join(' ')}
                 >
                   Create
                 </button>

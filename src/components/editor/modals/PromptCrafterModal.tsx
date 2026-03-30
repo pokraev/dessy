@@ -5,10 +5,11 @@ import { X, Loader2 } from 'lucide-react';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { usePromptCrafterStore } from '@/stores/promptCrafterStore';
-import { getApiKey } from '@/lib/storage/apiKeyStorage';
+import { getApiKey, getOpenAIApiKey, getProvider } from '@/lib/storage/apiKeyStorage';
 import {
   enrichPrompt,
   callGeminiImage,
+  callOpenAIImage,
   assemblePrompt,
   snapAspectRatio,
   base64ToBlob,
@@ -143,7 +144,8 @@ export function PromptCrafterModal({ open, onClose }: PromptCrafterModalProps) {
   useEffect(() => {
     if (step !== 'generating') return;
 
-    const apiKey = getApiKey();
+    const provider = getProvider();
+    const apiKey = provider === 'openai' ? getOpenAIApiKey() : getApiKey();
     if (!apiKey || !frameSnapshot) {
       setError(t('promptCrafter.generateError'));
       setStep('customizing');
@@ -154,7 +156,26 @@ export function PromptCrafterModal({ open, onClose }: PromptCrafterModalProps) {
 
     async function doGenerate() {
       try {
-        const dataUrl = await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
+        let dataUrl: string;
+        try {
+          dataUrl = provider === 'openai'
+            ? await callOpenAIImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio)
+            : await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
+        } catch {
+          // Fallback: try the other image provider
+          const { getOpenAIApiKey, getApiKey: getGeminiKey } = await import('@/lib/storage/apiKeyStorage');
+          if (provider !== 'openai') {
+            const openaiKey = getOpenAIApiKey();
+            if (openaiKey) {
+              dataUrl = await callOpenAIImage(openaiKey, assembledPromptText, frameSnapshot!.aspectRatio);
+            } else throw new Error('Image generation failed. No fallback provider available.');
+          } else {
+            const geminiKey = getGeminiKey();
+            if (geminiKey) {
+              dataUrl = await callGeminiImage(geminiKey, assembledPromptText, frameSnapshot!.aspectRatio);
+            } else throw new Error('Image generation failed. No fallback provider available.');
+          }
+        }
         if (cancelled) return;
 
         const blob = base64ToBlob(dataUrl);

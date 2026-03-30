@@ -158,7 +158,85 @@ async function callClaude(
   }
 }
 
+// --- OpenAI ---
+
+async function callOpenAI(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  imageBase64?: string,
+  maxTokens = 16384
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const content: any[] = [];
+
+    if (imageBase64) {
+      content.push({
+        type: 'image_url',
+        image_url: { url: imageBase64 },
+      });
+    }
+
+    content.push({ type: 'text', text: userPrompt });
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1',
+        max_tokens: maxTokens,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt + '\n\nIMPORTANT: Respond with ONLY valid JSON. No markdown code fences.' },
+          { role: 'user', content },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`OpenAI API error ${response.status}: ${errorBody}`);
+    }
+
+    const data = (await response.json()) as {
+      choices: Array<{ message: { content: string }; finish_reason?: string }>;
+    };
+
+    if (data.choices[0]?.finish_reason === 'length') {
+      throw new Error('TRUNCATED');
+    }
+
+    const text = data.choices[0]?.message?.content ?? '';
+    const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+    return fenceMatch ? fenceMatch[1] : text;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // --- Shared ---
+
+async function callWithRetry(
+  fn: (maxTokens?: number) => Promise<string>,
+  retryTokens?: number
+): Promise<string> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof Error && err.message === 'TRUNCATED' && retryTokens) {
+      return fn(retryTokens);
+    }
+    throw err;
+  }
+}
 
 async function callProvider(
   provider: AIProvider,
@@ -167,18 +245,34 @@ async function callProvider(
   userPrompt: string,
   imageBase64?: string,
 ): Promise<string> {
-  if (provider === 'claude') {
-    return callClaude(apiKey, systemPrompt, userPrompt, imageBase64);
-  }
+  const callFn = (p: AIProvider, key: string) => {
+    if (p === 'claude') return () => callClaude(key, systemPrompt, userPrompt, imageBase64);
+    if (p === 'openai') return (maxTokens?: number) => callOpenAI(key, systemPrompt, userPrompt, imageBase64, maxTokens);
+    return (maxTokens?: number) => callGemini(key, systemPrompt, userPrompt, imageBase64, maxTokens);
+  };
 
-  // Gemini — retry with more tokens if truncated
+  const retryTokens = provider === 'gemini' ? 65536 : provider === 'openai' ? 32768 : undefined;
+
   try {
-    return await callGemini(apiKey, systemPrompt, userPrompt, imageBase64);
-  } catch (err) {
-    if (err instanceof Error && err.message === 'TRUNCATED') {
-      return callGemini(apiKey, systemPrompt, userPrompt, imageBase64, 65536);
+    return await callWithRetry(callFn(provider, apiKey), retryTokens);
+  } catch {
+    // Fallback to OpenAI if available and wasn't the primary
+    if (provider !== 'openai') {
+      const { getOpenAIApiKey } = await import('@/lib/storage/apiKeyStorage');
+      const openaiKey = getOpenAIApiKey();
+      if (openaiKey) {
+        return callWithRetry(callFn('openai', openaiKey), 32768);
+      }
     }
-    throw err;
+    // Fallback to Gemini if available and wasn't the primary
+    if (provider !== 'gemini') {
+      const { getApiKey } = await import('@/lib/storage/apiKeyStorage');
+      const geminiKey = getApiKey();
+      if (geminiKey) {
+        return callWithRetry(callFn('gemini', geminiKey), 65536);
+      }
+    }
+    throw new Error('All AI providers failed. Check your API keys in Settings.');
   }
 }
 
@@ -251,7 +345,11 @@ export async function generateLeaflet(
     const retryPrompt =
       'Your previous response was not valid JSON. Please respond with ONLY the JSON object, no markdown or explanation.';
     rawResponse = await callProvider(provider, apiKey, systemPrompt, retryPrompt, image);
-    parsed = JSON.parse(rawResponse);
+    try {
+      parsed = JSON.parse(rawResponse);
+    } catch {
+      throw new Error('AI returned invalid JSON after retry. Please try again.');
+    }
   }
 
   // Normalize and repair
