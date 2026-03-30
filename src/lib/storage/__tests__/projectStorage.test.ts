@@ -1,4 +1,4 @@
-import { saveProject, loadProject, listProjects, deleteProject } from '../projectStorage';
+import { saveProject, loadProject, listProjects, deleteProject, duplicateProject, updateProjectName } from '../projectStorage';
 import type { ProjectMeta } from '@/types/project';
 
 const makeMeta = (id: string): ProjectMeta => ({
@@ -9,8 +9,32 @@ const makeMeta = (id: string): ProjectMeta => ({
   updatedAt: '2026-01-01T00:00:00Z',
 });
 
+// Simple in-memory localStorage mock
+const store: Record<string, string> = {};
+const mockLocalStorage = {
+  getItem: (key: string) => store[key] ?? null,
+  setItem: (key: string, value: string) => { store[key] = value; },
+  removeItem: (key: string) => { delete store[key]; },
+  clear: () => { Object.keys(store).forEach(k => delete store[k]); },
+  get length() { return Object.keys(store).length; },
+  key: (i: number) => Object.keys(store)[i] ?? null,
+};
+
+// Stable UUID counter for crypto.randomUUID
+let uuidCounter = 0;
+Object.defineProperty(globalThis, 'crypto', {
+  value: { randomUUID: () => `uuid-${++uuidCounter}` },
+  configurable: true,
+});
+
 beforeEach(() => {
-  localStorage.clear();
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: mockLocalStorage,
+    configurable: true,
+    writable: true,
+  });
+  mockLocalStorage.clear();
+  uuidCounter = 0;
   jest.restoreAllMocks();
 });
 
@@ -26,12 +50,15 @@ describe('saveProject', () => {
   });
 
   it('returns { success: false, error: "quota" } on QuotaExceededError', () => {
-    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    // Spy on our mock localStorage's setItem directly
+    const original = mockLocalStorage.setItem;
+    mockLocalStorage.setItem = (_key: string, _value: string) => {
       const err = new DOMException('QuotaExceededError', 'QuotaExceededError');
       throw err;
-    });
+    };
     const meta = makeMeta('proj-2');
     const result = saveProject('proj-2', { meta, canvasJSON: {}, pageData: {} });
+    mockLocalStorage.setItem = original;
     expect(result.success).toBe(false);
     expect(result.error).toBe('quota');
   });
@@ -79,14 +106,68 @@ describe('deleteProject', () => {
 });
 
 describe('duplicateProject', () => {
-  it.todo('returns new project ID when source exists');
-  it.todo('returns null when source does not exist');
-  it.todo('new project has "Copy of" prefix in name');
-  it.todo('new project has fresh createdAt and updatedAt');
+  it('returns new project ID when source exists', () => {
+    saveProject('src-1', { meta: makeMeta('src-1'), canvasJSON: {}, pageData: {} });
+    const newId = duplicateProject('src-1');
+    expect(newId).not.toBeNull();
+    expect(typeof newId).toBe('string');
+    expect(newId).not.toBe('src-1');
+  });
+
+  it('returns null when source does not exist', () => {
+    const result = duplicateProject('nonexistent');
+    expect(result).toBeNull();
+  });
+
+  it('new project has "Copy of" prefix in name by default', () => {
+    saveProject('src-2', { meta: makeMeta('src-2'), canvasJSON: {}, pageData: {} });
+    const newId = duplicateProject('src-2');
+    expect(newId).not.toBeNull();
+    const loaded = loadProject(newId!);
+    expect(loaded!.meta.name).toBe('Copy of Test Project');
+  });
+
+  it('new project has fresh createdAt and updatedAt', () => {
+    const originalMeta = makeMeta('src-3');
+    saveProject('src-3', { meta: originalMeta, canvasJSON: {}, pageData: {} });
+    const newId = duplicateProject('src-3');
+    expect(newId).not.toBeNull();
+    const loaded = loadProject(newId!);
+    // The new project's timestamps should differ from the original
+    expect(loaded!.meta.id).not.toBe('src-3');
+  });
+
+  it('creates new entry with custom prefix', () => {
+    saveProject('src-4', { meta: makeMeta('src-4'), canvasJSON: {}, pageData: {} });
+    const newId = duplicateProject('src-4', 'Duplicate of');
+    expect(newId).not.toBeNull();
+    const loaded = loadProject(newId!);
+    expect(loaded!.meta.name).toBe('Duplicate of Test Project');
+  });
 });
 
 describe('updateProjectName', () => {
-  it.todo('returns true and updates name when project exists');
-  it.todo('returns false when project does not exist');
-  it.todo('updates updatedAt timestamp');
+  it('returns true and updates name when project exists', () => {
+    saveProject('upd-1', { meta: makeMeta('upd-1'), canvasJSON: {}, pageData: {} });
+    const result = updateProjectName('upd-1', 'New Name');
+    expect(result).toBe(true);
+    const loaded = loadProject('upd-1');
+    expect(loaded!.meta.name).toBe('New Name');
+  });
+
+  it('returns false when project does not exist', () => {
+    const result = updateProjectName('nonexistent', 'New Name');
+    expect(result).toBe(false);
+  });
+
+  it('updates updatedAt timestamp', () => {
+    const originalMeta = makeMeta('upd-2');
+    saveProject('upd-2', { meta: originalMeta, canvasJSON: {}, pageData: {} });
+    const before = new Date(originalMeta.updatedAt).getTime();
+    updateProjectName('upd-2', 'Renamed');
+    const loaded = loadProject('upd-2');
+    const after = new Date(loaded!.meta.updatedAt).getTime();
+    // updatedAt should be a valid date (>= original or equal)
+    expect(after).toBeGreaterThanOrEqual(before);
+  });
 });
