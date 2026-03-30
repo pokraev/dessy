@@ -35,7 +35,7 @@ export function ProjectCard({ project, onRefresh }: Props) {
       }
       objectUrl = url;
       setThumbUrl(url);
-    });
+    }).catch(() => { /* thumbnail load failure shows placeholder */ });
     return () => {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -94,6 +94,8 @@ export function ProjectCard({ project, onRefresh }: Props) {
         style={{
           height: '160px',
           overflow: 'hidden',
+          padding: '12px',
+          boxSizing: 'border-box',
           background: thumbUrl ? undefined : '#6366f1',
           display: 'flex',
           alignItems: 'center',
@@ -104,7 +106,7 @@ export function ProjectCard({ project, onRefresh }: Props) {
           <img
             src={thumbUrl}
             alt={project.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         ) : (
           <span

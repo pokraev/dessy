@@ -260,7 +260,7 @@ export default function EditorCanvasInner({ projectId, formatId }: EditorCanvasI
       canvas.loadFromJSON(canvasJSON).then(() => {
         canvas.renderAll();
         setHasElements(canvas.getObjects().length > 0);
-      });
+      }).catch(() => { /* corrupt canvas data — keep default */ });
     } catch {
       // Ignore corrupt restore data
     }

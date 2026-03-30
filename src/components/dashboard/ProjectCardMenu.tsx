@@ -45,7 +45,8 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
   }
 
   function handleDuplicate() {
-    duplicateProject(project.id);
+    const result = duplicateProject(project.id);
+    if (result === null) return;
     onRefresh();
     onClose();
     // Show simple toast via console (real toast system is out of scope for this plan)
@@ -54,7 +55,7 @@ export function ProjectCardMenu({ project, onClose, onRefresh, onStartRename }: 
 
   function handleDeleteConfirm() {
     deleteProject(project.id);
-    deleteThumbnail(project.id);
+    deleteThumbnail(project.id).catch(() => {});
     onRefresh();
     onClose();
   }
