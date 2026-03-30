@@ -224,6 +224,20 @@ async function callOpenAI(
 
 // --- Shared ---
 
+async function callWithRetry(
+  fn: (maxTokens?: number) => Promise<string>,
+  retryTokens?: number
+): Promise<string> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof Error && err.message === 'TRUNCATED' && retryTokens) {
+      return fn(retryTokens);
+    }
+    throw err;
+  }
+}
+
 async function callProvider(
   provider: AIProvider,
   apiKey: string,
@@ -231,29 +245,34 @@ async function callProvider(
   userPrompt: string,
   imageBase64?: string,
 ): Promise<string> {
-  if (provider === 'claude') {
-    return callClaude(apiKey, systemPrompt, userPrompt, imageBase64);
-  }
+  const callFn = (p: AIProvider, key: string) => {
+    if (p === 'claude') return () => callClaude(key, systemPrompt, userPrompt, imageBase64);
+    if (p === 'openai') return (maxTokens?: number) => callOpenAI(key, systemPrompt, userPrompt, imageBase64, maxTokens);
+    return (maxTokens?: number) => callGemini(key, systemPrompt, userPrompt, imageBase64, maxTokens);
+  };
 
-  if (provider === 'openai') {
-    try {
-      return await callOpenAI(apiKey, systemPrompt, userPrompt, imageBase64);
-    } catch (err) {
-      if (err instanceof Error && err.message === 'TRUNCATED') {
-        return callOpenAI(apiKey, systemPrompt, userPrompt, imageBase64, 32768);
-      }
-      throw err;
-    }
-  }
+  const retryTokens = provider === 'gemini' ? 65536 : provider === 'openai' ? 32768 : undefined;
 
-  // Gemini — retry with more tokens if truncated
   try {
-    return await callGemini(apiKey, systemPrompt, userPrompt, imageBase64);
-  } catch (err) {
-    if (err instanceof Error && err.message === 'TRUNCATED') {
-      return callGemini(apiKey, systemPrompt, userPrompt, imageBase64, 65536);
+    return await callWithRetry(callFn(provider, apiKey), retryTokens);
+  } catch {
+    // Fallback to OpenAI if available and wasn't the primary
+    if (provider !== 'openai') {
+      const { getOpenAIApiKey } = await import('@/lib/storage/apiKeyStorage');
+      const openaiKey = getOpenAIApiKey();
+      if (openaiKey) {
+        return callWithRetry(callFn('openai', openaiKey), 32768);
+      }
     }
-    throw err;
+    // Fallback to Gemini if available and wasn't the primary
+    if (provider !== 'gemini') {
+      const { getApiKey } = await import('@/lib/storage/apiKeyStorage');
+      const geminiKey = getApiKey();
+      if (geminiKey) {
+        return callWithRetry(callFn('gemini', geminiKey), 65536);
+      }
+    }
+    throw new Error('All AI providers failed. Check your API keys in Settings.');
   }
 }
 

@@ -23,7 +23,7 @@ export function useAutoSave(canvas: Canvas | null, projectId: string) {
 
       isSavingRef.current = true;
       try {
-      const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+      const canvasJSON = canvas.toObject([...CUSTOM_PROPS]);
       const brandState = useBrandStore.getState();
       const result = saveProject(projectId, {
         meta: currentProject.meta,

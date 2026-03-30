@@ -9,7 +9,7 @@ export function exportProjectJSON(canvas: Canvas, meta: ProjectMeta): void {
     version: FILE_VERSION,
     exportedAt: new Date().toISOString(),
     meta,
-    canvas: canvas.toDatalessJSON([...CUSTOM_PROPS]),
+    canvas: canvas.toObject([...CUSTOM_PROPS]),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);

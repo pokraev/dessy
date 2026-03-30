@@ -33,7 +33,7 @@ export function createHistory() {
    *  toJSON embeds base64 data, making snapshots self-contained for undo/redo. */
   function serialize(canvas: Canvas): string {
     return JSON.stringify(
-      canvas.toJSON(CUSTOM_PROPS as unknown as string[])
+      canvas.toObject(CUSTOM_PROPS as unknown as string[])
     );
   }
 

@@ -156,9 +156,26 @@ export function PromptCrafterModal({ open, onClose }: PromptCrafterModalProps) {
 
     async function doGenerate() {
       try {
-        const dataUrl = provider === 'openai'
-          ? await callOpenAIImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio)
-          : await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
+        let dataUrl: string;
+        try {
+          dataUrl = provider === 'openai'
+            ? await callOpenAIImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio)
+            : await callGeminiImage(apiKey!, assembledPromptText, frameSnapshot!.aspectRatio);
+        } catch {
+          // Fallback: try the other image provider
+          const { getOpenAIApiKey, getApiKey: getGeminiKey } = await import('@/lib/storage/apiKeyStorage');
+          if (provider !== 'openai') {
+            const openaiKey = getOpenAIApiKey();
+            if (openaiKey) {
+              dataUrl = await callOpenAIImage(openaiKey, assembledPromptText, frameSnapshot!.aspectRatio);
+            } else throw new Error('Image generation failed. No fallback provider available.');
+          } else {
+            const geminiKey = getGeminiKey();
+            if (geminiKey) {
+              dataUrl = await callGeminiImage(geminiKey, assembledPromptText, frameSnapshot!.aspectRatio);
+            } else throw new Error('Image generation failed. No fallback provider available.');
+          }
+        }
         if (cancelled) return;
 
         const blob = base64ToBlob(dataUrl);

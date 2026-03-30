@@ -15,7 +15,7 @@ export async function captureThumbnail(
   const doc = getDocDimensions(format);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]) as { objects?: any[]; [k: string]: unknown };
+  const canvasJSON = canvas.toObject([...CUSTOM_PROPS]) as { objects?: any[]; [k: string]: unknown };
 
   // Strip image objects with blob/data URLs that can't be loaded by the temp canvas
   if (canvasJSON.objects) {

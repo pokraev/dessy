@@ -50,7 +50,7 @@ export function usePageSwitching(
       if (pageIndex === currentIdx) return;
 
       // Save current page canvas JSON to sessionStorage
-      const currentJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+      const currentJSON = canvas.toObject([...CUSTOM_PROPS]);
       sessionStorage.setItem(
         `dessy-generated-page-${projectId}-${currentIdx}`,
         JSON.stringify(currentJSON)

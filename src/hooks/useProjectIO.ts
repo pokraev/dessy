@@ -41,7 +41,7 @@ export function useProjectIO(
     const triggerSave = () => {
       const { currentProject } = useProjectStore.getState();
       if (!currentProject) return;
-      const canvasJSON = canvas.toDatalessJSON([...CUSTOM_PROPS]);
+      const canvasJSON = canvas.toObject([...CUSTOM_PROPS]);
       const brandState = useBrandStore.getState();
       const result = saveProject(projectId, {
         meta: currentProject.meta,
@@ -100,12 +100,14 @@ export function useProjectIO(
     if (!stored) return;
 
     sessionStorage.removeItem(`dessy-canvas-restore-${projectId}`);
+
     try {
       const canvasJSON = JSON.parse(stored);
+      // toJSON embeds image data as base64 — no stale blob URLs
       canvas.loadFromJSON(canvasJSON).then(() => {
         canvas.renderAll();
         onHasElements?.(canvas.getObjects().length > 0);
-      }).catch(() => { /* corrupt canvas data — keep default */ });
+      }).catch((err) => { console.error('[RESTORE] loadFromJSON failed:', err); });
     } catch {
       // Ignore corrupt restore data
     }

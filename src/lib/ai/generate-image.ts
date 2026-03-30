@@ -16,6 +16,51 @@ export async function enrichPrompt(
   baseDescription: string,
   frameContext: FrameContext
 ): Promise<PromptVariations> {
+  try {
+    return await enrichPromptGemini(apiKey, baseDescription, frameContext);
+  } catch {
+    // Fallback to OpenAI
+    const { getOpenAIApiKey } = await import('@/lib/storage/apiKeyStorage');
+    const openaiKey = getOpenAIApiKey();
+    if (openaiKey) {
+      return enrichPromptOpenAI(openaiKey, baseDescription, frameContext);
+    }
+    throw new Error('Prompt enrichment failed. Check your API keys in Settings.');
+  }
+}
+
+async function enrichPromptOpenAI(
+  apiKey: string,
+  baseDescription: string,
+  frameContext: FrameContext
+): Promise<PromptVariations> {
+  const systemPrompt = buildEnrichmentSystemPrompt(frameContext);
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'gpt-4.1',
+      max_tokens: 1024,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: baseDescription },
+      ],
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+  if (!response.ok) throw new Error(`OpenAI error ${response.status}`);
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content ?? '{}';
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  return JSON.parse(fenceMatch ? fenceMatch[1] : text) as PromptVariations;
+}
+
+async function enrichPromptGemini(
+  apiKey: string,
+  baseDescription: string,
+  frameContext: FrameContext
+): Promise<PromptVariations> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120_000);
 
