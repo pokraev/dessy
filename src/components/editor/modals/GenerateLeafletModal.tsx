@@ -11,9 +11,9 @@ import { GenerationPreview } from './GenerationPreview';
 import type { GenerationMode, FoldType, GenerationResponse } from '@/types/generation';
 import type { AIProvider } from '@/lib/storage/apiKeyStorage';
 import {
-  getApiKey, setApiKey, clearApiKey,
-  getClaudeApiKey, setClaudeApiKey, clearClaudeApiKey,
-  getOpenAIApiKey, setOpenAIApiKey, clearOpenAIApiKey,
+  getApiKey,
+  getClaudeApiKey,
+  getOpenAIApiKey,
   getProvider, setProvider,
 } from '@/lib/storage/apiKeyStorage';
 import { generateLeaflet } from '@/lib/ai/generate-leaflet';
@@ -51,27 +51,13 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   const [geminiKey, setGeminiKeyState] = useState<string | null>(null);
   const [claudeKey, setClaudeKeyState] = useState<string | null>(null);
   const [openaiKey, setOpenAIKeyState] = useState<string | null>(null);
-  const [geminiKeyDraft, setGeminiKeyDraft] = useState('');
-  const [claudeKeyDraft, setClaudeKeyDraft] = useState('');
-  const [openaiKeyDraft, setOpenAIKeyDraft] = useState('');
-
-  useEffect(() => {
-    const storedGemini = getApiKey();
-    const storedClaude = getClaudeApiKey();
-    const storedOpenAI = getOpenAIApiKey();
-    const storedProvider = getProvider();
-    setGeminiKeyState(storedGemini);
-    setClaudeKeyState(storedClaude);
-    setOpenAIKeyState(storedOpenAI);
-    setProviderState(storedProvider);
-    if (storedProvider === 'claude' && !storedClaude) setShowKeyInput(true);
-    else if (storedProvider === 'openai' && !storedOpenAI) setShowKeyInput(true);
-    else if (storedProvider === 'gemini' && !storedGemini) setShowKeyInput(true);
-  }, []);
-
   // Reset generation state when modal opens so user sees the initial screen
   useEffect(() => {
     if (open) {
+      setGeminiKeyState(getApiKey());
+      setClaudeKeyState(getClaudeApiKey());
+      setOpenAIKeyState(getOpenAIApiKey());
+      setProviderState(getProvider());
       setResponse(null);
       setError(null);
       setIsGenerating(false);
@@ -79,48 +65,6 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
   }, [open]);
 
   const activeKey = provider === 'claude' ? claudeKey : provider === 'openai' ? openaiKey : geminiKey;
-
-  function handleSaveGeminiKey() {
-    const trimmed = geminiKeyDraft.trim();
-    if (trimmed) {
-      setApiKey(trimmed);
-      setGeminiKeyState(trimmed);
-      setGeminiKeyDraft('');
-    }
-  }
-
-  function handleSaveClaudeKey() {
-    const trimmed = claudeKeyDraft.trim();
-    if (trimmed) {
-      setClaudeApiKey(trimmed);
-      setClaudeKeyState(trimmed);
-      setClaudeKeyDraft('');
-    }
-  }
-
-  function handleSaveOpenAIKey() {
-    const trimmed = openaiKeyDraft.trim();
-    if (trimmed) {
-      setOpenAIApiKey(trimmed);
-      setOpenAIKeyState(trimmed);
-      setOpenAIKeyDraft('');
-    }
-  }
-
-  function handleClearGeminiKey() {
-    clearApiKey();
-    setGeminiKeyState(null);
-  }
-
-  function handleClearClaudeKey() {
-    clearClaudeApiKey();
-    setClaudeKeyState(null);
-  }
-
-  function handleClearOpenAIKey() {
-    clearOpenAIApiKey();
-    setOpenAIKeyState(null);
-  }
 
   function handleProviderChange(p: AIProvider) {
     setProviderState(p);
@@ -287,7 +231,7 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
                     }}
                   >
                     {tab.icon}
-                    {tab.label}
+                    {t(`generate.tab${tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}`)}
                   </button>
                 );
               })}
@@ -296,240 +240,25 @@ export function GenerateLeafletModal({ open, onClose, onLoadPages }: GenerateLea
             {/* Tab content OR preview */}
             <div style={{ padding: '16px' }}>
               {showKeyInput && (
-                <div style={{
-                  marginBottom: '12px',
-                  padding: '12px',
-                  background: '#1a1a1a',
-                  border: '1px solid #333',
-                  borderRadius: '8px',
-                }}>
-                  {/* Provider toggle */}
-                  <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                    {(['gemini', 'claude', 'openai'] as const).map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => handleProviderChange(p)}
-                        style={{
-                          padding: '6px 14px',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          background: provider === p ? '#6366f1' : '#0a0a0a',
-                          color: provider === p ? '#fff' : '#888',
-                          border: `1px solid ${provider === p ? '#6366f1' : '#333'}`,
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {p === 'gemini' ? 'Gemini' : p === 'claude' ? 'Claude' : 'OpenAI'}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Gemini key */}
-                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    {t('generate.geminiKey')} {geminiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
-                  </label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                    <input
-                      type="password"
-                      value={geminiKeyDraft}
-                      onChange={(e) => setGeminiKeyDraft(e.target.value)}
-                      placeholder={geminiKey ? '••••••••' : t('generate.enterGeminiKey')}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveGeminiKey()}
-                      style={{
-                        flex: 1,
-                        padding: '8px 10px',
-                        fontSize: '13px',
-                        background: '#0a0a0a',
-                        border: '1px solid #333',
-                        borderRadius: '6px',
-                        color: '#f5f5f5',
-                        outline: 'none',
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveGeminiKey}
-                      style={{
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        background: '#6366f1',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {t('generate.save')}
-                    </button>
-                    {geminiKey && (
-                      <button
-                        type="button"
-                        onClick={handleClearGeminiKey}
-                        style={{
-                          padding: '8px 12px',
-                          fontSize: '13px',
-                          background: 'transparent',
-                          color: '#ef4444',
-                          border: '1px solid #333',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Claude key */}
-                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    {t('generate.claudeKey')} {claudeKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
-                  </label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                    <input
-                      type="password"
-                      value={claudeKeyDraft}
-                      onChange={(e) => setClaudeKeyDraft(e.target.value)}
-                      placeholder={claudeKey ? '••••••••' : t('generate.enterClaudeKey')}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveClaudeKey()}
-                      style={{
-                        flex: 1,
-                        padding: '8px 10px',
-                        fontSize: '13px',
-                        background: '#0a0a0a',
-                        border: '1px solid #333',
-                        borderRadius: '6px',
-                        color: '#f5f5f5',
-                        outline: 'none',
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveClaudeKey}
-                      style={{
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        background: '#6366f1',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {t('generate.save')}
-                    </button>
-                    {claudeKey && (
-                      <button
-                        type="button"
-                        onClick={handleClearClaudeKey}
-                        style={{
-                          padding: '8px 12px',
-                          fontSize: '13px',
-                          background: 'transparent',
-                          color: '#ef4444',
-                          border: '1px solid #333',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {/* OpenAI key */}
-                  <label style={{ display: 'block', fontSize: '13px', color: '#ccc', marginBottom: '6px' }}>
-                    OpenAI API Key {openaiKey && <span style={{ color: '#4ade80', fontSize: '11px' }}>{t('generate.saved')}</span>}
-                  </label>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                    <input
-                      type="password"
-                      value={openaiKeyDraft}
-                      onChange={(e) => setOpenAIKeyDraft(e.target.value)}
-                      placeholder={openaiKey ? '••••••••' : 'sk-...'}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveOpenAIKey()}
-                      style={{
-                        flex: 1,
-                        padding: '8px 10px',
-                        fontSize: '13px',
-                        background: '#0a0a0a',
-                        border: '1px solid #333',
-                        borderRadius: '6px',
-                        color: '#f5f5f5',
-                        outline: 'none',
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveOpenAIKey}
-                      style={{
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        background: '#6366f1',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {t('generate.save')}
-                    </button>
-                    {openaiKey && (
-                      <button
-                        type="button"
-                        onClick={handleClearOpenAIKey}
-                        style={{
-                          padding: '8px 12px',
-                          fontSize: '13px',
-                          background: 'transparent',
-                          color: '#ef4444',
-                          border: '1px solid #333',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  <p style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
-                    Gemini:{' '}
-                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
-                      aistudio.google.com/apikey
-                    </a>
-                    {' | '}
-                    Claude:{' '}
-                    <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
-                      console.anthropic.com
-                    </a>
-                    {' | '}
-                    OpenAI:{' '}
-                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
-                      platform.openai.com/api-keys
-                    </a>
+                <div style={{ padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '13px', color: '#ccc', margin: '0 0 8px' }}>
+                    {activeKey
+                      ? `${provider === 'gemini' ? 'Gemini' : provider === 'claude' ? 'Claude' : 'OpenAI'} API key configured`
+                      : 'No API key configured'}
                   </p>
-
+                  <p style={{ fontSize: '11px', color: '#666', margin: '0 0 8px' }}>
+                    Manage API keys and providers in Settings (gear icon in the header).
+                  </p>
                   {activeKey && (
                     <button
                       type="button"
                       onClick={() => setShowKeyInput(false)}
                       style={{
-                        marginTop: '8px',
-                        padding: '4px 12px',
-                        fontSize: '12px',
-                        background: 'transparent',
-                        border: '1px solid #333',
-                        borderRadius: '4px',
-                        color: '#888',
-                        cursor: 'pointer',
+                        padding: '6px 12px', fontSize: '12px', background: 'transparent',
+                        border: '1px solid #333', borderRadius: '6px', color: '#888', cursor: 'pointer',
                       }}
                     >
-                      {t('generate.closeSettings')}
+                      {t('generate.close')}
                     </button>
                   )}
                 </div>

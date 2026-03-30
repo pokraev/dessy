@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Image, FileCode, FileType, Terminal } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useCanvasStore } from '@/stores/canvasStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { FORMATS } from '@/constants/formats';
@@ -43,7 +44,10 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
   async function handleExport() {
     const canvas = useCanvasStore.getState().canvasRef;
     const project = useProjectStore.getState().currentProject;
-    if (!canvas || !project) return;
+    if (!canvas || !project) {
+      toast.error(t('export.canvasNotReady', 'Canvas not ready. Please try again.'));
+      return;
+    }
 
     const formatDef = FORMATS[project.meta.format];
     if (!formatDef) return;

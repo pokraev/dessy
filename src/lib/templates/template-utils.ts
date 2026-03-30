@@ -50,5 +50,28 @@ export function createProjectFromTemplate(template: TemplateEntry): string {
   }));
 
   saveProject(newId, { meta, canvasJSON, pageData: { pages, currentPageIndex: 0 } });
+
+  // Store additional page canvasJSONs in sessionStorage for page switching
+  if (template.allPagesJSON && template.allPagesJSON.length > 1) {
+    for (let i = 1; i < template.allPagesJSON.length; i++) {
+      const pageJSON = JSON.parse(JSON.stringify(template.allPagesJSON[i]));
+      // Apply same origin/bleed fixes as first page
+      for (const obj of (pageJSON.objects ?? [])) {
+        if (!obj.originX) obj.originX = 'left';
+        if (!obj.originY) obj.originY = 'top';
+        if (obj._isDocBackground) {
+          obj.left = -doc.bleedPx;
+          obj.top = -doc.bleedPx;
+          obj.width = doc.width;
+          obj.height = doc.height;
+        }
+      }
+      sessionStorage.setItem(
+        `dessy-generated-page-${newId}-${i}`,
+        JSON.stringify(pageJSON)
+      );
+    }
+  }
+
   return newId;
 }
