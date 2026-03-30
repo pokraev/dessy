@@ -1,7 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TEMPLATES } from '@/lib/templates/templates-index';
+import { getTemplates } from '@/lib/templates/templates-index';
+import type { TemplateEntry } from '@/lib/templates/templates-index';
 import { useAppStore } from '@/stores/appStore';
 import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
 import { useTemplateThumbnails } from '@/hooks/useTemplateThumbnails';
@@ -11,12 +13,13 @@ interface Props {
 }
 
 export function EmptyState({ onNewLeaflet }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const suggestedTemplates = TEMPLATES.slice(0, 3);
-  const thumbnails = useTemplateThumbnails(suggestedTemplates);
+  const templates = useMemo(() => getTemplates(i18n.language), [i18n.language]);
+  const suggestedTemplates = useMemo(() => templates.slice(0, 3), [templates]);
+  const thumbnails = useTemplateThumbnails(suggestedTemplates, i18n.language);
 
-  function handleTemplateClick(template: typeof TEMPLATES[number]) {
+  function handleTemplateClick(template: TemplateEntry) {
     const newId = createProjectFromTemplate(template);
     useAppStore.getState().openProject(newId);
   }
@@ -73,7 +76,7 @@ export function EmptyState({ onNewLeaflet }: Props) {
             {/* Template preview */}
             <div
               className="h-20 flex items-center justify-center overflow-hidden"
-              style={{ background: CATEGORY_COLORS[template.category] ?? '#6366f1' }}
+              style={{ background: CATEGORY_COLORS[template.category] ?? '#4b5563' }}
             >
               {thumbnails[template.id] ? (
                 <img src={thumbnails[template.id]} alt={template.name} className="w-full h-full object-contain p-1.5" />

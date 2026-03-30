@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { TemplateEntry } from '@/lib/templates/templates-index';
 import { renderPageToBlob } from '@/lib/export/raster-export';
 import { getDocDimensions } from '@/lib/fabric/canvas-config';
 import { FORMATS } from '@/constants/formats';
 
-// Cache thumbnails across component mounts so they're only generated once
+// Cache thumbnails across component mounts — keyed by "lang:templateId"
 const thumbnailCache: Record<string, string> = {};
 
 /**
@@ -31,36 +31,55 @@ function fixTemplateJSON(canvasJSON: Record<string, unknown>, formatId: string):
   return fixed;
 }
 
-export function useTemplateThumbnails(templates: TemplateEntry[]) {
-  const [thumbnails, setThumbnails] = useState<Record<string, string>>(thumbnailCache);
+export function useTemplateThumbnails(templates: TemplateEntry[], lang = 'en') {
+  // Stable identity: only rebuild when template IDs or lang actually change
+  const templateIds = useMemo(() => templates.map((t) => t.id).join(','), [templates]);
+
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const tmpl of templates) {
+      const key = `${lang}:${tmpl.id}`;
+      if (thumbnailCache[key]) initial[tmpl.id] = thumbnailCache[key];
+    }
+    return initial;
+  });
 
   useEffect(() => {
     if (templates.length === 0) return;
     let cancelled = false;
 
+    // Reset thumbnails for new language, pulling from cache
+    const cached: Record<string, string> = {};
+    for (const tmpl of templates) {
+      const key = `${lang}:${tmpl.id}`;
+      if (thumbnailCache[key]) cached[tmpl.id] = thumbnailCache[key];
+    }
+    setThumbnails(cached);
+
     async function generate() {
       for (const tmpl of templates) {
         if (cancelled) break;
-        if (thumbnailCache[tmpl.id]) continue;
+        const cacheKey = `${lang}:${tmpl.id}`;
+        if (thumbnailCache[cacheKey]) continue;
         try {
           const format = FORMATS[tmpl.format] ?? FORMATS['A4'];
           const doc = getDocDimensions(format);
           const fixedJSON = fixTemplateJSON(tmpl.canvasJSON as Record<string, unknown>, tmpl.format);
           const pageData = { pageIndex: 0, canvasJSON: fixedJSON, pageId: '', background: '#FFFFFF' };
-          // Use multiplier 1 — same as project thumbnail capture (full 72 DPI)
           const blob = await renderPageToBlob(pageData, doc.width, doc.height, 'png', 1);
           const url = URL.createObjectURL(blob);
-          thumbnailCache[tmpl.id] = url;
+          thumbnailCache[cacheKey] = url;
           if (!cancelled) setThumbnails((prev) => ({ ...prev, [tmpl.id]: url }));
-        } catch {
-          // Skip failed template thumbnails
+        } catch (err) {
+          console.warn(`[useTemplateThumbnails] Failed for ${tmpl.id}:`, err);
         }
       }
     }
 
     generate();
     return () => { cancelled = true; };
-  }, [templates]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateIds, lang]);
 
   return thumbnails;
 }

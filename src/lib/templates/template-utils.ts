@@ -41,6 +41,10 @@ export function createProjectFromTemplate(template: TemplateEntry): string {
       obj.width = doc.width;
       obj.height = doc.height;
     }
+    // Normalize template customType to match app expectations
+    if (obj.customType === 'textFrame') obj.customType = 'text';
+    // Ensure every object has a unique id
+    if (!obj.id) obj.id = crypto.randomUUID();
   }
 
   const pages = Array.from({ length: template.pageCount }, () => ({
@@ -65,6 +69,8 @@ export function createProjectFromTemplate(template: TemplateEntry): string {
           obj.width = doc.width;
           obj.height = doc.height;
         }
+        if (obj.customType === 'textFrame') obj.customType = 'text';
+        if (!obj.id) obj.id = crypto.randomUUID();
       }
       sessionStorage.setItem(
         `dessy-generated-page-${newId}-${i}`,

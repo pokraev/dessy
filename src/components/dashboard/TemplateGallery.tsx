@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates/templates-index';
+import { getTemplates, TEMPLATE_CATEGORIES } from '@/lib/templates/templates-index';
 import type { TemplateEntry, TemplateCategory } from '@/lib/templates/templates-index';
 import { useAppStore } from '@/stores/appStore';
 import { CATEGORY_COLORS, createProjectFromTemplate } from '@/lib/templates/template-utils';
@@ -15,22 +15,28 @@ interface TemplateGalleryProps {
 }
 
 export function TemplateGallery({ onClose }: TemplateGalleryProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<'All' | TemplateCategory>('All');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateEntry | null>(null);
 
-  const filtered = activeCategory === 'All'
-    ? TEMPLATES
-    : TEMPLATES.filter((tmpl) => tmpl.category === activeCategory);
+  const templates = useMemo(() => getTemplates(i18n.language), [i18n.language]);
 
-  const thumbnails = useTemplateThumbnails(TEMPLATES);
+  // Reset selection when language changes so stale canvasJSON isn't used
+  useEffect(() => { setSelectedTemplate(null); }, [i18n.language]);
 
-  function handleUseTemplate() {
+  const filtered = useMemo(
+    () => activeCategory === 'All' ? templates : templates.filter((tmpl) => tmpl.category === activeCategory),
+    [templates, activeCategory],
+  );
+
+  const thumbnails = useTemplateThumbnails(templates, i18n.language);
+
+  const handleUseTemplate = useCallback(() => {
     if (!selectedTemplate) return;
     const newId = createProjectFromTemplate(selectedTemplate);
     useAppStore.getState().openProject(newId);
     onClose();
-  }
+  }, [selectedTemplate, onClose]);
 
   return (
     <div className="flex flex-col">
@@ -98,7 +104,7 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
             <button
               onClick={() => setSelectedTemplate(null)}
               className="absolute top-4 right-4 bg-transparent border-none cursor-pointer text-text-secondary flex items-center justify-center hover:text-text-primary"
-              aria-label="Close preview"
+              aria-label={t('common.close', 'Close preview')}
             >
               <X size={16} />
             </button>
