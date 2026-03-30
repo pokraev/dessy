@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { EditorLayout } from '@/components/editor/EditorLayout';
@@ -13,12 +13,12 @@ import { useCanvasStore } from '@/stores/canvasStore';
 import { useBrandStore } from '@/stores/brandStore';
 import { loadProject } from '@/lib/storage/projectStorage';
 import { ensureFormatPageCount } from '@/lib/pages/page-crud';
-import { saveThumbnail } from '@/lib/storage/thumbnailDb';
 import { useAppStore } from '@/stores/appStore';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import type { LeafletFormatId } from '@/types/project';
+import { captureThumbnail } from '@/lib/thumbnails/capture';
 
-const EditorCanvasInner = lazy(() => import('@/components/editor/EditorCanvasInner'));
+import EditorCanvasInner from '@/components/editor/EditorCanvasInner';
 
 const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-headline', name: 'Headline', fontFamily: 'Inter', fontSize: 32, fontWeight: 700, lineHeight: 1.2, letterSpacing: 0, color: '#000000' },
@@ -28,49 +28,6 @@ const DEFAULT_TYPOGRAPHY_PRESETS = [
   { id: 'preset-cta', name: 'CTA', fontFamily: 'Inter', fontSize: 16, fontWeight: 700, lineHeight: 1.2, letterSpacing: 40, color: '#6366f1' },
 ];
 
-export async function captureThumbnail(projectId: string) {
-  const canvas = useCanvasStore.getState().canvasRef;
-  if (!canvas) return;
-
-  // Find the document background rect for crop bounds
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bgRect = canvas.getObjects().find((o: any) => o._isDocBackground);
-  const left = bgRect?.left ?? 0;
-  const top = bgRect?.top ?? 0;
-  const width = (bgRect?.width ?? 595) * (bgRect?.scaleX ?? 1);
-  const height = (bgRect?.height ?? 842) * (bgRect?.scaleY ?? 1);
-
-  // AligningGuidelines hooks into 'before:render' and tries to access an overlay context
-  // that doesn't exist on the temp canvas created by toDataURL/toCanvasElement.
-  // Temporarily remove the listener to prevent the crash.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const listeners = (canvas as any).__eventListeners?.['before:render'];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (listeners) (canvas as any).__eventListeners['before:render'] = [];
-  let dataUrl: string;
-  try {
-    dataUrl = canvas.toDataURL({
-      left, top, width, height,
-      multiplier: 0.15,
-      format: 'jpeg',
-      quality: 0.6,
-    });
-  } finally {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (listeners) (canvas as any).__eventListeners['before:render'] = listeners;
-  }
-
-  await saveThumbnail(projectId, dataUrl);
-}
-
-function CanvasLoading() {
-  const { t } = useTranslation();
-  return (
-    <div className="w-full h-full bg-bg flex items-center justify-center">
-      <p className="text-text-secondary text-[13px]">{t('app.loadingCanvas')}</p>
-    </div>
-  );
-}
 
 function EditorRoot({ projectId }: { projectId: string }) {
   const [formatId, setFormatId] = useState<LeafletFormatId>('A4');
@@ -130,15 +87,20 @@ function EditorRoot({ projectId }: { projectId: string }) {
     const unsubscribe = useCanvasStore.subscribe((state, prevState) => {
       if (state.triggerSave !== prevState.triggerSave && state.triggerSave) {
         const originalTriggerSave = state.triggerSave;
+        // Unsubscribe BEFORE setState to prevent infinite recursion
+        unsubscribe();
         useCanvasStore.setState({
           triggerSave: () => {
             originalTriggerSave();
-            captureThumbnail(projectId).catch(() => {
-              // Thumbnail capture failure should not break manual save
-            });
+            const canvasRef = useCanvasStore.getState().canvasRef;
+            const proj = useProjectStore.getState().currentProject;
+            if (canvasRef && proj) {
+              captureThumbnail(canvasRef, projectId, proj.meta.format).catch(() => {
+                // Thumbnail capture failure should not break manual save
+              });
+            }
           },
         });
-        unsubscribe();
       }
     });
 
@@ -197,9 +159,7 @@ function EditorRoot({ projectId }: { projectId: string }) {
       leftPanel={<LeftPanel />}
       canvas={
         <CanvasArea>
-          <Suspense fallback={<CanvasLoading />}>
-            <EditorCanvasInner projectId={projectId} formatId={formatId} />
-          </Suspense>
+          <EditorCanvasInner projectId={projectId} formatId={formatId} />
         </CanvasArea>
       }
       rightPanel={<PropertiesPanel />}
