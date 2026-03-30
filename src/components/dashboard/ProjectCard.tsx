@@ -19,7 +19,6 @@ interface Props {
 export function ProjectCard({ project, onRefresh }: Props) {
   const { t } = useTranslation();
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-  const [hovered, setHovered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(project.name);
@@ -77,53 +76,27 @@ export function ProjectCard({ project, onRefresh }: Props) {
   return (
     <div
       onClick={handleCardClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        position: 'relative',
-        background: '#141414',
-        border: `1px solid ${hovered ? '#6366f1' : '#2a2a2a'}`,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'border-color 0.15s',
-      }}
+      className="group relative bg-surface border border-border rounded-xl overflow-hidden cursor-pointer transition-colors hover:border-accent"
     >
       {/* Thumbnail area */}
       <div
-        style={{
-          height: '160px',
-          overflow: 'hidden',
-          padding: '12px',
-          boxSizing: 'border-box',
-          background: thumbUrl ? undefined : '#6366f1',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className={`h-40 overflow-hidden p-3 box-border flex items-center justify-center${thumbUrl ? '' : ' bg-accent'}`}
       >
         {thumbUrl ? (
           <img
             src={thumbUrl}
             alt={project.name}
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            className="w-full h-full object-contain"
           />
         ) : (
-          <span
-            style={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: '#f5f5f5',
-              opacity: 0.7,
-            }}
-          >
+          <span className="text-sm font-semibold text-text-primary opacity-70">
             {formatLabel}
           </span>
         )}
       </div>
 
       {/* Card body */}
-      <div style={{ padding: '12px' }}>
+      <div className="p-3">
         {/* Project name / rename input */}
         {isRenaming ? (
           <input
@@ -133,66 +106,28 @@ export function ProjectCard({ project, onRefresh }: Props) {
             onBlur={handleRenameCommit}
             onKeyDown={handleRenameKeyDown}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#1e1e1e',
-              border: '1px solid #6366f1',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              fontSize: '16px',
-              fontWeight: 600,
-              color: '#f5f5f5',
-              outline: 'none',
-              width: '100%',
-              boxSizing: 'border-box',
-            }}
+            className="bg-surface-raised border border-accent rounded px-2 py-1 text-base font-semibold text-text-primary outline-none w-full"
           />
         ) : (
-          <div
-            style={{
-              fontSize: '16px',
-              fontWeight: 600,
-              color: '#f5f5f5',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: 'calc(100% - 28px)',
-            }}
-          >
+          <div className="text-base font-semibold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis max-w-[calc(100%-28px)]">
             {project.name}
           </div>
         )}
 
         {/* Meta row */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginTop: '4px',
-          }}
-        >
+        <div className="flex items-center gap-2 mt-1">
           {/* Format badge */}
-          <span
-            style={{
-              background: '#2a2a2a',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              fontSize: '12px',
-              fontWeight: 400,
-              color: '#888',
-              flexShrink: 0,
-            }}
-          >
+          <span className="bg-surface-raised rounded px-2 py-1 text-xs text-text-secondary shrink-0">
             {formatLabel}
           </span>
 
           {/* Relative date */}
-          <span style={{ fontSize: '12px', color: '#888', flexShrink: 0 }}>
+          <span className="text-xs text-text-secondary shrink-0">
             {relativeTime(project.updatedAt)}
           </span>
 
           {/* Page count */}
-          <span style={{ fontSize: '12px', color: '#888', flexShrink: 0 }}>
+          <span className="text-xs text-text-secondary shrink-0">
             {t('dashboard.pageCount', { count: pageCount })}
           </span>
         </div>
@@ -203,22 +138,7 @@ export function ProjectCard({ project, onRefresh }: Props) {
         aria-label="Project options"
         aria-haspopup="true"
         onClick={handleMenuToggle}
-        style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          background: 'rgba(10,10,10,0.7)',
-          borderRadius: '6px',
-          padding: '4px',
-          border: 'none',
-          cursor: 'pointer',
-          opacity: hovered ? 1 : 0,
-          transition: 'opacity 0.15s',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#f5f5f5',
-        }}
+        className="absolute top-2 right-2 bg-bg/70 rounded-md p-1 border-none cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-text-primary"
       >
         <MoreVertical size={16} />
       </button>
