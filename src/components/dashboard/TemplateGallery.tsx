@@ -35,13 +35,13 @@ export function TemplateGallery({ onClose }: TemplateGalleryProps) {
   return (
     <div className="flex flex-col">
       {/* Category tabs */}
-      <div className="flex flex-wrap gap-2 px-6 pt-4">
+      <div className="flex flex-wrap gap-1.5 px-6 pt-3">
         {(['All', ...TEMPLATE_CATEGORIES] as Array<'All' | TemplateCategory>).map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
             className={[
-              'rounded-full px-4 py-2 text-sm font-normal cursor-pointer border font-sans transition-colors',
+              'rounded-full px-2.5 py-1 text-[11px] font-normal cursor-pointer border font-sans transition-colors',
               activeCategory === cat
                 ? 'bg-accent text-text-primary border-transparent'
                 : 'bg-surface-raised text-text-secondary border-border hover:text-text-primary',
