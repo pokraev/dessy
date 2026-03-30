@@ -55,13 +55,25 @@ export async function extractBrandFromUrl(
   apiKey: string,
   provider: AIProvider
 ): Promise<SavedBrand> {
-  // Try fetching HTML — extract font/style-relevant parts
+  // Try fetching HTML via CORS proxy — extract font/style-relevant parts
   let htmlContext = '';
   try {
-    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
-      const fullHtml = await res.text();
+    // Try multiple proxies in case one is rate-limited
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    ];
+    let fullHtml = '';
+    for (const proxyUrl of proxies) {
+      try {
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+        if (res.ok) {
+          fullHtml = await res.text();
+          break;
+        }
+      } catch { /* try next proxy */ }
+    }
+    if (fullHtml) {
       // Extract <head> (contains font links, meta, style tags)
       const headMatch = fullHtml.match(/<head[\s\S]*?<\/head>/i);
       const head = headMatch ? headMatch[0] : '';
@@ -89,9 +101,14 @@ export async function extractBrandFromUrl(
     ? `Website URL: ${url}\n\nHere are the font links, styles, and CSS from the page:\n\n${htmlContext}\n\nExtract the complete brand identity. Pay special attention to the font-family declarations, Google Fonts links, and CSS custom properties for colors and typography.`
     : `Website URL: ${url}\n\nExtract the complete brand identity based on your knowledge of this website.`;
 
-  const raw: ExtractedBrandData = provider === 'claude'
-    ? await callClaude(apiKey, userPrompt)
-    : await callGemini(apiKey, userPrompt);
+  let raw: ExtractedBrandData;
+  if (provider === 'claude') {
+    raw = await callClaude(apiKey, userPrompt);
+  } else if (provider === 'openai') {
+    raw = await callOpenAI(apiKey, userPrompt);
+  } else {
+    raw = await callGemini(apiKey, userPrompt);
+  }
 
   // Convert to SavedBrand
   const now = new Date().toISOString();
@@ -163,6 +180,30 @@ async function callClaude(apiKey: string, userPrompt: string): Promise<Extracted
   if (!res.ok) throw new Error(`Claude API error: ${res.status}`);
   const data = await res.json();
   const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? '{}';
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  return JSON.parse(fenceMatch ? fenceMatch[1] : text);
+}
+
+async function callOpenAI(apiKey: string, userPrompt: string): Promise<ExtractedBrandData> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4.1',
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: PROMPT_PREFIX },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`);
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content ?? '{}';
   const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
   return JSON.parse(fenceMatch ? fenceMatch[1] : text);
 }
